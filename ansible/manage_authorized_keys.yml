@@ -1,0 +1,14 @@
+---
+# this playbook manages the authorized_key file for the pi user
+
+- hosts: all
+  remote_user: pi
+  vars:
+    local_d: ~/authorized_keys
+  tasks:
+  - name: set up authorized keys
+    authorized_key:
+      user: pi
+      state: present 
+      key: "{{ lookup('file', '{{ item }}') }}"
+    with_fileglob: "authorized_keys/*.pub"
