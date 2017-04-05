@@ -1,0 +1,26 @@
+---
+# this playbook ensures that the required packages are present on the system
+- hosts: all
+  remote_user: pi
+  become: yes
+  tasks:
+  - name: install python3
+    package:
+      name: python3
+      state: latest
+  - name: install python3-pip
+    package: 
+      name: python3-pip
+      state: latest
+  - name: install redis
+    package: 
+      name: redis-server
+      state: latest
+  - name: install git
+    package: 
+      name: git
+      state: latest
+  - name: install supervisor
+    package: 
+      name: supervisor
+      state: latest

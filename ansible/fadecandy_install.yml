@@ -1,0 +1,22 @@
+---
+# this playbook installs and configures the fadecandy server
+- hosts: test-flowers
+  remote_user: pi
+  become: yes
+  tasks:
+#  - name: install fcserver
+#    copy:
+#      src: files/fadecandy/fcserver
+#      dest: /usr/local/bin
+#      mode: 0644
+#  - name: configure fcserver
+#    copy:
+#      src: files/fadecandy/fcserver.json
+#      dest: /usr/local/bin
+#      mode: 0644
+######## TODO: TEMPLATE THE CONFIG AND READ SERIAL FROM LOG
+  - name: configure fcserver to use supervisor
+    copy:
+      src: files/fadecandy/fadecandy_server.conf
+      dest: /etc/supervisor/conf.d
+      mode: 0644
