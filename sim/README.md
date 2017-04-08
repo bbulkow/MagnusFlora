@@ -55,8 +55,8 @@ Receive: "status": {
 	"health": 96,
 	"title": "Camp Navarro"
 	"resonators": [
-		{"level": 6,"health": 94,"position": "E"},
-		{"level": 6,"health": 96,"position": "NE"},
+		{"level": 6,"health": 94,"owner": "NumberSix","position": "E"},
+		{"level": 6,"health": 96,"owner": "NumberSix","position": "NE"},
 		{"level": 7,"health": 97,"owner": "NumberSix","position": "N"},
 		{"level": 8,"health": 97,"owner": "NumberSix","position": "NW"},
 		{"level": 6,"health": 97,"owner": "NumberSix","position": "W"},
@@ -66,4 +66,14 @@ Receive: "status": {
 		]
 	}
 
-
+Proposed would be:
+	"resonators": {
+		"E": {"level": 6,"health": 94,"owner": "NumberSix"},
+		"NE": {"level": 6,"health": 94,"owner": "NumberSix"},
+		"N": {"level": 6,"health": 96,"owner": "NumberSix"},
+		"NW": {"level": 7,"health": 97,"owner": "NumberSix"},
+		"W": {"level": 6,"health": 97,"owner": "NumberSix"},
+		"SW": {"level": 7,"health": 96,"owner": "NumberSix"},
+		"S": {"level": 8,"health": 94,"owner": "NumberSix"},
+		"SE": {"level": 7,"health": 94,"owner": "NumberSix"}
+	}

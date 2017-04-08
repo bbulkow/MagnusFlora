@@ -37,25 +37,76 @@ class Relay:
 
 # portal class... in case you ever want more than one portal
 
+class Resonator:
+	def __init__(self, position):
+		self.level = 0
+		self.health = 0
+		self.distance = 0
+		self.position = position
+
+	def check(self):
+		if type(self.level) is not int:
+			return False
+		if self.level < 0 or self.level > 8:
+			return False
+		if self.health is not int:
+			return False
+		if self.health < 0 or self.health > 100:
+			return False
+		if type(self.position) is not str:
+			return False
+		if self.position not in valid_positions:
+			return False
+		if self.distance is not int:
+			return False
+		if self.distance < 0 or self.distance > 100:
+			return False
+		return True
+
+	def setLevel(self, level):
+		# wire up debugging....
+		if level > 8:
+			return False
+		if level < 0:
+			return False
+		self.level = level
+		if level == 0:
+			self.health = 0
+			self.distance = 0
+		return True
+
+	def setHealth(self, health):
+		if health > 100:
+			return False
+		if health < 0:
+			return False
+		self.health = health
+		if health == 0:
+			self.level = 0
+			self.distance = 0
+		return True
+
+
 # TODO: add modifiers, 
 class Portal:
 
 	valid_positions = [ "E", "NE", "N", "NW", "W", "SW", "S", "SE" ]
+	valid_mods = ["FA","HS-C","HS-R","HS-VR","LA-R","LA-VR","SBUL","MH-C","MH-R","MH-VR","PM","PS-C","PS-R","PS-VR","AXA","T"]
 
 	def __init__(self):
 		self.faction = 0
 		self.health = 0
 		self.level = 0
 		self.title = "default portal"
-		self.resonators = [	{ "level": 0,"health": 0, "position": "E", "distance": 0 },
-					{ "level": 0,"health": 0, "position": "NE", "distance": 0 },
-					{ "level": 0,"health": 0, "position": "N", "distance": 0 },
-					{ "level": 0,"health": 0, "position": "NW", "distance": 0 },
-					{ "level": 0,"health": 0, "position": "W", "distance": 0},
-					{ "level": 0,"health": 0, "position": "SW", "distance": 0 },
-					{ "level": 0,"health": 0, "position": "S", "distance": 0 },
-					{ "level": 0,"health": 0, "position": "SE", "distance": 0 }
-		]
+		self.resonators = {	"N": Resonator("N"),
+							"NE": Resonator("NE"),
+							"E": Resonator("E"),
+							"SE": Resonator("SE"),
+							"S": Resonator("S"), 
+							"SW": Resonator("SW"), 
+							"W": Resonator("W"),
+							"NW": Resonator("NW") 
+		}
 		self.mods = [ None, None, None, None ]
 
 	# TODO
@@ -108,14 +159,14 @@ class Portal:
 		if len(self.title) > 300:
 			print("Portal title seems too long")
 			return False
-		if type(self.resonators) is not list:
+		if type(self.resonators) is not dict:
 			print("Portal resonator type wrong")
 			return False
 		if len(self.resonators) != 8:
 			print("Portal has incorrect number of resonators ",len(self.resontaors))
 			return False
-		for idx in range(0,7):
-			if checkResontaor(self.resonator[idx]) == False:
+		for r in valid_positions:
+			if checkResontaor(self.resonator[r]) == False:
 				print(" resonator ",idx," is not valid ")
 				return False
 		return True
