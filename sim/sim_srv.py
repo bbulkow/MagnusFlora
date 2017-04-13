@@ -30,6 +30,7 @@ import time
 import datetime
 import os
 import itertools
+import copy
 
 import json
 
@@ -59,12 +60,22 @@ class Relay:
 # Resonator class... because portals have more than one resonator
 
 class Resonator:
-    def __init__(self, position):
+
+    def __init__(self, position, values=None ):
         # print ("Resonator create: position ",position)
-        self.level = 0
-        self.health = 0
-        self.distance = 0
         self.position = position
+        if values == None:
+            self.level = 0
+            self.health = 0
+            self.distance = 0
+            self.position = position
+            self.owner = ""
+        else:
+            self.level = int(values.get("level",0))
+            self.health = int(values.get("health",0))
+            self.distance = int(values.get("distance",0))
+            self.owner = str(values.get("owner", ""))
+
         # print ("Resontaor level: ",self.level)
 
     def check(self):
@@ -149,7 +160,42 @@ class Portal:
         self.create_time = time.time()
         print("Created a new portal object")  
 
+    # returns a new object of the Portal type
+    def dup(self):
+        n = Portal(self.id_)
+        n.faction = self.faction
+        n.health = self.health
+        n.level = self.level
+        n.title = self.title
+        n.owner = self.owner
+        n.owner_id = self.owner_id
+        if self.resonators:
+            n.resonators =  copy.copy(self.resonators)
+        if self.links:
+            n.links = copy.copy(self.links)
+        if self.mods:
+            n.mods = copy.copy(self.mods)
+        n.lock = None
+        n.create_time = self.create_time
+        print("Created a duplicate portal object")  
+        return n
+
+    # carefully avoid the lock and the creattime
+    # no return
+    def reset(self, n):
+        self.faction = n.faction
+        self.health = n.health
+        self.level = n.level
+        self.title = n.title
+        self.owner = n.owner
+        self.owner_id = n.owner_id
+        self.resonators = n.resonators
+        self.links = n.links
+        self.mods = n.mods
+        print("Created a duplicate portal object")  
+
     # This function takes a Json object
+    # Returns an object for the next line to read
     def setStatus( self, jsonStr ):
         print("Portal set status using string: ",jsonStr)
         try:
@@ -160,9 +206,44 @@ class Portal:
             print( message )
             return None
 
-        print(" parsed JSON. Object is: ",statusObj)
+        print(" parsed JSON, taking lock. Object is: ",statusObj)
+        with self.lock:
+            portal = self.dup()
 
-        return
+        if "title" in statusObj:
+            portal.title = str(statusObj.get("title"))
+        if "health" in statusObj:
+            portal.health = int(statusObj.get("health"))
+        if "faction" in statusObj:
+            portal.title = int(statusObj.get("faction"))
+        if "owner" in statusObj:
+            portal.health = str(statusObj.get("owner"))
+        if "level" in statusObj:
+            portal.health = int(statusObj.get("level"))
+        if "mods" in statusObj:
+            portal.mods = []
+            mods = statusObj.get("mods")
+            for mod in mods:
+                portal.mods.append(mod)
+        if "resonators" in statusObj:
+            resonators = statusObj.get("resonators")
+            for pos, values in resonators.items():
+                r = Resonator(pos, values)
+                portal.resonators[pos] = r
+
+        # validate the new object through the validator
+        if portal.check() == False:
+            print (" Bad format, line ignored ")
+
+        # copy the parts that should be copied ( ie, not the lock or create time )
+        with self.lock:
+            self.reset(portal)
+
+        # return value is the amount of delay to add
+        delay = 0.0
+        if "delay" in statusObj:
+            delay = float(statusObj.get("delay"))
+        return delay
 
     # This is the "current form" that is mussing a lot of information
     def statusLegacy(self):
@@ -283,6 +364,7 @@ async def ticker(app):
 
         # if file object, read and jam it into the status object
         if f != None:
+            delay = 0.0
             l = f.readline()
             l = l.rstrip()
             l = l.lstrip()
@@ -292,10 +374,10 @@ async def ticker(app):
                 if (l[0] == '#'):
                     print("ignoring comment line")
                 else:
-                    portal.setStatus(l)
+                    delay = portal.setStatus(l)
 
         print(i)
-        await asyncio.sleep(2)
+        await asyncio.sleep(delay)
 
 #
 # A number of debug / demo endpoints
