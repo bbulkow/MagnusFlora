@@ -1,0 +1,9 @@
+
+# THe first line should have all the information, this is a good example
+# delay is in seconds until the next line is processed
+# CAN'T BREAK LINES, but you can have a second line with 0.0 delay
+   { "delay": 0.0, "title": "myportal", "health": 10, "faction": "1", "owner": "bbulkow", "level": 7, "mods": [ "PS-C", "HS-C", "HS-R" ]  }
+   { "delay": 1.0, "resonators": { "N": {"level": 4, "health": 98, "distance": 50, "owner": "bb1"},"NE": {"level": 4, "health": 98, "distance": 50, "owner": "bb2"},"E": {"level": 4, "health": 98, "distance": 50, "owner": "bb3"},"SE": {"level": 4, "health": 98, "distance": 50, "owner": "bb4"},"SW": {"level": 4, "health": 98, "distance": 50, "owner": "bb5"},"W": {"level": 4, "health": 98, "distance": 50, "owner": "bb6"},"NW": {"level": 4, "health": 98, "distance": 50, "owner": "bb7" } } }
+# test for malformed json
+   { "}, malformed JSON
+
