@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+
+### VERY MUCH PYTHON 3 !!!
+
+
 """
 Example for aiohttp.web basic server
 Uses a background timer to read from a file to update a shared datastructure
@@ -29,6 +33,7 @@ import threading
 import time
 import datetime
 import os
+import sys
 import itertools
 import copy
 
@@ -39,6 +44,8 @@ import textwrap
 
 from aiohttp import web
 
+if sys.version_info[0] < 3:
+    raise "Must be using Python 3"
 
 # Relay class 
 class Relay:
@@ -61,6 +68,8 @@ class Relay:
 
 class Resonator:
 
+    valid_positions = [ "E", "NE", "N", "NW", "W", "SW", "S", "SE" ]
+
     def __init__(self, position, values=None ):
         # print ("Resonator create: position ",position)
         self.position = position
@@ -80,20 +89,28 @@ class Resonator:
 
     def check(self):
         if type(self.level) is not int:
+            print("bad level type ",type(self.level))
             return False
         if self.level < 0 or self.level > 8:
+            print("bad level value ",self.level)
             return False
-        if self.health is not int:
+        if type(self.health) is not int:
+            print("bad level health type ",type(self.health))
             return False
         if self.health < 0 or self.health > 100:
+            print("bad level value ",self.health)
             return False
         if type(self.position) is not str:
+            print("bad position type ",type(self.position))
             return False
-        if self.position not in valid_positions:
+        if self.position not in self.valid_positions:
+            print("bad position: ",self.position)
             return False
-        if self.distance is not int:
+        if type(self.distance) is not int:
+            print("bad distance type ",type(self.distance))
             return False
         if self.distance < 0 or self.distance > 100:
+            print("bad distance value ",self.distance)
             return False
         return True
 
@@ -121,9 +138,9 @@ class Resonator:
         return True
 
     def __str__(self):
-        print (" grabbing reso string: level ",self.level)
+        # print (" grabbing reso string: level ",self.level)
         l = self.level
-        return '{{"level": {0}, "health": {1}, "distance": {2}, "position": "{3}"\}}'.format(self.level, self.health, self.distance, self.position)
+        return '{{"level": {0}, "health": {1}, "distance": {2}, "position": "{3}"}}'.format(self.level, self.health, self.distance, self.position)
 
     # without the position, sometimes that is implied 
     def toBetterStr(self):
@@ -158,7 +175,7 @@ class Portal:
         self.mods = [ None, None, None, None ]
         self.lock = threading.Lock()  
         self.create_time = time.time()
-        print("Created a new portal object")  
+        # print("Created a new portal object")  
 
     # returns a new object of the Portal type
     def dup(self):
@@ -177,10 +194,11 @@ class Portal:
             n.mods = copy.copy(self.mods)
         n.lock = None
         n.create_time = self.create_time
-        print("Created a duplicate portal object")  
+        # print("Created a duplicate portal object")  
         return n
 
     # carefully avoid the lock and the creattime
+    # otherwise we're copying the object into the self
     # no return
     def reset(self, n):
         self.faction = n.faction
@@ -192,7 +210,26 @@ class Portal:
         self.resonators = n.resonators
         self.links = n.links
         self.mods = n.mods
-        print("Created a duplicate portal object")  
+
+    # Health is calculated from resonators states so it is always correct
+    def getLevel(self):
+        if self.resonators == None:
+            return 0
+        level_sum = 0
+        for k,v in self.resonators.items():
+            level_sum += v.level
+        return int (level_sum / 8)
+
+    # health is in .... ???
+    # Let's try average of the health of the resonators
+    def getHealth(self):
+        if self.resonators == None:
+            return 0
+        health_sum = 0
+        for k,v in self.resonators.items():
+            health_sum += v.health
+        return int (health_sum / 8.0)
+
 
     # This function takes a Json object
     # Returns an object for the next line to read
@@ -206,20 +243,16 @@ class Portal:
             print( message )
             return None
 
-        print(" parsed JSON, taking lock. Object is: ",statusObj)
+        # print(" parsed JSON, taking lock. Object is: ",statusObj)
         with self.lock:
             portal = self.dup()
 
         if "title" in statusObj:
             portal.title = str(statusObj.get("title"))
-        if "health" in statusObj:
-            portal.health = int(statusObj.get("health"))
         if "faction" in statusObj:
-            portal.title = int(statusObj.get("faction"))
+            portal.faction = int(statusObj.get("faction"))
         if "owner" in statusObj:
-            portal.health = str(statusObj.get("owner"))
-        if "level" in statusObj:
-            portal.health = int(statusObj.get("level"))
+            portal.owner = str(statusObj.get("owner"))
         if "mods" in statusObj:
             portal.mods = []
             mods = statusObj.get("mods")
@@ -230,6 +263,10 @@ class Portal:
             for pos, values in resonators.items():
                 r = Resonator(pos, values)
                 portal.resonators[pos] = r
+
+            # if we changed the resonators, update the health and level
+            portal.level = portal.getLevel()
+            portal.health = portal.getHealth()
 
         # validate the new object through the validator
         if portal.check() == False:
@@ -282,50 +319,53 @@ class Portal:
     # this method makes sure the status is valid and reasonable ( no values greater than game state )
     def check(self):
         if type(self.faction) is not int:
-            print("Portal faction type initvalid")
+            print("Portal faction type initvalid, is ",type(self.faction))
             return False
         if self.faction < 0 or self.faction > 2:
             print("Illegal Portal faction value ",self.faction)
             return False
         if type(self.health) is not int:
-            print("Portal health type invalid")
+            print("Portal health type invalid, is ",type(self.health))
             return False
         if self.health < 0 or self.health > 100:
             print("Illegal Portal health value ",self.health)
             return False
         if type(self.level) is not int:
-            print("Portal level type invalid")
+            print("Portal level type invalid, is ",type(self.level))
             return False
-        if self.health < 0 or self.health > 8:
+        if self.level < 0 or self.level > 8:
             print("Illegal Portal level value ",self.level)
             return False
         if type(self.title) is not str:
-            print("Portal title type invalid")
+            print("Portal title type invalid, is ",type(self.title))
             return False
         if len(self.title) > 300:
             print("Portal title seems too long")
             return False
         if type(self.resonators) is not dict:
-            print("Portal resonator type wrong")
+            print("Portal resonator type wrong, is ",type(self.resonators))
             return False
         if len(self.resonators) != 8:
             print("Portal has incorrect number of resonators ",len(self.resontaors))
             return False
-        for r in valid_positions:
-            if checkResontaor(self.resonator[r]) == False:
-                print(" resonator ",r," is not valid ")
+        for k,v in self.resonators.items():
+            if k not in self.valid_positions:
+                print("resonator has invalid position ",k)
+                return False
+            if v.check() == False:
+                print(" resonator ",v," is not valid ")
                 return False
         if type(self.mods) is not list:
-            print("Mods wrong type")
+            print("Mods wrong type, is ",type(self.mods))
             return False
         if len(self.mods) > 4:
             print("too many mods")
             return False
-        for m in mods:
+        for m in self.mods:
             if type(m) is not str:
-                print (" type of one of the mods is wrong ")
+                print (" type of one of the mods is wrong, is ",type(m))
                 return False
-            if m not in valid_mods:
+            if m not in self.valid_mods:
                 print ("invalid mod ",m)
                 return False
         return True
@@ -337,9 +377,8 @@ class Portal:
 # 2. Readline and set initial based on readline
 
 
-
 @asyncio.coroutine
-async def ticker(app):
+async def fileReader(app):
 
     # file object
     f = None
@@ -347,13 +386,14 @@ async def ticker(app):
     for i in itertools.count():
         portal = app['portal']
 
-        # if no file object oepn one
+        delay = 0.5
+
+        # if no file object open one
         if f == None:
             try:
                 fn = "portal_driver.json"
                 f = open(fn, 'r')
-                print("file object is ",f)
-
+                print (" opened file again ")
             except FileNotFoundError:
                 # the most likely error
                 print(" file ",fn," was not found, trying again later")
@@ -364,17 +404,21 @@ async def ticker(app):
 
         # if file object, read and jam it into the status object
         if f != None:
-            delay = 0.0
             l = f.readline()
-            l = l.rstrip()
-            l = l.lstrip()
-
-            if (type(l) == str and len(l) > 0):
-                print(" first character is: ",l[0])
-                if (l[0] == '#'):
-                    print("ignoring comment line")
-                else:
-                    delay = portal.setStatus(l)
+            # at end of file, close the file, allow a reopen
+            if len(l) == 0:
+                f.close()
+                f = None
+                print( " reached end of file ")
+            else:
+                l = l.rstrip()
+                l = l.lstrip()
+                if (type(l) == str and len(l) > 0):
+                    if (l[0] == '#'):
+                        # print("ignoring comment line")
+                        pass
+                    else:
+                        delay = portal.setStatus(l)
 
         print(i)
         await asyncio.sleep(delay)
@@ -423,7 +467,7 @@ async def hello(request):
 # Whatever tasks you create here will be executed and cancelled properly
 
 async def start_background_tasks(app):
-    app['file_task'] = app.loop.create_task( ticker(app))
+    app['file_task'] = app.loop.create_task( fileReader(app))
 
 
 async def cleanup_background_tasks(app):
