@@ -480,18 +480,16 @@ async def cleanup_background_tasks(app):
     app['file_task'].cancel()
     await app['file_task']
 
-
-
-async def init(loop. legacy):
+async def init(loop, legacy):
     app = web.Application()
     app.router.add_get('/', hello)
 
     app.router.add_get('/status/faction', statusFaction)
     app.router.add_get('/status/health', statusHealth)
     if legacy:
-        app.router.add_get('/status/json', statusJson)
-    else:
         app.router.add_get('/status/json', statusJsonLegacy)
+    else:
+        app.router.add_get('/status/json', statusJson)
 
     # create the shared objects
     app['portal'] = Portal(1)
