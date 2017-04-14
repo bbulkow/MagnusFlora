@@ -236,8 +236,8 @@ class Portal:
 
     # This function takes a Json object
     # Returns an object for the next line to read
-    def setStatus( self, jsonStr ):
-        print("Portal set status using string: ",jsonStr)
+    def setStatus( self, jsonStr, lineNumber ):
+        print("Portal set status using string: ",jsonStr, "on line ",lineNumber)
         try:
             statusObj = json.loads(jsonStr)
         except Exception as ex:
@@ -384,10 +384,10 @@ async def fileReader(app):
 
     # file object
     f = None
-    file_line = 0
 
+    file_line = 0
     portal = app['portal']
-    filename = app['filename']
+    file_name = app['filename']
 
     while True:
 #    for i in itertools.count():
@@ -396,12 +396,12 @@ async def fileReader(app):
         if f == None:
             delay = 0.5
             try:
-                f = open(filename, 'r')
+                f = open(file_name, 'r')
                 file_line = 0
                 # print (" opened file again ")
             except FileNotFoundError:
                 # the most likely error
-                print(" file ",filename," was not found, trying again later")
+                print(" file ",file_name," was not found, trying again later")
             except Exception as ex:
                 template = "An exception of type {0} occurred. Arguments:\n{1!r}"
                 message = template.format(type(ex).__name__, ex.args)
@@ -416,7 +416,7 @@ async def fileReader(app):
             if len(l) == 0:
                 f.close()
                 f = None
-                print( " reached end of file ")
+                print( " Reloading file ")
             else:
                 l = l.rstrip()
                 l = l.lstrip()
@@ -425,7 +425,7 @@ async def fileReader(app):
                         # print("ignoring comment line")
                         pass
                     else:
-                        delay = portal.setStatus(l)
+                        delay = portal.setStatus(l, file_line)
 
         await asyncio.sleep(delay)
 
@@ -482,14 +482,16 @@ async def cleanup_background_tasks(app):
 
 
 
-async def init(loop):
+async def init(loop. legacy):
     app = web.Application()
     app.router.add_get('/', hello)
 
     app.router.add_get('/status/faction', statusFaction)
     app.router.add_get('/status/health', statusHealth)
-    app.router.add_get('/status/json', statusJson)
-    app.router.add_get('/status/jsonLegacy', statusJsonLegacy)
+    if legacy:
+        app.router.add_get('/status/json', statusJson)
+    else:
+        app.router.add_get('/status/json', statusJsonLegacy)
 
     # create the shared objects
     app['portal'] = Portal(1)
@@ -506,14 +508,16 @@ async def init(loop):
 
 parser = argparse.ArgumentParser(description="Ingress Portal TechThulu")
 parser.add_argument('--port', '-p', help="HTTP port", default="5050", type=int)
-parser.add_argument('--file', '-f', dest="filename", help="Simulator JSON file to process", default="tecthulu.json", type=str)
+parser.add_argument('--file', '-f', dest="filename", help="Simulator JSON file to process", default="techthulu.json", type=str)
+parser.add_argument('--legacy', help="Use legacy JSON format", action='store_true')
+parser.set_defaults(legacy=False)
 args = parser.parse_args()
 print("starting TechThulu simulator with file ",args.filename," on port ",args.port)
 
 
 # register all the async stuff
 loop = asyncio.get_event_loop()
-app = loop.run_until_complete(init(loop))
+app = loop.run_until_complete(init(loop, args.legacy))
 app['filename'] = args.filename
 
 # run the web server
