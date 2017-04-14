@@ -155,7 +155,7 @@ class Resonator:
 class Portal:
 
     valid_positions = [ "E", "NE", "N", "NW", "W", "SW", "S", "SE" ]
-    valid_mods = ["FA","HS-C","HS-R","HS-VR","LA-R","LA-VR","SBUL","MH-C","MH-R","MH-VR","PM","PS-C","PS-R","PS-VR","AXA","T"]
+    valid_mods = ["FA","HS-C","HS-R","HS-VR","LA-R","LA-VR","SBUL","MH-C","MH-R","MH-VR","PS-C","PS-R","PS-VR","AXA","T"]
 
     def __init__(self, id_):
         self.faction = 0

@@ -52,22 +52,21 @@ The following JSON fields are allowed:
 
 ## Modifiers
 
-- `FA`
-- `HS-C`
-- `HS-R`
-- `HS-VR`
-- `LA-R`
-- `LA-VR`
-- `SBUL`
-- `MH-C`
-- `MH-R`
-- `MH-VR`
-- `PM`
-- `PS-C`
-- `PS-R`
-- `PS-VR`
-- `AXA`
-- `T`
+- `FA` Force Amp
+- `HS-C` Heat Shield, Common
+- `HS-R` Heat Shield, Rare
+- `HS-VR` Heat Shield, Very Rare
+- `LA-R` Link Amplifier, Rare
+- `LA-VR` Link Amplifier, Very Rare
+- `SBUL` SoftBank Ultra Link
+- `MH-C` MultiHack, Common
+- `MH-R` MultiHack, Rare
+- `MH-VR` MultiHack, Very Rare
+- `PS-C` Portal Shield, Common
+- `PS-R` Portal Shield, Rare
+- `PS-VR` Portal Sheild, Very Rare
+- `AXA` AXS Shield
+- `T` Turret
 
 ## Resonators
 
@@ -113,7 +112,7 @@ A "macro" designator that would allow one file to point to another file
 
 # TechTHulu specs as of April 8, 2017
 
-The spec for the project's endpoints and rest addresses are like this. This is enabled when the "legacy" mode is enabled.
+##  Endpoints
 
 /module/status/json - Returns a JSON string of detected information for portal (example below)
 
@@ -148,7 +147,7 @@ when total resonator count decreases.
 
 /module/command/diagnostics - Returns title of portal, runs short diagnostics, then fully resets/restarts module
 
-# Endpoint Examples
+## Endpoint Examples from the leaked document
 
 Send: "tecthulhu_module03.local/module/status/title"
 Receive: "Camp Navarro"
