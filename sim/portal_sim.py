@@ -28,24 +28,27 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """
+import sys
+if sys.version_info[0] < 3:
+    raise "Must be using Python 3"
 
 import threading
 import time
 import datetime
 import os
-import sys
+
 import itertools
 import copy
 
 import json
+import argparse
 
 import asyncio
 import textwrap
 
 from aiohttp import web
 
-if sys.version_info[0] < 3:
-    raise "Must be using Python 3"
+
 
 # Relay class 
 class Relay:
@@ -376,27 +379,29 @@ class Portal:
 # 1. Open a file
 # 2. Readline and set initial based on readline
 
-
 @asyncio.coroutine
 async def fileReader(app):
 
     # file object
     f = None
+    file_line = 0
 
-    for i in itertools.count():
-        portal = app['portal']
+    portal = app['portal']
+    filename = app['filename']
 
-        delay = 0.5
+    while True:
+#    for i in itertools.count():
 
         # if no file object open one
         if f == None:
+            delay = 0.5
             try:
-                fn = "portal_driver.json"
-                f = open(fn, 'r')
-                print (" opened file again ")
+                f = open(filename, 'r')
+                file_line = 0
+                # print (" opened file again ")
             except FileNotFoundError:
                 # the most likely error
-                print(" file ",fn," was not found, trying again later")
+                print(" file ",filename," was not found, trying again later")
             except Exception as ex:
                 template = "An exception of type {0} occurred. Arguments:\n{1!r}"
                 message = template.format(type(ex).__name__, ex.args)
@@ -404,7 +409,9 @@ async def fileReader(app):
 
         # if file object, read and jam it into the status object
         if f != None:
+            delay = 0.0
             l = f.readline()
+            file_line += 1
             # at end of file, close the file, allow a reopen
             if len(l) == 0:
                 f.close()
@@ -420,7 +427,6 @@ async def fileReader(app):
                     else:
                         delay = portal.setStatus(l)
 
-        print(i)
         await asyncio.sleep(delay)
 
 #
@@ -474,9 +480,7 @@ async def cleanup_background_tasks(app):
     app['file_task'].cancel()
     await app['file_task']
 
-##
-##
-##
+
 
 async def init(loop):
     app = web.Application()
@@ -498,10 +502,19 @@ async def init(loop):
 
     return app
 
+# Parse the command line options
+
+parser = argparse.ArgumentParser(description="Ingress Portal TechThulu")
+parser.add_argument('--port', '-p', help="HTTP port", default="5050", type=int)
+parser.add_argument('--file', '-f', dest="filename", help="Simulator JSON file to process", default="tecthulu.json", type=str)
+args = parser.parse_args()
+print("starting TechThulu simulator with file ",args.filename," on port ",args.port)
+
+
 # register all the async stuff
 loop = asyncio.get_event_loop()
 app = loop.run_until_complete(init(loop))
-print("registered app loop")
+app['filename'] = args.filename
 
 # run the web server
-web.run_app(app, port=5050)
+web.run_app(app, port=args.port)
