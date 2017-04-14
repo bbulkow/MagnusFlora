@@ -142,11 +142,14 @@ class Resonator:
 
     def toLegacyStr(self):
         # print (" grabbing reso string: level ",self.level)
-        return '{{"level": {0}, "health": {1}, "distance": {2}, "position": "{3}"}}'.format(self.level, self.health, self.distance, self.position)
+        return '{{"level": {0}, "health": {1}, "position": "{2}"}}'.format(self.level, self.health, self.position)
 
     # without the position, sometimes that is implied 
     def toBetterStr(self):
-        return "{{\"level\": {0!s}, \"health\": {1!s}, \"distance\": {2!s} }}".format(self.level, self.health, self.distance)
+        if self.level == 0:
+            return'"{0}": {{"level": {1} }}'.format(self.position, self.level)
+        else:
+            return '"{0}": {{"level": {1}, "health": {2}, "distance": {3} }}'.format(self.position, self.level, self.health, self.distance)
 
 # WARNING! This class has multithreaded access.
 # Before you access the data structure, grab the lock and release afterward
@@ -156,7 +159,7 @@ class Portal:
     valid_positions = [ "E", "NE", "N", "NW", "W", "SW", "S", "SE" ]
     valid_mods = ["FA","HS-C","HS-R","HS-VR","LA-R","LA-VR","SBUL","MH-C","MH-R","MH-VR","PS-C","PS-R","PS-VR","AXA","T"]
 
-    def __init__(self, id_):
+    def __init__(self, id_, verbose):
         self.faction = 0
         self.health = 0
         self.level = 0
@@ -164,24 +167,17 @@ class Portal:
         self.title = "default portal"
         self.owner = ""
         self.owner_id = 0
-        self.resonators = { "N": Resonator("N"),
-                            "NE": Resonator("NE"),
-                            "E": Resonator("E"),
-                            "SE": Resonator("SE"),
-                            "S": Resonator("S"), 
-                            "SW": Resonator("SW"), 
-                            "W": Resonator("W"),
-                            "NW": Resonator("NW") 
-        }
+        self.resonators = { }
         self.links = []
-        self.mods = [ None, None, None, None ]
+        self.mods = []
         self.lock = threading.Lock()  
         self.create_time = time.time()
+        self.verbose = verbose
         # print("Created a new portal object")  
 
     # returns a new object of the Portal type
     def dup(self):
-        n = Portal(self.id_)
+        n = Portal(self.id_, self.verbose)
         n.faction = self.faction
         n.health = self.health
         n.level = self.level
@@ -189,11 +185,11 @@ class Portal:
         n.owner = self.owner
         n.owner_id = self.owner_id
         if self.resonators:
-            n.resonators =  copy.copy(self.resonators)
+            n.resonators = self.resonators
         if self.links:
-            n.links = copy.copy(self.links)
+            n.links = self.links
         if self.mods:
-            n.mods = copy.copy(self.mods)
+            n.mods = self.mods
         n.lock = None
         n.create_time = self.create_time
         # print("Created a duplicate portal object")  
@@ -202,7 +198,7 @@ class Portal:
     # carefully avoid the lock and the creattime
     # otherwise we're copying the object into the self
     # no return
-    def reset(self, n):
+    def set(self, n):
         self.faction = n.faction
         self.health = n.health
         self.level = n.level
@@ -212,6 +208,7 @@ class Portal:
         self.resonators = n.resonators
         self.links = n.links
         self.mods = n.mods
+        self.verbose = n.verbose
 
     # Health is calculated from resonators states so it is always correct
     def getLevel(self):
@@ -236,7 +233,9 @@ class Portal:
     # This function takes a Json object
     # Returns an object for the next line to read
     def setStatus( self, jsonStr, lineNumber ):
-        print("Portal set status using string: ",jsonStr, "on line ",lineNumber)
+        if self.verbose:
+            print("Portal set status: line ",lineNumber," using string: ",jsonStr)
+
         try:
             statusObj = json.loads(jsonStr)
         except Exception as ex:
@@ -251,15 +250,19 @@ class Portal:
 
         if "title" in statusObj:
             portal.title = str(statusObj.get("title"))
+
         if "faction" in statusObj:
             portal.faction = int(statusObj.get("faction"))
+
         if "owner" in statusObj:
             portal.owner = str(statusObj.get("owner"))
+
         if "mods" in statusObj:
             portal.mods = []
             mods = statusObj.get("mods")
             for mod in mods:
                 portal.mods.append(mod)
+
         if "resonators" in statusObj:
             resonators = statusObj.get("resonators")
             for pos, values in resonators.items():
@@ -272,11 +275,17 @@ class Portal:
 
         # validate the new object through the validator
         if portal.check() == False:
-            print (" Bad format, line ignored ")
+            print (" !!! Bad format after applying delta, line ",lineNumber," ignored ")
 
-        # copy the parts that should be copied ( ie, not the lock or create time )
-        with self.lock:
-            self.reset(portal)
+            print (" delta which will not be applied: ", str(portal) )
+
+        else:
+            # copy the parts that should be copied ( ie, not the lock or create time )
+            with self.lock:
+                self.set(portal)
+
+        if self.verbose:
+            print ("+++++ object after changes: ",str(portal))
 
         # return value is the amount of delay to add
         delay = 0.0
@@ -287,37 +296,44 @@ class Portal:
     # This is the "current form" that is mussing a lot of information
     def statusLegacy(self):
         resos = []
-        resos.append('resonators: [')
-        print (" resonators: ")
+        num_entries = 0
         for k, v in self.resonators.items():
             # skip if empty, saving space & time
             # print(" r position ",k," value ",str(v))
             if v.level == 0:
                 continue
+            num_entries += 1
             resos.append(v.toLegacyStr())
-        resos.append(']')
+            resos.append(",")
+        # have to take off the last comma if more than one item
+        if num_entries > 0:
+            resos.pop()
         reso_string = ''.join(resos)
-        return '"controllingFaction": {0}, "health": {1}, "level": {2}, "title": "{3}", "resonators": {4}'.format( 
+        return '{{"controllingFaction": {0}, "health": {1}, "level": {2}, "title": "{3}", "resonators": [{4}]}}'.format( 
             self.faction, self.health, self.level, self.title, reso_string )
 
+    # not legacy! The cool kid way with resonators as a dict
     def __str__(self):
 
-        # shortcut
+        # shortcut - grey
         if self.level == 0:
-            return '"faction": 0, "health":0, "level":0, "title":{0}, "resonators": []'.format(self.title)
+            return '{{"faction": 0, "health": 0, "level": 0, "title":{0}, "resonators": {{}}, "mods": {{}} }}'.format(self.title)
 
         #longcut
+        howmany = 0
         resos = []
-        resos.append('resonators: [')
         for k, v in self.resonators.items():
             # skip if empty, saving space & time
             if v.level == 0:
                 continue
+            howmany += 1
             resos.append(v.toBetterStr())
-        resos.append(']')
+            resos.append(",")
+        if (howmany > 0):
+            resos.pop()
         reso_string = ''.join(resos)
-        return '"faction": {0}, "health": {1}, "level": {2}, "title": "{3}", "resonators": {4}'.format( 
-            self.faction, self.health, self.level, self.title, reso_string )
+        return '{{"faction": {0}, "health": {1}, "level": {2}, "title": "{3}", "resonators": {{{4}}}, "mods": {5} }}'.format( 
+            self.faction, self.health, self.level, self.title, reso_string, str(self.mods) )
 
     # this method makes sure the status is valid and reasonable ( no values greater than game state )
     def check(self):
@@ -348,7 +364,7 @@ class Portal:
         if type(self.resonators) is not dict:
             print("Portal resonator type wrong, is ",type(self.resonators))
             return False
-        if len(self.resonators) != 8:
+        if len(self.resonators) > 8:
             print("Portal has incorrect number of resonators ",len(self.resontaors))
             return False
         for k,v in self.resonators.items():
@@ -480,20 +496,22 @@ async def cleanup_background_tasks(app):
     app['file_task'].cancel()
     await app['file_task']
 
-async def init(loop, legacy):
+async def init(app, args):
     app = web.Application()
+
     app.router.add_get('/', hello)
 
     app.router.add_get('/status/faction', statusFaction)
     app.router.add_get('/status/health', statusHealth)
-    if legacy:
+    if args.legacy:
         app.router.add_get('/status/json', statusJsonLegacy)
     else:
         app.router.add_get('/status/json', statusJson)
 
     # create the shared objects
-    app['portal'] = Portal(1)
+    app['portal'] = Portal(1, args.verbose)
     app['relay'] = Relay()
+    app['filename'] = args.filename
 
     # background tasks are covered near the bottom of this:
     # http://aiohttp.readthedocs.io/en/stable/web.html
@@ -509,14 +527,15 @@ parser.add_argument('--port', '-p', help="HTTP port", default="5050", type=int)
 parser.add_argument('--file', '-f', dest="filename", help="Simulator JSON file to process", default="tecthulu.json", type=str)
 parser.add_argument('--legacy', help="Use legacy JSON format", action='store_true')
 parser.set_defaults(legacy=False)
+parser.add_argument('--verbase', help="Puts Lots of Printing Noise in", action='store_true')
+parser.set_defaults(verbose=False)
 args = parser.parse_args()
 print("starting TechThulu simulator with file ",args.filename," on port ",args.port)
 
 
 # register all the async stuff
 loop = asyncio.get_event_loop()
-app = loop.run_until_complete(init(loop, args.legacy))
-app['filename'] = args.filename
+app = loop.run_until_complete(init(web.Application(), args))
 
 # run the web server
 web.run_app(app, port=args.port)

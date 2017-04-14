@@ -6,4 +6,7 @@
    { "delay": 1.0, "resonators": { "N": {"level": 4, "health": 98, "distance": 50, "owner": "bb1"},"NE": {"level": 4, "health": 98, "distance": 50, "owner": "bb2"},"E": {"level": 4, "health": 98, "distance": 50, "owner": "bb3"},"SE": {"level": 4, "health": 98, "distance": 50, "owner": "bb4"},"SW": {"level": 4, "health": 98, "distance": 50, "owner": "bb5"},"W": {"level": 4, "health": 98, "distance": 50, "owner": "bb6"},"NW": {"level": 4, "health": 98, "distance": 50, "owner": "bb7" } } }
 # test for malformed json
    { "}, malformed JSON
+   { "delay": "oooo" }
+   { "delay": }
+   { "resonators": "€€€€€€€€€€文字種"}
 

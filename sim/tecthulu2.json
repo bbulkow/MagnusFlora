@@ -1,0 +1,25 @@
+
+# THe first line should have all the information, this is a good example
+# delay is in seconds until the next line is processed
+# CAN'T BREAK LINES, but you can have a second line with 0.0 delay
+   { "delay": 0.0, "title": "woobooga", "faction": 1, "owner": "bbulkow", "mods": [ ]  }
+# ok, you can't change the title of the portal but
+   { "delay": 0.0, "title": "€€€€€€€€€€文字種", "faction": 1, "owner": "bbulkow", "mods": [ "PS-C", "HS-C", "HS-R" ]  }
+   { "delay": 1.0, "resonators": { "N": {"level": 4, "health": 98, "distance": 50, "owner": "bb1"},"NE": {"level": 4, "health": 98, "distance": 50, "owner": "bb2"},"E": {"level": 4, "health": 98, "distance": 50, "owner": "bb3"},"SE": {"level": 4, "health": 98, "distance": 50, "owner": "bb4"},"SW": {"level": 4, "health": 98, "distance": 50, "owner": "bb5"},"W": {"level": 4, "health": 98, "distance": 50, "owner": "bb6"},"NW": {"level": 4, "health": 98, "distance": 50, "owner": "bb7" } } }
+   { "delay": 0.5, "resonators": { "N": {"health": 90 } } }
+   { "delay": 0.4, "resonators": { "N": {"health": 80 } } }
+   { "delay": 0.3, "resonators": { "N": {"health": 72 }, "NW": {"health": 20 }, "NE": {"health": 30 } } }
+   { "delay": 0.3, "resonators": { "N": {"health": 0 }, "NW": {"health": 0 }, "NE": {"health": 30 } } }
+   { "delay": 1.0, "resonators": { "N": {"level": 5, "health": 100, "distance": 20, "owner": "bb8"},"NE": {"level": 5, "health": 100, "distance": 20, "owner": "bb9"} } }
+   { "delay": 1.0, "faction": 0, "owner": "", "mods": [], "resonators": {} }
+   { "delay": 1.0, "faction": 2, "owner": "blueGoo", "resonators": { "S": {"health": 100, "level": 2} } }
+   { "delay": 0.5, "resonators": { "SE": {"health": 100, "level": 2} } }
+   { "delay": 0.5, "resonators": { "SW": {"health": 100, "level": 3} } }
+   { "delay": 0.5, "resonators": { "W": {"health": 100, "level": 3} } }
+   { "delay": 0.5, "resonators": { "N": {"health": 100, "level": 5} } }
+   { "delay": 0.5, "resonators": { "NE": {"health": 100, "level": 8} } }
+   { "delay": 0.5, "resonators": { "E": {"health": 100, "level": 7} } }
+   { "delay": 0.5, "resonators": { "NW": {"health": 100, "level": 6} } }
+   { "delay": 0.5, "resonators": { "NW": {"owner": "∑∑∑", "health": 100, "level": 6} } }
+   { "delay": 0.5, "resonators": { "NW": {"health": 100, "level": 6} } }
+   { "delay": 0.2,  "mods": [ "PS-C", "PS-C" ]}
