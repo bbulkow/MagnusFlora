@@ -140,9 +140,8 @@ class Resonator:
             self.distance = 0
         return True
 
-    def __str__(self):
+    def toLegacyStr(self):
         # print (" grabbing reso string: level ",self.level)
-        l = self.level
         return '{{"level": {0}, "health": {1}, "distance": {2}, "position": "{3}"}}'.format(self.level, self.health, self.distance, self.position)
 
     # without the position, sometimes that is implied 
@@ -292,28 +291,29 @@ class Portal:
         print (" resonators: ")
         for k, v in self.resonators.items():
             # skip if empty, saving space & time
-            print(" r position ",k," value ",str(v))
+            # print(" r position ",k," value ",str(v))
             if v.level == 0:
                 continue
-            resos.append(str(v))
+            resos.append(v.toLegacyStr())
         resos.append(']')
         reso_string = ''.join(resos)
         return '"controllingFaction": {0}, "health": {1}, "level": {2}, "title": "{3}", "resonators": {4}'.format( 
             self.faction, self.health, self.level, self.title, reso_string )
 
     def __str__(self):
+
         # shortcut
-        if level == 0:
-            if level == 0:
-                return '"faction": 0, "health":0, "level":0, "title":{0}, "resonators": []'.format(self.title)
+        if self.level == 0:
+            return '"faction": 0, "health":0, "level":0, "title":{0}, "resonators": []'.format(self.title)
+
         #longcut
         resos = []
         resos.append('resonators: [')
-        for r in self.resonators:
+        for k, v in self.resonators.items():
             # skip if empty, saving space & time
-            if r.level == 0:
+            if v.level == 0:
                 continue
-            resos.append(r.toBetterStr())
+            resos.append(v.toBetterStr())
         resos.append(']')
         reso_string = ''.join(resos)
         return '"faction": {0}, "health": {1}, "level": {2}, "title": "{3}", "resonators": {4}'.format( 
