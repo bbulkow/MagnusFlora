@@ -508,7 +508,7 @@ async def init(loop. legacy):
 
 parser = argparse.ArgumentParser(description="Ingress Portal TechThulu")
 parser.add_argument('--port', '-p', help="HTTP port", default="5050", type=int)
-parser.add_argument('--file', '-f', dest="filename", help="Simulator JSON file to process", default="techthulu.json", type=str)
+parser.add_argument('--file', '-f', dest="filename", help="Simulator JSON file to process", default="tecthulu.json", type=str)
 parser.add_argument('--legacy', help="Use legacy JSON format", action='store_true')
 parser.set_defaults(legacy=False)
 args = parser.parse_args()
