@@ -158,6 +158,7 @@ class Portal:
 
     valid_positions = [ "E", "NE", "N", "NW", "W", "SW", "S", "SE" ]
     valid_mods = ["FA","HS-C","HS-R","HS-VR","LA-R","LA-VR","SBUL","MH-C","MH-R","MH-VR","PS-C","PS-R","PS-VR","AXA","T"]
+    reso_level_XM = [0.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 4000.0, 5000.0, 6000.0 ]
 
     def __init__(self, id_, verbose):
         self.faction = 0
@@ -224,10 +225,20 @@ class Portal:
     def getHealth(self):
         if self.resonators == None:
             return 0
-        health_sum = 0
+        if len(self.resonators) == 0:
+            return 0
+        xm_max = 0.0
+        xm = 0.0
         for k,v in self.resonators.items():
-            health_sum += v.health
-        return int (health_sum / 8.0)
+            reso_xm = self.reso_level_XM[v.level]
+            xm_max += reso_xm
+            xm += (float(v.health) / 100.0) * reso_xm
+        if xm < 0.00001:
+            return 0
+        r = int ((xm / xm_max) * 100.0)
+        if r > 100:
+            r = 100
+        return r
 
 
     # This function takes a Json object
@@ -527,7 +538,7 @@ parser.add_argument('--port', '-p', help="HTTP port", default="5050", type=int)
 parser.add_argument('--file', '-f', dest="filename", help="Simulator JSON file to process", default="tecthulu.json", type=str)
 parser.add_argument('--legacy', help="Use legacy JSON format", action='store_true')
 parser.set_defaults(legacy=False)
-parser.add_argument('--verbase', help="Puts Lots of Printing Noise in", action='store_true')
+parser.add_argument('--verbose', '-v', help="Puts Lots of Printing Noise in", action='store_true')
 parser.set_defaults(verbose=False)
 args = parser.parse_args()
 print("starting TechThulu simulator with file ",args.filename," on port ",args.port)
