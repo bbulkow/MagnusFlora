@@ -187,3 +187,26 @@ Proposed would be:
 		"S": {"level": 8,"health": 94,"owner": "NumberSix"},
 		"SE": {"level": 7,"health": 94,"owner": "NumberSix"}
 	}
+
+# Installation notes - Python 3.6 on Raspberry Pi
+
+It is sensible to run this on a raspberry pi, where the livin' is easy and there's lots of memory and cores. Our work is with Rasperry Pi 3's, because of the 64-bit and everything.
+
+Yet, the common distributions run Python 3 quite a few versions behind - so let's use pyenv.
+
+The instructions here: https://github.com/pyenv/pyenv
+
+Clone into ~/.pyenv - this probably should be done in /usr/local in a box like this
+
+Add the environment variables into .bash_aliases instead of .bash_profile
+
+When you try to install python3.6.1, you must be fully up to date on Jessie ( including a dist-upgrade ), and you must install these pre-reques.
+
+sudo apt-get install  libssl-dev libreadline-dev libbz2-dev
+
+Then, it seems the install succeeds.
+
+
+Then you can use pyenv features like `pyenv global 3.6.1` and similar
+
+And that's it.
