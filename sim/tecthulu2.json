@@ -23,3 +23,6 @@
    { "delay": 0.5, "resonators": { "NW": {"owner": "∑∑∑", "health": 100, "level": 6} } }
    { "delay": 0.5, "resonators": { "NW": {"health": 100, "level": 6} } }
    { "delay": 0.2,  "mods": [ "PS-C", "PS-C" ]}
+   { "delay": 10.0 }
+   { "delay": 0.5, "resonators": { "NW": {"health": 40, "level": 6} } }
+   { "delay": 0.5, "resonators": { "NE": {"health": 20, "level": 6} } }
