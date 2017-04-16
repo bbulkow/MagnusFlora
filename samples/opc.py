@@ -3,6 +3,13 @@
 """Python Client library for Open Pixel Control
 http://github.com/zestyping/openpixelcontrol
 
+NOTE: This was somewhat impoverished in networking
+* For this kind of library, using 'create_connection' is better,
+because you'll go through the resolver, thus allow things like
+hostfiles
+* There should be a timeout on connect
+- BBB added these
+
 Sends pixel values to an Open Pixel Control server to be displayed.
 http://openpixelcontrol.org/
 
@@ -87,7 +94,9 @@ class Client(object):
         try:
             self._debug('_ensure_connected: trying to connect...')
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._socket.connect((self._ip, self._port))
+# add a 1 second timeout: todo, add this as an input parameter in __init__
+            self._socket = socket.create_connection( (self._ip, self._port), 1.0 ) 
+#            self._socket.connect((self._ip, self._port))
             self._debug('_ensure_connected:    ...success')
             return True
         except socket.error:
