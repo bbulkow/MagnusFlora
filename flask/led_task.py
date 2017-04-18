@@ -20,7 +20,8 @@ import opc
 REDIS = redis.StrictRedis(host='localhost', port=6379, db=0) 
 
 app = Celery('flower_web', backend ='redis://localhost:6379/1', broker='redis://localhost:6379/0')
-app.conf.CELERY_ACCEPT_CONTENT = ['pickle', 'json']  
+app.conf.CELERY_ACCEPT_CONTENT = ['pickle', 'json']
+app.conf.TASK_SERIALIZER = ['pickle']
 
 
 class FCInterface():

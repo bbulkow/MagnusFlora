@@ -1,0 +1,23 @@
+---
+# this playbook installs and configures the web_flower server
+- hosts: test-flowers
+  remote_user: pi
+  become: yes
+  tasks:
+  - name: setup directories
+    file:
+      path: '/srv'
+      state: directory
+      mode: 0755
+  - name: transfer flask files to server
+    synchronize:
+      src: ../flask
+      dest: /srv
+  - name: update pip
+    pip:
+      name: pip
+      executable: /usr/bin/pip3
+  - name: install packages
+    pip:
+      requirements: /srv/flask/requirements.txt
+      virtualenv: /srv/.virtualenv/
