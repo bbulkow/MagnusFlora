@@ -44,18 +44,18 @@ app = Celery('flower_web', backend ='redis://localhost:6379/1', broker='redis://
 
 @app.task
 def status_update( tim, status_obj ):
-	pass
+	return
 
 @app.task
 def sound_change_mods( mods ):
 	return
 
 @app.task
-def sound_deploy_reso( location, faction, level):
+def sound_deploy_reso( location, faction, reso_level, portal_level):
 	return
 
 @app.task
-def sound_destroy_reso( location ):
+def sound_destroy_reso( location, portal_level ):
 	return
 
 

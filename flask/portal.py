@@ -41,27 +41,6 @@ import itertools
 import copy
 
 import json
-import argparse
-
-import asyncio
-import textwrap
-
-from aiohttp import web
-
-
-
-# Relay class 
-class Relay:
-    def __init__(self):
-        # 1 is "NO and NC", 0 is "Flipped"
-        self.state = 0
-
-        # 0, 1, 2, 3 are possible
-        # 1 = relay is NC /NO when portal is controlled, reversed when neutral
-        # 2 = relay is reversed when portal is controlled, NO/NC when neutral
-        # 3 = relay is NC /NO when portal is controlled, reversed for 3 seconds when faction changes, then reverts to NO/NC
-        # 4 = relay closed when portal is controlled, reversed for 1.5 seconds
-        self.mode = 0
 
 
 # todo: since a mod has an owner, should make it a class as well, for parallelism sake
@@ -139,10 +118,6 @@ class Resonator:
             self.level = 0
             self.distance = 0
         return True
-
-    def toLegacyStr(self):
-        # print (" grabbing reso string: level ",self.level)
-        return '{{"level": {0}, "health": {1}, "position": "{2}"}}'.format(self.level, self.health, self.position)
 
     # without the position, sometimes that is implied 
     def toBetterStr(self):
@@ -243,9 +218,9 @@ class Portal:
 
     # This function takes a Json object
     # Returns an object for the next line to read
-    def setStatus( self, jsonStr, lineNumber ):
+    def setStatus( self, jsonStr ):
         if self.verbose:
-            print("Portal set status: line ",lineNumber," using string: ",jsonStr)
+            print("Portal set status: using: ",jsonStr)
 
         try:
             statusObj = json.loads(jsonStr)
@@ -303,25 +278,6 @@ class Portal:
         if "delay" in statusObj:
             delay = float(statusObj.get("delay"))
         return delay
-
-    # This is the "current form" that is mussing a lot of information
-    def statusLegacy(self):
-        resos = []
-        num_entries = 0
-        for k, v in self.resonators.items():
-            # skip if empty, saving space & time
-            # print(" r position ",k," value ",str(v))
-            if v.level == 0:
-                continue
-            num_entries += 1
-            resos.append(v.toLegacyStr())
-            resos.append(",")
-        # have to take off the last comma if more than one item
-        if num_entries > 0:
-            resos.pop()
-        reso_string = ''.join(resos)
-        return '{{"controllingFaction": {0}, "health": {1}, "level": {2}, "title": "{3}", "resonators": [{4}]}}'.format( 
-            self.faction, self.health, self.level, self.title, reso_string )
 
     # not legacy! The cool kid way with resonators as a dict
     def __str__(self):
@@ -401,152 +357,3 @@ class Portal:
         return True
 
 
-#
-# Background file processor
-# 1. Open a file
-# 2. Readline and set initial based on readline
-
-@asyncio.coroutine
-async def fileReader(app):
-
-    # file object
-    f = None
-
-    file_line = 0
-    portal = app['portal']
-    file_name = app['filename']
-
-    while True:
-#    for i in itertools.count():
-
-        # if no file object open one
-        if f == None:
-            delay = 0.5
-            try:
-                f = open(file_name, 'r')
-                file_line = 0
-                # print (" opened file again ")
-            except FileNotFoundError:
-                # the most likely error
-                print(" file ",file_name," was not found, trying again later")
-            except Exception as ex:
-                template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-                message = template.format(type(ex).__name__, ex.args)
-                print( message )
-
-        # if file object, read and jam it into the status object
-        if f != None:
-            delay = 0.0
-            l = f.readline()
-            file_line += 1
-            # at end of file, close the file, allow a reopen
-            if len(l) == 0:
-                f.close()
-                f = None
-                print( " Reloading file ")
-            else:
-                l = l.rstrip()
-                l = l.lstrip()
-                if (type(l) == str and len(l) > 0):
-                    if (l[0] == '#'):
-                        # print("ignoring comment line")
-                        pass
-                    else:
-                        delay = portal.setStatus(l, file_line)
-
-        await asyncio.sleep(delay)
-
-#
-# A number of debug / demo endpoints
-# Note to self: you create a "Response" object, thn
-# you manipulate it.
-
-
-async def statusFaction(request):
-    portal = request.app['portal']
-    faction = 0
-    with portal.lock:
-        faction = portal.faction
-    return web.Response(text=str(faction))
-
-async def statusHealth(request):
-    portal = request.app['portal']
-    health = 0
-    with portal.lock:
-        health = portal.health
-    return web.Response(text=str(health))
-
-# this needs UTF8 because names might have utf8
-async def statusJson(request):
-    portal = request.app['portal']
-    portal_str = ""
-    with portal.lock:
-        portal_str = str(portal)
-    return web.Response(text=portal_str , charset='utf-8')
-
-async def statusJsonLegacy(request):
-    portal = request.app['portal']
-    portal_str = ""
-    with portal.lock:
-        portal_str = portal.statusLegacy()
-    return web.Response(text=portal_str , charset='utf-8')
-
-async def hello(request):
-    return web.Response(text="Hello World!")
-
-
-# background tasks are covered near the bottom of this:
-# http://aiohttp.readthedocs.io/en/stable/web.html
-# Whatever tasks you create here will be executed and cancelled properly
-
-async def start_background_tasks(app):
-    app['file_task'] = app.loop.create_task( fileReader(app))
-
-
-async def cleanup_background_tasks(app):
-    app['file_task'].cancel()
-    await app['file_task']
-
-async def init(app, args):
-    app = web.Application()
-
-    app.router.add_get('/', hello)
-
-    app.router.add_get('/status/faction', statusFaction)
-    app.router.add_get('/status/health', statusHealth)
-    if args.legacy:
-        app.router.add_get('/status/json', statusJsonLegacy)
-    else:
-        app.router.add_get('/status/json', statusJson)
-
-    # create the shared objects
-    app['portal'] = Portal(1, args.verbose)
-    app['relay'] = Relay()
-    app['filename'] = args.filename
-
-    # background tasks are covered near the bottom of this:
-    # http://aiohttp.readthedocs.io/en/stable/web.html
-    app.on_startup.append(start_background_tasks)
-    app.on_cleanup.append(cleanup_background_tasks)
-
-    return app
-
-# Parse the command line options
-
-parser = argparse.ArgumentParser(description="Ingress Portal TechThulu")
-parser.add_argument('--port', '-p', help="HTTP port", default="5050", type=int)
-parser.add_argument('--file', '-f', dest="filename", help="Simulator JSON file to process", default="tecthulu.json", type=str)
-parser.add_argument('--legacy', help="Use legacy JSON format", action='store_true')
-parser.set_defaults(legacy=False)
-parser.add_argument('--verbose', '-v', help="Puts Lots of Printing Noise in", action='store_true')
-parser.set_defaults(verbose=False)
-args = parser.parse_args()
-print("starting TechThulu simulator with file ",args.filename," on port ",args.port)
-
-
-# register all the async stuff
-loop = asyncio.get_event_loop()
-app = loop.run_until_complete(init(web.Application(), args))
-
-# run the web server
-web.run_app(app, port=args.port)
