@@ -3,7 +3,7 @@
 #
 
 """
-Example for aiohttp.web basic server
+This will 
 Uses a background timer to read from a file to update a shared datastructure
 Because it's going to be used as a simulator
 
@@ -31,10 +31,33 @@ from random import randint
 from time import sleep
 from celery import Celery
  
-
 COUNTER = 0
  
 app = Celery('flower_web', backend ='redis://localhost:6379/1', broker='redis://localhost:6379/0')
+
+# Location is a string with the compas point
+# mods is a list of the current mods, not the delta
+# level is 0-8 ( integer )
+# faction is 0 , 1, 2 ( integer )
+# status update gives an entire status object
+# tim is a double with time since epoch
+
+@app.task
+def status_update( tim, status_obj ):
+	pass
+
+@app.task
+def sound_change_mods( mods ):
+	return
+
+@app.task
+def sound_deploy_reso( location, faction, level):
+	return
+
+@app.task
+def sound_destroy_reso( location ):
+	return
+
 
 @app.task
 def dummy_task(arg1, arg2):
