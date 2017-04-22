@@ -6,4 +6,9 @@ Google Doc for accessing test hardware: https://docs.google.com/a/bulkowski.org/
 
 ( Regrettably this file has VPN passwords and thus is not widely shared... please request access )
 
+## notes about installation of sound that I will move later
+
+Working with `pyaudio`. It seems pip doesn't do quite the right thing, and doing
+`sudo apt-get install python3-pyaudio` pulls in the correct prereq PortAudio.
+
 
