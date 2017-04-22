@@ -18,6 +18,7 @@
 import json
 from flask import Flask
 import led_task
+import dummy_task
 
 
 app = Flask('flower_web')
@@ -27,6 +28,16 @@ app = Flask('flower_web')
     #~ CELERY_BROKER_URL='redis://localhost:6379',
     #~ CELERY_RESULT_BACKEND='redis://localhost:6379'
 #~ )
+
+@app.route('/randomtask', methods=['GET', 'POST'])
+@app.route('/randomtask/<random_str>', methods=['GET', 'POST'])
+def call_random(random_str=''):
+	return json.dumps(dummy_task.random_task.delay(random_str).get())
+
+@app.route('/dummytask', methods=['GET', 'POST'])
+def call_dummy():
+	dummy_task.dummy_task.delay("hello", "world")
+	return 'True'
 
 @app.route('/<entity_name>/chase/start', methods=['GET', 'POST'])
 def startchase(entity_name):
