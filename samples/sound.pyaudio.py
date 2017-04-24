@@ -31,18 +31,18 @@ for index in range(aud.get_device_count()):
 	
 
 try:
-	stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+	stream = aud.open(format=aud.get_format_from_width(wf.getsampwidth()),
 				channels=wf.getnchannels(),
 				rate = wf.getframerate(),
-				output_device_index = 4,
+				frames_per_buffer = wf.getframerate(),
 				output = True )
-#	stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+#	stream = aud.open(format=aud.get_format_from_width(wf.getsampwidth()),
 #				channels=wf.getnchannels(),
 #				rate = wf.getframerate(),
 #				output = True )
 
-except:
-	print("pyaudio open failed, exception")
+except Exception as e:
+	print("pyaudio open failed, exception ",e)
 	sys.exit()
 
 print("pyaudio readframes / write")
