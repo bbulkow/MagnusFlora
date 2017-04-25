@@ -45,4 +45,16 @@ Either use the UI, or execute `diskutil unmountDisk /dev/disk2` again
 -- Interfacing: enable I2C but none of the others, turn on SSH if you are paranoid
 -- Advanced: expand the file system, set the memory split to 16M
 
+## If you're going to use git locally for development
+
+`sudo apt-get install git`
+
+`ssh-keygen`
+
+`cat .ssh/id_rsa.pub` 
+Copy this into Github in the standard way. 
+
+`git clone git@github.com:bbulkow/MagnusFlora`
+
+
 ## Reboot and you should see all is good
