@@ -20,24 +20,9 @@ In many of the commands below, linux forms of slashes will be used for file name
 
 A raspberry pi is a small ( 4 inch by 3 inch ) Linux computer with video output, sound output, ethernet, USB, flash storage. The version we are using ( Pi 3 ) also has Wifi and Bluetooth.
 
-It's better to use a fresh install of your Raspberry Pi operating system. 
+It's better to use a fresh install of your Raspberry Pi operating system, we're then going to install a set of system packages via Ansible.
 
-We are using Raspberrian Ubuntu 8 ("jessie"). 
-
-Make sure the RPi is on the network, you can log into it, and all updates have been done.
-
-The most recent builds of Raspberrian disable SSH access. Thus, you can't simply flash a new card and log in --- you'll need to find a keyboard and monitor and log in. There are a number of tutorials for enabling "headless" SSH access. My checklist runs like so:
-
-- Boot a fresh copy with ethernet connected, a USB keyboard, and an HDMI monitor.
-- Use `sudo raspi-config`. Enable the following:
--- SSH access
--- Change the hostname to something you can remember
--- Set the filesystem to consume the entire hard drive
--- Change the password to something simple that's not `raspberry`
--- Reboot the pi.
--- Find the IP address. Either port-scan the network ( I like `angry ip scanner` for macinto ), or log into your router and find the IP address, or use your still-connected keyboard and monitor to `ifconfig | fgrep inet`, or use the hostname.network.local .
--- Ping the RPi to know that you've found it, then log in with `ssh pi@host_ip`
--- Full `sudo apt-get update`
+Please see the file raspberry.md in the root directory to get your RPi up to the starting point we'll use.
 
 You will need a computer, typically some form of laptop or PC. That computer run Ansible, which is a system for managing remote systems. This is called the "local computer" in the scripts below.
 
