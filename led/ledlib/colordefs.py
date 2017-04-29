@@ -13,8 +13,10 @@ GREEN_ENL = (5,155,5)
 # Level colors from IITC source, http://iitc.me
 # Conversions via https://toolstud.io/color/rgb.php?rgbhex=9627F4
 
-PURPLE_R8 = (150,39,244) 	# 9627F4
-VIOLET_R7 = (193,36,224) 	# C124E0
+# PURPLE_R8 = (150,39,244) 	# 9627F4
+PURPLE_R8 = (40,0,70)		# empirical
+# VIOLET_R7 = (193,36,224) 	# C124E0
+VIOLET_R7 = (90,10,120)		# empirical
 MAGENTA_R6 = (235,38,205) 	# EB26CD
 FUCHSIA_R5 = (253,41,146)  	# FD2992
 RED_R4 = (228,0,0) 		# E40000
