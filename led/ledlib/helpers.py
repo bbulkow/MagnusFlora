@@ -5,6 +5,7 @@
 #
 # Aliza R. Panitz
 # 2014-10-22
+# converted to python3 2017
 
 from ledlib import globalconfig
 
@@ -99,4 +100,13 @@ def get_effective_user():
         globalconfig.effectiveuser = getlogin()
         debugprint ("Effective user is %s" % globalconfig.effectiveuser )
     return globalconfig.effectiveuser
+
+def usage(errorstring):
+
+  if errorstring:
+    print ("") 
+    print (errorstring)
+    print ("") 
+  print ("Use the source, Luke.")
+  exit (1)
 

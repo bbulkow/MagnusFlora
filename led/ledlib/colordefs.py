@@ -2,6 +2,7 @@
 
 # This was a test color but Joey liked it.
 MUTED_PINK = (150,50,50)
+MUTED_GRAY = (20,20,20)
 
 # Ingress-specific colors
 

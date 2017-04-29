@@ -5,9 +5,8 @@
 import opc, time
 from itertools import cycle
 
-numLEDs = 24
-numChase = 4
-client = opc.Client('192.168.4.15:7890')
+numLEDs = 512
+client = opc.Client('127.0.0.1:7890')
 
 for i in range(numLEDs):
 	pixels = [ (0,0,0) ] * numLEDs
