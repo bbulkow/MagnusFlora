@@ -76,3 +76,6 @@ ENV/
 
 # mkdocs documentation
 /site
+
+# Added by Aliza 2017-04-26
+*.swp

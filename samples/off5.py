@@ -6,6 +6,7 @@ import opc, time
 from itertools import cycle
 
 numLEDs = 512
+numChase = 4
 client = opc.Client('127.0.0.1:7890')
 
 for i in range(numLEDs):
