@@ -206,7 +206,7 @@ Clone into ~/.pyenv - this probably should be done in /usr/local in a box like t
 
 ## Environment variables
 
-Add these into `.bash_profile`
+Add these into `.bash_aliases`
 
 ```
 export PYENV_ROOT="/usr/local/bin/pyenv"
