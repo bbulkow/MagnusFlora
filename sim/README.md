@@ -204,6 +204,10 @@ The instructions here: https://github.com/pyenv/pyenv
 
 Clone into ~/.pyenv - this probably should be done in /usr/local in a box like this
 
+Mark it writable:
+
+`sudo chmod a+w /usr/local/bin/pyenv`
+
 ## Environment variables
 
 Add these into `.bash_aliases`
