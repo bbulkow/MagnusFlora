@@ -7,8 +7,8 @@ import wave
 
 #reso_destroyed = "../audio/resonator_destroyed1.wav"
 #reso_deployed = "../audio/resonator_deployed1.wav"
-test_file = "../audio/violin-test-PCM16-48.wav"
-#test_file = "../audio/violin-test-PCM16.wav"
+#test_file = "../audio/violin-test-PCM16-48.wav"
+test_file = "../audio/violin-test-PCM16.wav"
 
 
 CHUNK = 1024 * 16
@@ -19,7 +19,6 @@ wf = wave.open(test_file, 'rb')
 print (" wave object: channels ",wf.getnchannels()," rate ",wf.getframerate()," samp width ",wf.getsampwidth() )
 
 duration = 5
-filename = '20seconds_sine.wav'
 device = 0
 dtype = 'int16'
 
