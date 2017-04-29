@@ -216,6 +216,7 @@ Add these into `.bash_aliases`
 export PYENV_ROOT="/usr/local/bin/pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
+export CFLAGS='-O2'
 ```
 
 Restart, and try `pyenv` which should work
