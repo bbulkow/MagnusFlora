@@ -194,18 +194,31 @@ It is sensible to run this on a raspberry pi, where the livin' is easy and there
 
 Yet, the common distributions run Python 3 quite a few versions behind - so let's use pyenv.
 
+## Packages to install
+
+`sudo apt-get install  libssl-dev libreadline-dev libbz2-dev`
+
+## Then Pyenv
+
 The instructions here: https://github.com/pyenv/pyenv
 
 Clone into ~/.pyenv - this probably should be done in /usr/local in a box like this
 
-Add the environment variables into .bash_aliases instead of .bash_profile
+## Environment variables
+
+Add these into `.bash_profile`
+
+```
+export PYENV_ROOT="/usr/local/bin/pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+```
+
+Restart, and try `pyenv` which should work
 
 When you try to install python3.6.1, you must be fully up to date on Jessie ( including a dist-upgrade ), and you must install these pre-reques.
 
-sudo apt-get install  libssl-dev libreadline-dev libbz2-dev
-
 Then, it seems the install succeeds.
-
 
 Then you can use pyenv features like `pyenv global 3.6.1` and similar
 
