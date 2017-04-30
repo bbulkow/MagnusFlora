@@ -121,20 +121,19 @@ Most people will do that. These instructions have been tested with Linux and Mac
 	From your local computers's MagnusFlora project folder, run
    ```bash
    cd ansible
-   sudo cp hosts /etc/ansible/hosts
-   ansible-playbook manage_authorized_keys.yml
+   ansible-playbook -i hosts manage_authorized_keys.yml
    ```
    this will ask for the password for the ```pi``` user on the raspberry pi
 
    ```bash
-   ansible-playbook package_installs.yml
+   ansible-playbook -i hosts package_installs.yml
    ```
    this should NOT ask for your password.
 
 1. Set up the entire set of applications
 	Todo:
    ```bash
-   ansible-playbook web_flower_install.yml
+   ansible-playbook -i hosts web_flower_install.yml
    ```
    this will install, configure and start the flask application and supervisor jobs which manage celery. Still in progress right now.
    
