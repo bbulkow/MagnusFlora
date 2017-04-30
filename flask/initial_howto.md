@@ -121,7 +121,7 @@ Most people will do that. These instructions have been tested with Linux and Mac
 	From your local computers's MagnusFlora project folder, run
    ```bash
    cd ansible
-   ansible-playbook -i hosts manage_authorized_keys.yml
+   ansible-playbook -i hosts manage_authorized_keys.yml --ask-pass
    ```
    this will ask for the password for the ```pi``` user on the raspberry pi
 
