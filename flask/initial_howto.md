@@ -137,7 +137,6 @@ Usually: `cp ~/.ssh/id_rsa.pub authorized_keys`
    this should NOT ask for your password.
 
 1. Set up the entire set of applications
-	Todo:
    ```bash
    ansible-playbook -i hosts web_flower_install.yml
    ```
