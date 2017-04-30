@@ -32,7 +32,7 @@ The following discussion talks about IP addresses. However, your network may use
 If you want to do this and know what you're doing, power to you.
 
 
-## HOW TO ADD A RASBERRY-PI TO ANSIBLE
+## HOW USE ANSIBLE ON YOUR WORKSTATION TO CONFIGURE A RASBERRY-PI
 
 1. Ansible needs to be installed on your local computer. If your workstation is running Ubuntu, one needs to
     ```bash
@@ -70,6 +70,21 @@ If you want to do this and know what you're doing, power to you.
 	Therefore, you may need to comment out ( prepend with `#` ) the production hosts, and add the
 	host you are using on your network.
 
+## HOW TO USE ANSIBLE ON A RASPBERRY PI TO CONFIGURE THAT RASPBERRYPI
+
+1. Install pip and Ansible. Starting with the system default version of Python, you can get ansible by:
+```bash
+sudo easy_install pip
+sudo pip install ansible
+```
+
+2. Cd into the `ansible` directory in the project and run
+
+```bash
+ansible-playbook -i "localhost," -c local setup_hostfile.yml
+ansible-playbook package_installs.yml
+```
+
 ## HOW TO RUN ANSIBLE TO CONFIGURE A RPI
 
 1. Make sure you have a public key generated. You probably do, which is if you `ls ~/.ssh` you will see an `id_rsa.pub`.
@@ -81,12 +96,12 @@ If you want to do this and know what you're doing, power to you.
 	From your local computers's MagnusFlora project folder, run
    ```bash
    pushd ansible
-   ansible-playbook -i hosts manage_authorized_keys.yml
+   ansible-playbook manage_authorized_keys.yml
    ```
    this will ask for the password for the ```pi``` user on the raspberry pi
 
    ```bash
-   ansible-playbook -i hosts package_installs.yml
+   ansible-playbook package_installs.yml
    popd
    ```
    this should NOT ask for your password.
@@ -94,7 +109,7 @@ If you want to do this and know what you're doing, power to you.
 3. Set up the entire set of applications
 	Todo:
    ```bash
-   ansible-playbook -i hosts web_flower_install.yml
+   ansible-playbook web_flower_install.yml
    ```
    this will install, configure and start the flask application and supervisor jobs which manage celery. Still in progress right now.
    
