@@ -13,11 +13,12 @@
     git:
       repo: https://github.com/bbulkow/MagnusFlora.git
       dest: /srv
+      update: yes
   - name: update pip
     pip:
       name: pip
       executable: /usr/bin/pip3
-  - name: isntall virtualenv
+  - name: insnall virtualenv
     pip:
       name: virtualenv
       executable: /usr/bin/pip3
@@ -29,9 +30,9 @@
     supervisorctl:
       name: flower_web
       state: restarted
-      config: /svr/ansible/files/flask/celery_worker.conf
+      config: /srv/ansible/files/flask/celery_worker.conf
   - name: setup webserver
     supervisorctl:
       name: flower_web
       state: restarted
-      config: /svr/ansible/files/flask/web_flower_server.conf
+      config: /srv/ansible/files/flask/web_flower_server.conf
