@@ -128,7 +128,7 @@ Usually: `cp ~/.ssh/id_rsa.pub authorized_keys`
    cd ansible
    ansible-playbook -i hosts manage_authorized_keys.yml --ask-pass
    ```
-   this will ask for the password for the ```pi``` user on the raspberry pi
+   this will ask for the password for the ```pi``` user on the raspberry pi; it may also ask to add to the known_hosts file, say yes
 
    ```bash
    ansible-playbook -i hosts package_installs.yml
