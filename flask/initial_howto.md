@@ -140,7 +140,7 @@ Usually: `cp ~/.ssh/id_rsa.pub authorized_keys`
    ```bash
    ansible-playbook -i hosts web_flower_install.yml
    ```
-   this will install, configure and start the flask application and supervisor jobs which manage celery. Still in progress right now.
+   this will install, configure and start the flask application and supervisor jobs which manage celery.
    
    
 ## HOW TO MAKE A CELERY TASK
