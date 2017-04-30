@@ -96,7 +96,7 @@ sudo pip install ansible
 3. Cd into the `ansible` directory in MagnusFlora and run
 
 ```bash
-ansible-playbook -i "localhost," -c local setup_hostfile.yml
+ansible-playbook -i "localhost," -c local setup_hostfile_local.yml
 ansible-playbook package_installs.yml
 ```
 
@@ -120,14 +120,14 @@ Most people will do that. These instructions have been tested with Linux and Mac
 1. Add your public keys to the PI so all other commands will succeed, using ansible.
 	From your local computers's MagnusFlora project folder, run
    ```bash
-   pushd ansible
+   cd ansible
+   sudo cp hosts /etc/ansible/hosts
    ansible-playbook manage_authorized_keys.yml
    ```
    this will ask for the password for the ```pi``` user on the raspberry pi
 
    ```bash
    ansible-playbook package_installs.yml
-   popd
    ```
    this should NOT ask for your password.
 
