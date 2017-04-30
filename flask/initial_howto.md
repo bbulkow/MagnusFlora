@@ -144,12 +144,7 @@ Usually: `cp ~/.ssh/id_rsa.pub authorized_keys`
    
    
 ## HOW TO MAKE A CELERY TASK
-1. Install required packages
-	If you have run the Ansible tasks, this should be complete. If this hasn't worked yet, while in the root project dircectory do
-   ```bash
-   sudo apt-get install redis
-   sudo pip install -r flask/requirements.txt
-   ```
+
 1. Configure your application
 <br>copy the ```app``` portion of ```flask\dummy_task.py``` into your new python file.
 1. Write a function which carries out a task
