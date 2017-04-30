@@ -119,6 +119,7 @@ Usually: `cp ~/.ssh/id_rsa.pub authorized_keys`
 
 1. Make sure the hosts in  `ansible/hosts` file match the hosts you want to control
   The `ansible\hosts` file should have the names of the hosts you wish to control.
+  You will do this by adding the hostname(s) of the pi under the [test-flowers] group, ala, at the end of the file
   The checked in version should be the names of the hosts we are using on the production system.
   If you need to remove the checked in ones, either by deleting the lines or prepending with '#', and replace with localhost, go for it
 
