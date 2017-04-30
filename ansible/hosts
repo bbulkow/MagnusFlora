@@ -1,3 +1,5 @@
+[local]
+localhost ansible_connection=local
 [test-flowers]
 192.168.4.15
 192.168.4.33
