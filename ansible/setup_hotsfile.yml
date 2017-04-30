@@ -1,0 +1,10 @@
+---
+# this playbook ensures that the required packages are present on the system
+- hosts: all
+  remote_user: pi
+  become: yes
+  tasks:
+  - name: install python3
+    lineinfile:
+      path: /etc/ansible/hosts
+      line: 'localhost ansible_connection=local'
