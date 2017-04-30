@@ -112,7 +112,12 @@ Most people will do that. These instructions have been tested with Linux and Mac
 	key to your github account ( although you should! )
 	[Here's a link from github to help set up the keys!](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/)<br><br>
 
-1. Make sure the hosts in  `ansible\hosts` file match the hosts you want to control
+1. Copy your public key into the `ansible/authorized_keys` directory. The name of the file must end with '.pub' . You
+  can push this into the repo, if you'd like.
+  
+Usually: `cp ~/.ssh/id_rsa.pub authorized_keys`
+
+1. Make sure the hosts in  `ansible/hosts` file match the hosts you want to control
   The `ansible\hosts` file should have the names of the hosts you wish to control.
   The checked in version should be the names of the hosts we are using on the production system.
   If you need to remove the checked in ones, either by deleting the lines or prepending with '#', and replace with localhost, go for it
@@ -121,31 +126,25 @@ Most people will do that. These instructions have been tested with Linux and Mac
 	From your local computers's MagnusFlora project folder, run
    ```bash
    cd ansible
-   sudo cp hosts /etc/ansible/hosts
-   ansible-playbook manage_authorized_keys.yml
+   ansible-playbook -i hosts manage_authorized_keys.yml --ask-pass
    ```
-   this will ask for the password for the ```pi``` user on the raspberry pi
+   this will ask for the password for the ```pi``` user on the raspberry pi; it may also ask to add to the known_hosts file, say yes
 
    ```bash
-   ansible-playbook package_installs.yml
+   ansible-playbook -i hosts package_installs.yml
    ```
    this should NOT ask for your password.
 
 1. Set up the entire set of applications
 	Todo:
    ```bash
-   ansible-playbook web_flower_install.yml
+   ansible-playbook -i hosts web_flower_install.yml
    ```
-   this will install, configure and start the flask application and supervisor jobs which manage celery. Still in progress right now.
+   this will install, configure and start the flask application and supervisor jobs which manage celery.
    
    
 ## HOW TO MAKE A CELERY TASK
-1. Install required packages
-	If you have run the Ansible tasks, this should be complete. If this hasn't worked yet, while in the root project dircectory do
-   ```bash
-   sudo apt-get install redis
-   sudo pip install -r flask/requirements.txt
-   ```
+
 1. Configure your application
 <br>copy the ```app``` portion of ```flask\dummy_task.py``` into your new python file.
 1. Write a function which carries out a task
