@@ -11,8 +11,8 @@
       mode: 0755
   - name: check out code
     git:
-    repo: https://github.com/bbulkow/MagnusFlora.git
-    dest: /srv
+      repo: https://github.com/bbulkow/MagnusFlora.git
+      dest: /srv
   - name: update pip
     pip:
       name: pip
