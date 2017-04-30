@@ -114,7 +114,7 @@ Most people will do that. These instructions have been tested with Linux and Mac
 
 1. Copy the key you just created into the `ansible/authorized_keys` directory. The name of the file must end with '.pub'
 
-1. Make sure the hosts in  `ansible\hosts` file match the hosts you want to control
+1. Make sure the hosts in  `ansible/hosts` file match the hosts you want to control
   The `ansible\hosts` file should have the names of the hosts you wish to control.
   The checked in version should be the names of the hosts we are using on the production system.
   If you need to remove the checked in ones, either by deleting the lines or prepending with '#', and replace with localhost, go for it
