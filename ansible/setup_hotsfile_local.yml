@@ -1,10 +1,10 @@
 ---
-# this playbook ensures that the required packages are present on the system
+# this playbook makes it so that localhost is the default target for ansible commands
 - hosts: all
   remote_user: pi
   become: yes
   tasks:
-  - name: install python3
+  - name: manage hostfile
     lineinfile:
       path: /etc/ansible/hosts
       line: 'localhost ansible_connection=local'

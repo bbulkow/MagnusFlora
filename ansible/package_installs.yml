@@ -24,6 +24,3 @@
     package: 
       name: supervisor
       state: latest
-  - git:
-	  repo: https://github.com/bbulkow/MagnusFlora.git
-	  dest: /srv
