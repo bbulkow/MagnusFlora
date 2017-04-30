@@ -28,7 +28,7 @@
       virtualenv: /srv/.virtualenv/
 
   - name: setup supervisord
-    shell: "cp files/flask/*.conf /etc/supervisor/conf.d"
+    shell: "cp /srv/ansible/files/flask/*.conf /etc/supervisor/conf.d"
 
   - name: setup celery
     supervisorctl:
