@@ -1,6 +1,6 @@
 ---
 # this playbook ensures that the required packages are present on the system
-- hosts: all
+- hosts: test-flowers
   remote_user: pi
   become: yes
   tasks:
