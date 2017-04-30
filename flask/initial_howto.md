@@ -32,7 +32,7 @@ The following discussion talks about IP addresses. However, your network may use
 If you want to do this and know what you're doing, power to you.
 
 
-## HOW TO ADD A RASBERRY-PI TO ANSIBLE
+## CONFIGURE YOUR RASBERRY-PI
 
 1. Ansible needs to be installed on your local computer. If your workstation is running Ubuntu, one needs to
     ```bash
@@ -64,37 +64,77 @@ If you want to do this and know what you're doing, power to you.
     ```bash
     ifconfig eth0 | grep 'inet addr:' | awk -F'[: ]+' '{print $4}'
 
-4. Make sure the hosts in  `ansible\hosts` file in the repo match the hosts you want to control
-	The `ansible\hosts` file should have the names of the hosts you wish to control.
-	The checked in version should be the names of the hosts we are using on the production system.
-	Therefore, you may need to comment out ( prepend with `#` ) the production hosts, and add the
-	host you are using on your network.
 
-## HOW TO RUN ANSIBLE TO CONFIGURE A RPI
+
+## IF YOU ONLY HAVE THE PI, DO THIS
+
+If you don't have a computer, and you want to run Ansible locally on the pi, you can follow this.
+Most people will skip these instructions and run ansible on a computer which can ssh to the
+PI, which is below.
+
+0. Get the MagnusFlora repo from git
+
+You'll need git
+
+`sudo apt-get install git`
+
+Then clone it
+
+`git clone https://github.com/bbulkow/MagnusFlora`
+
+1. Install pip and Ansible. Starting with the system default version of Python, you can get ansible by:
+```bash
+sudo easy_install pip
+sudo pip install ansible
+```
+
+2. Make sure the hosts in  `ansible\hosts` file match the hosts you want to control
+  The `ansible\hosts` file should have the names of the hosts you wish to control.
+  The checked in version should be the names of the hosts we are using on the production system.
+  If you need to remove the checked in ones, either by deleting the lines or prepending with '#', and replace with localhost, go for it
+
+3. Cd into the `ansible` directory in MagnusFlora and run
+
+```bash
+ansible-playbook -i "localhost," -c local setup_hostfile.yml
+ansible-playbook package_installs.yml
+```
+
+## IF YOU ARE USING A COMPUTER, DO THIS
+
+This will run Ansible on your local computer. See the instructions above for getting ansible
+on your machine.
+
+Most people will do that. These instructions have been tested with Linux and Macos.
 
 1. Make sure you have a public key generated. You probably do, which is if you `ls ~/.ssh` you will see an `id_rsa.pub`.
 	If you don't have a public key, use these instructions to create one, but you don't have to add your public
 	key to your github account ( although you should! )
 	[Here's a link from github to help set up the keys!](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/)<br><br>
 
-2. Add your public keys to the PI so all other commands will succeed, using ansible.
+1. Make sure the hosts in  `ansible\hosts` file match the hosts you want to control
+  The `ansible\hosts` file should have the names of the hosts you wish to control.
+  The checked in version should be the names of the hosts we are using on the production system.
+  If you need to remove the checked in ones, either by deleting the lines or prepending with '#', and replace with localhost, go for it
+
+1. Add your public keys to the PI so all other commands will succeed, using ansible.
 	From your local computers's MagnusFlora project folder, run
    ```bash
    pushd ansible
-   ansible-playbook -i hosts manage_authorized_keys.yml
+   ansible-playbook manage_authorized_keys.yml
    ```
    this will ask for the password for the ```pi``` user on the raspberry pi
 
    ```bash
-   ansible-playbook -i hosts package_installs.yml
+   ansible-playbook package_installs.yml
    popd
    ```
    this should NOT ask for your password.
 
-3. Set up the entire set of applications
+1. Set up the entire set of applications
 	Todo:
    ```bash
-   ansible-playbook -i hosts web_flower_install.yml
+   ansible-playbook web_flower_install.yml
    ```
    this will install, configure and start the flask application and supervisor jobs which manage celery. Still in progress right now.
    
