@@ -1,7 +1,7 @@
 ---
 # this playbook manages the authorized_key file for the pi user
 
-- hosts: all
+- hosts: test-flowers
   remote_user: pi
   vars:
     local_d: ~/authorized_keys

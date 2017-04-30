@@ -1,0 +1,9 @@
+---
+# this playbook makes it so that the inventory for ansible commands is the one
+# found in the hosts file
+- hosts: all
+  remote_user: pi
+  become: yes
+  tasks:
+  - name: manage hostfile
+    shell : cp hosts /etc/ansible/hosts

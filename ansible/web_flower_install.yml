@@ -9,15 +9,33 @@
       path: '/srv'
       state: directory
       mode: 0755
-  - name: transfer flask files to server
-    synchronize:
-      src: ../flask
+  - name: check out code
+    git:
+      repo: https://github.com/bbulkow/MagnusFlora.git
       dest: /srv
+      update: yes
   - name: update pip
     pip:
       name: pip
+      executable: /usr/bin/pip3
+  - name: insnall virtualenv
+    pip:
+      name: virtualenv
       executable: /usr/bin/pip3
   - name: install packages
     pip:
       requirements: /srv/flask/requirements.txt
       virtualenv: /srv/.virtualenv/
+
+  - name: setup supervisord
+    shell: "cp /srv/ansible/files/flask/*.conf /etc/supervisor/conf.d"
+
+  - name: setup celery
+    supervisorctl:
+      name: celery_worker
+      state: restarted
+
+  - name: setup webserver
+    supervisorctl:
+      name: flower_web
+      state: restarted
