@@ -120,7 +120,7 @@ Most people will do that. These instructions have been tested with Linux and Mac
 1. Add your public keys to the PI so all other commands will succeed, using ansible.
 	From your local computers's MagnusFlora project folder, run
    ```bash
-   pushd ansible
+   cd ansible
    sudo ansible-playbook -i 'localhost,' -c local setup_hotsfile_network.yml
    ansible-playbook manage_authorized_keys.yml
    ```
@@ -128,7 +128,6 @@ Most people will do that. These instructions have been tested with Linux and Mac
 
    ```bash
    ansible-playbook package_installs.yml
-   popd
    ```
    this should NOT ask for your password.
 
