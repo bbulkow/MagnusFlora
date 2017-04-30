@@ -114,6 +114,8 @@ Most people will do that. These instructions have been tested with Linux and Mac
 
 1. Copy your public key into the `ansible/authorized_keys` directory. The name of the file must end with '.pub' . You
   can push this into the repo, if you'd like.
+  
+Usually: `cp ~/.ssh/id_rsa.pub authorized_keys`
 
 1. Make sure the hosts in  `ansible/hosts` file match the hosts you want to control
   The `ansible\hosts` file should have the names of the hosts you wish to control.
