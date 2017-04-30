@@ -112,7 +112,8 @@ Most people will do that. These instructions have been tested with Linux and Mac
 	key to your github account ( although you should! )
 	[Here's a link from github to help set up the keys!](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/)<br><br>
 
-1. Copy the key you just created into the `ansible/authorized_keys` directory. The name of the file must end with '.pub'
+1. Copy your public key into the `ansible/authorized_keys` directory. The name of the file must end with '.pub' . You
+  can push this into the repo, if you'd like.
 
 1. Make sure the hosts in  `ansible/hosts` file match the hosts you want to control
   The `ansible\hosts` file should have the names of the hosts you wish to control.
