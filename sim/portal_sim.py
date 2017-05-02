@@ -363,7 +363,7 @@ class Portal:
 
         # shortcut - grey
         if self.level == 0:
-            return '{{"faction": 0, "health": 0, "level": 0, "title":{0}, "resonators": {{}}, "mods": []] }}'.format(self.title)
+            return '{{"faction": 0, "health": 0, "level": 0, "title":"{0}", "resonators": {{}}, "mods": [] }}'.format(self.title)
 
         #longcut
         howmany = 0
@@ -378,7 +378,7 @@ class Portal:
         if (howmany > 0):
             resos.pop()
         reso_string = ''.join(resos)
-        return '{{"faction": {0}, "health": {1}, "level": {2}, "title": "{3}", "resonators": {{{4}}}, "mods": {5} }}'.format( 
+        return '{{"faction": {0}, "health": {1}, "level": "{2}", "title": "{3}", "resonators": {{{4}}}, "mods": {5} }}'.format( 
             self.faction, self.health, self.level, self.title, reso_string, self.getModsStr() )
 
     # this method makes sure the status is valid and reasonable ( no values greater than game state )
