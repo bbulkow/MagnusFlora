@@ -80,13 +80,20 @@ class Resonator:
             self.level = 0
             self.health = 0
             self.distance = 0
-            self.position = position
+            # may not update position, not a value
             self.owner = ""
         else:
             self.level = int(values.get("level",0))
             self.health = int(values.get("health",0))
             self.distance = int(values.get("distance",0))
             self.owner = str(values.get("owner", ""))
+
+            if (self.level == 0) or (self.health == 0):
+                self.level = 0
+                self.health = 0
+                self.distance = 0
+                # note: position does not change
+                self.owner = ""
 
         # print ("Resontaor level: ",self.level)
 
@@ -115,6 +122,13 @@ class Resonator:
         if self.distance < 0 or self.distance > 100:
             print("bad distance value ",self.distance)
             return False
+        if (self.level == 0) and (self.health > 0):
+            print("zero level and non-zero health: illegal ")
+            return False
+        if (self.health == 0) and (self.level > 0):
+            print("zero health and non-zero level: illegal ")
+            return False
+
         return True
 
     def setLevel(self, level):
@@ -265,6 +279,11 @@ class Portal:
         if "faction" in statusObj:
             portal.faction = int(statusObj.get("faction"))
 
+            # have to take off all resos
+            if portal.faction == 0:
+                portal.resonators = {}
+                portal.mods = []
+
         if "owner" in statusObj:
             portal.owner = str(statusObj.get("owner"))
 
@@ -344,7 +363,7 @@ class Portal:
 
         # shortcut - grey
         if self.level == 0:
-            return '{{"faction": 0, "health": 0, "level": 0, "title":{0}, "resonators": {{}}, "mods": {{}} }}'.format(self.title)
+            return '{{"faction": 0, "health": 0, "level": 0, "title":{0}, "resonators": {{}}, "mods": []] }}'.format(self.title)
 
         #longcut
         howmany = 0
@@ -394,6 +413,9 @@ class Portal:
         if len(self.resonators) > 8:
             print("Portal has incorrect number of resonators ",len(self.resontaors))
             return False
+        if (self.faction == 0) and (len(self.resonators) > 0):
+            print(" portal must have faction if it has resonators ")
+            return False
         for k,v in self.resonators.items():
             if k not in self.valid_positions:
                 print("resonator has invalid position ",k)
@@ -406,6 +428,9 @@ class Portal:
             return False
         if len(self.mods) > 4:
             print("too many mods")
+            return False
+        if (self.faction == 0) and (len(self.mods) > 0):
+            print(" portal must have faction if it has resonators ")
             return False
         for m in self.mods:
             if type(m) is not str:
@@ -565,8 +590,8 @@ parser.set_defaults(legacy=False)
 parser.add_argument('--verbose', '-v', help="Puts Lots of Printing Noise in", action='store_true')
 parser.set_defaults(verbose=False)
 args = parser.parse_args()
-print("starting TechThulu simulator with file ",args.filename," on port ",args.port)
 
+print("starting TechThulu simulator with file ",args.filename," on port ",args.port)
 
 # register all the async stuff
 loop = asyncio.get_event_loop()
