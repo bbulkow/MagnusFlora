@@ -304,6 +304,22 @@ class Portal:
             delay = float(statusObj.get("delay"))
         return delay
 
+    def getModsStr(self):
+        if type(self.mods) != list:
+            return '[]'
+        if len(self.mods) == 0:
+            return '[]'
+        res = []
+        res.append('[')
+        for mod in self.mods:
+            res.append('"')
+            res.append(mod)
+            res.append('"')
+            res.append(',')
+        res.pop()
+        res.append(']')
+        return ''.join(res)
+
     # This is the "current form" that is mussing a lot of information
     def statusLegacy(self):
         resos = []
@@ -344,7 +360,7 @@ class Portal:
             resos.pop()
         reso_string = ''.join(resos)
         return '{{"faction": {0}, "health": {1}, "level": {2}, "title": "{3}", "resonators": {{{4}}}, "mods": {5} }}'.format( 
-            self.faction, self.health, self.level, self.title, reso_string, str(self.mods) )
+            self.faction, self.health, self.level, self.title, reso_string, self.getModsStr() )
 
     # this method makes sure the status is valid and reasonable ( no values greater than game state )
     def check(self):
@@ -405,8 +421,8 @@ class Portal:
 # Background file processor
 # 1. Open a file
 # 2. Readline and set initial based on readline
+# this is a co-routine. Post Python 3.5 the coroutine decorator turned into 'async'
 
-@asyncio.coroutine
 async def fileReader(app):
 
     # file object
@@ -480,6 +496,7 @@ async def statusHealth(request):
 async def statusJson(request):
     portal = request.app['portal']
     portal_str = ""
+    print(" web request received ")
     with portal.lock:
         portal_str = str(portal)
     return web.Response(text=portal_str , charset='utf-8')
@@ -490,6 +507,12 @@ async def statusJsonLegacy(request):
     with portal.lock:
         portal_str = portal.statusLegacy()
     return web.Response(text=portal_str , charset='utf-8')
+
+# this rather pecular request does a delay, then responds, allowing you
+# to test your polling code
+async def delay(request):
+    await asyncio.sleep(10.0)
+    return web.Response(text="We delayed 10 seconds")
 
 async def hello(request):
     return web.Response(text="Hello World!")
@@ -511,6 +534,7 @@ async def init(app, args):
     app = web.Application()
 
     app.router.add_get('/', hello)
+    app.router.add_get('/delay', delay)
 
     app.router.add_get('/status/faction', statusFaction)
     app.router.add_get('/status/health', statusHealth)
