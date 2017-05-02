@@ -6,6 +6,7 @@ import sys, argparse
 from ledlib.colordefs import *
 from ledlib.helpers import usage
 from ledlib.ledmath import *
+from ledlib.flower import Ledportal
 
 
 def main(argv):
@@ -27,6 +28,8 @@ def main(argv):
 	client_home = "".join([server,":",port])
 	print ("opening opc on ", client_home)
 	client = opc.Client(client_home)
+
+	ledportal = Ledportal()
 
 	COLOR = (commandline.red, commandline.green, commandline.blue)
 	print ("writing ", COLOR, " to the LEDs.")

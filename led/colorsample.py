@@ -29,3 +29,5 @@ for base in Bases:
 		pixels [ base + gap_size + (resolevel*2) ] = RESO_COLORS[resolevel]
 		pixels [ base + gap_size + (resolevel*2) +1 ] = RESO_COLORS[resolevel]
 client.put_pixels(pixels)
+client.put_pixels(pixels)
+
