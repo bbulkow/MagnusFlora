@@ -1,14 +1,13 @@
 # Portal LED Patterns
 
 Ignoring wiring, each petal/reso has:
-Left Outer Curve (LOC/30)
-Top Curve (TOP/30)
-Right Outer Curve (ROC/30)
-Left Inner Curve (LIC/30)
-Right Inner Curve (RIC/30)
-Left Straight (30)
-Right Straight (30)
-Center Straight (30)
+Left Outer Curve (LOC/43)
+Right Outer Curve (ROC/43)
+Left Inner Curve (LIC/36)
+Right Inner Curve (RIC/36)
+Left Back (28)
+Right Back (28)
+Center Straight (42)
 
 There will be two types of patterns:  finite and infinite.
 

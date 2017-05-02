@@ -1,9 +1,11 @@
 # Define various colors used by the LED strips
 
-# This was a test color but Joey liked it.
-MUTED_PINK = (150,50,50)
-MUTED_GRAY = (20,20,20)
-DIM = (16,16,16)					# dimmest with no flicker
+colortable={}
+
+colortable["MUTED_PINK"]	= (150,50,50)					# test color Joey liked
+colortable["MUTED_GRAY"]	= (20,20,20)
+colortable["SUNSHINE"]		= (100,100,20)				# visible in daylight
+colortable["DIM"]					= (16,16,16)					# dimmest with no flicker
 
 # Ingress-specific colors
 
@@ -19,6 +21,10 @@ ENL = GREEN_ENL
 NEUTRAL = GRAY_NEUTRAL
 
 FACTION_COLORS = [ RES, ENL ]
+
+colortable["RES"] = RES
+colortable["ENL"] = ENL
+colortable["NEUTRAL"] = NEUTRAL
 
 # Level colors from IITC source, http://iitc.me
 # Conversions via https://toolstud.io/color/rgb.php?rgbhex=9627F4
@@ -49,4 +55,14 @@ R8 = PURPLE_R8
 
 # The counting shall start at zero.
 RESO_COLORS = [ R0, R1, R2, R3, R4, R5, R6, R7, R8 ]
+
+colortable["R0"] = R0
+colortable["R1"] = R1
+colortable["R2"] = R2
+colortable["R3"] = R3
+colortable["R4"] = R4
+colortable["R5"] = R5
+colortable["R6"] = R6
+colortable["R7"] = R7
+colortable["R8"] = R8
 

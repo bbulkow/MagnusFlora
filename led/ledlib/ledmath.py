@@ -62,5 +62,11 @@ def check_RGB(value):
 		raise argparse.ArgumentTypeError("RGB values between 1 and 16 flicker.")
 	return cvalue
 
-
-
+def check_COLOR(value):
+	from ledlib.colordefs import colortable
+	if value == "":
+		return value
+	if value in colortable:
+		return value
+	else:
+		raise argparse.ArgumentTypeError("Unknown color ")
