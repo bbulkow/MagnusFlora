@@ -16,7 +16,7 @@ frame_delay = 0.04
 # strip2 = 128-191
 # etc. 
 
-StripSize = 30
+StripSize = 64	
 
 Bases = [ 0, 64, 128, 192, 256, 320, 384, 448 ]
 
