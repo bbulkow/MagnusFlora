@@ -43,6 +43,8 @@ import copy
 import json
 import argparse
 
+import traceback
+
 import asyncio
 import textwrap
 
@@ -180,8 +182,7 @@ class Portal:
         self.level = 0
         self.id_ = id_
         self.title = "default portal"
-        self.owner = ""
-        self.owner_id = 0
+        self.owner = None
         self.resonators = { }
         self.links = []
         self.mods = []
@@ -198,7 +199,6 @@ class Portal:
         n.level = self.level
         n.title = self.title
         n.owner = self.owner
-        n.owner_id = self.owner_id
         if self.resonators:
             n.resonators = self.resonators
         if self.links:
@@ -219,7 +219,6 @@ class Portal:
         self.level = n.level
         self.title = n.title
         self.owner = n.owner
-        self.owner_id = n.owner_id
         self.resonators = n.resonators
         self.links = n.links
         self.mods = n.mods
@@ -227,7 +226,11 @@ class Portal:
 
     # Health is calculated from resonators states so it is always correct
     def getLevel(self):
+        if self.faction == 0:
+            return 0
         if self.resonators == None:
+            return 0
+        if len(self.resonators) == 0:
             return 0
         level_sum = 0
         for k,v in self.resonators.items():
@@ -237,9 +240,13 @@ class Portal:
     # health is in .... ???
     # Let's try average of the health of the resonators
     def getHealth(self):
+        if self.faction == 0:
+            return 0
         if self.resonators == None:
             return 0
         if len(self.resonators) == 0:
+            return 0
+        if self.faction == 0:
             return 0
         xm_max = 0.0
         xm = 0.0
@@ -256,10 +263,8 @@ class Portal:
 
 
     # This function takes a Json object
-    # Returns an object for the next line to read
-    def setStatus( self, jsonStr, lineNumber ):
-        if self.verbose:
-            print("Portal set status: line ",lineNumber," using string: ",jsonStr)
+    # Returns a float for how long to delay - when to read the next line
+    def setStatus( self, jsonStr ):
 
         try:
             statusObj = json.loads(jsonStr)
@@ -267,34 +272,36 @@ class Portal:
             template = "Exception in Portal parsing the json string {0} occurred. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
             print( message )
-            return None
+            raise # pass it upstack
 
         # print(" parsed JSON, taking lock. Object is: ",statusObj)
         with self.lock:
             portal = self.dup()
 
         if "title" in statusObj:
-            portal.title = str(statusObj.get("title"))
+            if statusObj.get("title"):
+                portal.title = str(statusObj.get("title"))
 
         if "faction" in statusObj:
+
             portal.faction = int(statusObj.get("faction"))
 
             # have to take off all resos
             if portal.faction == 0:
                 portal.resonators = {}
                 portal.mods = []
+                portal.health = 0
+                portal.level = 0
+                portal.owner = None
 
         if "owner" in statusObj:
             portal.owner = str(statusObj.get("owner"))
 
         if "mods" in statusObj:
-            portal.mods = []
-            mods = statusObj.get("mods")
-            for mod in mods:
-                portal.mods.append(mod)
+            portal.mods = list(statusObj.get("mods"))
 
         if "resonators" in statusObj:
-            resonators = statusObj.get("resonators")
+            resonators = dict(statusObj.get("resonators"))
             for pos, values in resonators.items():
                 r = Resonator(pos, values)
                 portal.resonators[pos] = r
@@ -305,9 +312,7 @@ class Portal:
 
         # validate the new object through the validator
         if portal.check() == False:
-            print (" !!! Bad format after applying delta, line ",lineNumber," ignored ")
-
-            print (" delta which will not be applied: ", str(portal) )
+            raise ValueError('JSON Portal line is not consistant')
 
         else:
             # copy the parts that should be copied ( ie, not the lock or create time )
@@ -315,12 +320,12 @@ class Portal:
                 self.set(portal)
 
         if self.verbose:
-            print ("+++++ object after changes: ",str(portal))
+            print ("+++++ object after changes: ",str(self))
 
         # return value is the amount of delay to add
-        delay = 0.0
-        if "delay" in statusObj:
-            delay = float(statusObj.get("delay"))
+        if type(statusObj.get("delay", 0.0)) == float:
+            delay = statusObj.get("delay", 0.0)
+
         return delay
 
     def getModsStr(self):
@@ -362,7 +367,7 @@ class Portal:
     def __str__(self):
 
         # shortcut - grey
-        if self.level == 0:
+        if (self.faction == 0):
             return '{{"faction": 0, "health": 0, "level": 0, "title":"{0}", "resonators": {{}}, "mods": [] }}'.format(self.title)
 
         #longcut
@@ -456,6 +461,7 @@ async def fileReader(app):
     file_line = 0
     portal = app['portal']
     file_name = app['filename']
+    verbose = app['verbose']
 
     while True:
 #    for i in itertools.count():
@@ -493,8 +499,16 @@ async def fileReader(app):
                         # print("ignoring comment line")
                         pass
                     else:
-                        delay = portal.setStatus(l, file_line)
+                        try:
+                            if verbose:
+                                print("Portal set status: line ",file_line," using string: ",l)
+                            delay = portal.setStatus(l)
+                        except:
+                            print("WARNING: could not process line ",file_line," ignoring ")
+                            traceback.print_exc(file=sys.stdout)
 
+        if type(delay) != float:
+            delay = 0.0
         await asyncio.sleep(delay)
 
 #
@@ -572,6 +586,7 @@ async def init(app, args):
     app['portal'] = Portal(1, args.verbose)
     app['relay'] = Relay()
     app['filename'] = args.filename
+    app['verbose'] = args.verbose
 
     # background tasks are covered near the bottom of this:
     # http://aiohttp.readthedocs.io/en/stable/web.html
