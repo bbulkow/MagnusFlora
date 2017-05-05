@@ -8,6 +8,17 @@ class Ledportal(Portal):
 		verbose=True
 		Portal.__init__(self,id,verbose)
 		self.title = "Dreamer Archetype"
+		# initialize the resos
+		self.faction = "ENL"										# or flip a coin.
+		self.level = 4
+		self.health = 100
+		self.resos = []
+		for fc in range(4):								# 4 FAdecandy boards
+			for side in range(2):						# 2 sets of 4 channels each
+				reso_number = fc * 2 + side		# 8 resos
+				reso_name = self.valid_positions[reso_number]
+				self.resos.append(Ledresonator(reso_number, reso_name, fc, side, \
+								self.level, self.health, self.faction))
 
 class Pixelstring(object):
 	def __init__(self, name, base, size, direction):
@@ -54,6 +65,16 @@ class Pixelmap(object):
 
 class Ledresonator(Resonator):
 
-	def __init__(self, pixelmap):
-		Resonator.__init__(self)
+	# usage:
+	# resos.append(Ledresonator(reso_number, reso_name, fc, side, level, health, faction)
+
+	def __init__(self, \
+							reso_number, \
+							reso_name, \
+							fc, side, \
+							level, health, faction):
+		Resonator.__init__(self, reso_name)
+		self.pixelmap = Pixelmap (fc, side)
+		run_pattern ("WAKEUP",
+									self.pixelmap)
 

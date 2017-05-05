@@ -8,9 +8,13 @@ from ledlib.helpers import usage, debugprint
 from ledlib.ledmath import *
 from ledlib.flower import Ledportal
 from ledlib import globalconfig
+from ledlib import globaldata
+from ledlib import patterns
 
-from hardcode.fcserverconfig import server
-from hardcode.fcserverconfig import port
+from ledlib.opcwrap import start_opc, ledwrite
+from ledlib import opcwrap
+
+from threading import Thread
 
 def parse_command_line(argv):
 	print ('Number of arguments:', len(sys.argv), 'arguments.')
@@ -35,6 +39,7 @@ def setup(argv):
 			basecolor = colortable[commandline.color]
 		except KeyError:
 			basecolor = colortable["MUTED_PINK"]
+			basecolor = colortable["DIM"]
 	debugprint ("Base color 0 is ")
 	debugprint (basecolor)
 
@@ -60,19 +65,16 @@ def setup(argv):
 # 			red = basecolor[0]
 # 
 
-	finalcolor = (red, green, blue)
+	globaldata.basecolor = (red, green, blue)
 
-	client_home = "".join([server,":",port])
-	print ("opening opc on ", client_home)
-	# TODO: trap failure
-	client = opc.Client(client_home)
+	globaldata.ledcontrol = start_opc()
 
-	ledportal = Ledportal()
+	# ledportal = Ledportal()
 
-	print ("writing ", finalcolor, " to the LEDs.")
-	pixels = [ finalcolor ] * numLEDs
-	client.put_pixels(pixels)
-	client.put_pixels(pixels)
+	# print ("writing ", finalcolor, " to the LEDs.")
+	# pixels = [ finalcolor ] * numLEDs
+
+	# ledwrite (ledcontrol, pixels)
 
 	return
 
@@ -80,6 +82,12 @@ def main(argv):
 
 	setup (argv)
 
+	# start a simple thread to asynchronously push the pixel array to the LEDs
+	let_there_be_light = Thread(target=opcwrap.ledwriteloop)
+	let_there_be_light.start()
+
+	# Wake up the whole portal
+	patterns.wake_up (0, globaldata.total_pixels, globaldata.basecolor)
 
 if __name__ == "__main__":
    main(sys.argv[1:])
