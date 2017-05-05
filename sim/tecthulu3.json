@@ -11,7 +11,4 @@
    { "delay": 1.0, "resonators": { "N": {"level": 5, "health": 100, "distance": 20, "owner": "bb8"},"NE": {"level": 5, "health": 100, "distance": 20, "owner": "bb9"} } }
    { "delay": 1.0, "faction": 0 }
    { "delay": 0.5, "faction": 2, "owner": "blueMeanie", "resonators": { "N": {"level": 6, "health": 100 } } }
-   { "delay": 0.5, "resonators": { "NE": {"level": 5 } } }
-   { "delay": 0.5, "resonators": { "E": {"level": 7 } } }
-   { "delay": 0.5, "resonators": { "SE": {"level": 8 } } }
-   { "delay": 0.5, "faction": 0 }
+   { "delay": 100.0 }

@@ -217,6 +217,8 @@
    { "delay": 0.1, "faction": 2}
    { "delay": 0.1, "faction": 1}
    { "delay": 0.1, "faction": 0}
+   { "delay": 2.0, "faction": 1, "owner":"BigGreen", "resonators": { "N": {"health": 100, "level": 8}, "NE": {"health": 100, "level": 8}, "E": {"health": 100, "level": 8}, "SE": {"health": 100, "level": 8}, "S": {"health": 100, "level": 8}, "SW": {"health": 100, "level": 8}, "W": {"health": 100, "level": 8}, "NW": {"health": 100, "level": 8} } }
+
    
 #Sim: Level 8
    { "delay": 0.5, "resonators": { "N": {"health": 100, "level": 8} } }
@@ -314,6 +316,9 @@
    { "delay": 0.1, "faction": 2}
    { "delay": 0.1, "faction": 1}
    { "delay": 0.1, "faction": 0}
+
+   { "delay": 0.5, "faction": 1, "owner": "GreenFreak", "resonators": { "N": {"level": 5, "health": 100, "distance": 50, "owner": "GreenFreak"} } }
+
    
 #Sim Mods
    { "delay": 0.5,  "mods": [ "FA", "FA", "FA", "FA" ]}
@@ -334,20 +339,23 @@
    
 #Sim: Mod Complete Flash
    { "delay": 0.0, "resonators": { "N": {"health": 100, "level": 8}, "NE": {"health": 100, "level": 8}, "E": {"health": 100, "level": 8}, "SE": {"health": 100, "level": 8}, "S": {"health": 100, "level": 8}, "SW": {"health": 100, "level": 8}, "W": {"health": 100, "level": 8}, "NW": {"health": 100, "level": 8} } }
-   { "delay": 0.1, "faction": 1}
-   { "delay": 0.1, "faction": 2}
-   { "delay": 0.1, "faction": 1}
+   { "delay": 0.1, "faction": 1, "owner": "__JARVIS__"}
+   { "delay": 0.1, "faction": 2, "owner": "__AXA__"}
+   { "delay": 0.1, "faction": 1, "owner": "__JARVIS__"}
    { "delay": 0.1, "faction": 0}
+
+   { "delay": 0.5, "faction": 2, "owner": "Frog1", "resonators": { "N": {"level": 1, "health": 5, "distance": 50, "owner": "Frog1"} } }
+
    
 #Sim: Number Of Changes At Once
    { "delay": 0.5, "resonators": { "N": {"level": 1, "health": 5, "distance": 50, "owner": "Frog1"} } }
    { "delay": 0.5, "resonators": { "N": {"level": 1, "health": 10, "distance": 50, "owner": "Frog1"} } }
    { "delay": 0.5, "resonators": { "N": {"level": 2, "health": 15, "distance": 50, "owner": "Frog1"} } }
-   { "delay": 0.5, "resonators": { "N": {"level": 2, "health": 20, "distance": 50, "owner": "Frog1", "NE": {"level": 1, "health": 5, "distance": 50, "owner": "Frog1"} } }
-   { "delay": 0.5, "resonators": { "N": {"level": 2, "health": 25, "distance": 50, "owner": "Frog1", "NE": {"level": 2, "health": 10, "distance": 50, "owner": "Frog1"} } }
-   { "delay": 0.5, "resonators": { "N": {"level": 3, "health": 30, "distance": 50, "owner": "Frog1", "NE": {"level": 3, "health": 15, "distance": 50, "owner": "Frog1"} } }
-   { "delay": 0.5, "resonators": { "N": {"level": 3, "health": 35, "distance": 50, "owner": "Frog1", "NE": {"level": 3, "health": 20, "distance": 50, "owner": "Frog1"},"E": {"level": 1, "health": 5, "distance": 50, "owner": "Frog1"} } }
-   { "delay": 0.5, "resonators": { "N": {"level": 3, "health": 40, "distance": 50, "owner": "Frog1", "NE": {"level": 3, "health": 25, "distance": 50, "owner": "Frog1"},"E": {"level": 2, "health": 10, "distance": 50, "owner": "Frog1"} } }
+   { "delay": 0.5, "resonators": { "N": {"level": 2, "health": 20, "distance": 50, "owner": "Frog1"}, "NE": {"level": 1, "health": 5, "distance": 50, "owner": "Frog1"} } }
+   { "delay": 0.5, "resonators": { "N": {"level": 2, "health": 25, "distance": 50, "owner": "Frog1"}, "NE": {"level": 2, "health": 10, "distance": 50, "owner": "Frog1"} } }
+   { "delay": 0.5, "resonators": { "N": {"level": 3, "health": 30, "distance": 50, "owner": "Frog1"}, "NE": {"level": 3, "health": 15, "distance": 50, "owner": "Frog1"} } }
+   { "delay": 0.5, "resonators": { "N": {"level": 3, "health": 35, "distance": 50, "owner": "Frog1"}, "NE": {"level": 3, "health": 20, "distance": 50, "owner": "Frog1"},"E": {"level": 1, "health": 5, "distance": 50, "owner": "Frog1"} } }
+   { "delay": 0.5, "resonators": { "N": {"level": 3, "health": 40, "distance": 50, "owner": "Frog1"}, "NE": {"level": 3, "health": 25, "distance": 50, "owner": "Frog1"},"E": {"level": 2, "health": 10, "distance": 50, "owner": "Frog1"} } }
 #Getting too cumbersome to keep track. Skipping to all possible changes for a few iterations.
    { "delay": 0.5, "faction": 1, "mods": [ "FA", "FA", "FA", "FA" ], "resonators": { "N": {"level": 1, "health": 100, "distance": 50, "owner": "Frog1"},"NE": {"level": 1, "health": 100, "distance": 50, "owner": "Frog1"},"E": {"level": 1, "health": 100, "distance": 50, "owner": "Frog1"},"SE": {"level": 1, "health": 100, "distance": 50, "owner": "Frog1"},"S": {"level": 1, "health": 100, "distance": 50, "owner": "Frog1"},"SW": {"level": 1, "health": 100, "distance": 50, "owner": "Frog1"},"W": {"level": 1, "health": 100, "distance": 50, "owner": "Frog1"},"NW": {"level": 1, "health": 100, "distance": 50, "owner": "Frog1" } } }
    { "delay": 0.5, "faction": 2, "mods": [ "HS-C", "HS-C", "HS-C", "HS-C" ], "resonators": { "N": {"level": 2, "health": 95, "distance": 50, "owner": "Smurf1"},"NE": {"level": 2, "health": 95, "distance": 50, "owner": "Smurf1"},"E": {"level": 2, "health": 95, "distance": 50, "owner": "Smurf1"},"SE": {"level": 2, "health": 95, "distance": 50, "owner": "Smurf1"},"S": {"level": 2, "health": 95, "distance": 50, "owner": "Smurf1"},"SW": {"level": 2, "health": 95, "distance": 50, "owner": "Smurf1"},"W": {"level": 2, "health": 95, "distance": 50, "owner": "Smurf1"},"NW": {"level": 2, "health": 95, "distance": 50, "owner": "Smurf1" } } }
@@ -364,22 +372,9 @@
    { "delay": 0.1, "faction": 2}
    { "delay": 0.1, "faction": 1}
    { "delay": 0.1, "faction": 0}
+
+   { "delay": 0.5, "faction": 2, "owner": "Frog1", "resonators": { "N": {"level": 1, "health": 5, "distance": 50, "owner": "Frog1"} } }
+
    
 #All Simulations Complete
-   { "delay": 0.0, "resonators": { "N": {"health": 100, "level": 8}, "NE": {"health": 100, "level": 8}, "E": {"health": 100, "level": 8}, "SE": {"health": 100, "level": 8}, "S": {"health": 100, "level": 8}, "SW": {"health": 100, "level": 8}, "W": {"health": 100, "level": 8}, "NW": {"health": 100, "level": 8} } }
-   { "delay": 0.1, "faction": 1}
-   { "delay": 0.1, "faction": 0}
-   { "delay": 0.1, "faction": 2}
-   { "delay": 0.1, "faction": 0}
-   { "delay": 0.1, "faction": 1}
-   { "delay": 0.1, "faction": 0}
-   { "delay": 0.1, "faction": 2}
-   { "delay": 0.1, "faction": 0}
-   { "delay": 0.1, "faction": 1}
-   { "delay": 0.1, "faction": 0}
-   { "delay": 0.1, "faction": 2}
-   { "delay": 0.1, "faction": 0}
-   { "delay": 0.1, "faction": 1}
-   { "delay": 0.1, "faction": 0}
-   { "delay": 0.1, "faction": 2}
-   { "delay": 0.1, "faction": 0}
+#   { "delay": 0.0, "resonators": { "N": {"health": 100, "level": 8}, "NE": {"health": 100, "level": 8}, "E": {"health": 100, "level": 8}, "SE": {"health": 100, "level": 8}, "S": {"health": 100, "level": 8}, "SW": {"health": 100, "level": 8}, "W": {"health": 100, "level": 8}, "NW": {"health": 100, "level": 8} } }
