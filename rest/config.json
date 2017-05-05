@@ -1,0 +1,24 @@
+{
+	"sound_url": "http://127.0.0.1:2003/portal",
+	"sound_port": 2003,
+
+	"template_url": "http://127.0.0.1:2003/portal",
+	"template_port": 2003,
+
+	"led_url": "http://127.0.0.1:2001/portal",
+	"led_port": 2001,
+
+	"servo_url": "http://127.0.0.1:2004/portal",
+	"servo_port": 2004,
+
+	"jarvis_url": "http://127.0.0.1:2005/",
+	"jarvis_port": 2005,
+
+	"tecthulu_url": "http://127.0.0.1:5050/",
+	"tecthulu_port": 5050,
+	"tecthulu_poll": 0.5,
+
+	"portalfile": "portal.json",
+
+	"drivers": [ "sound_url", "leds_url", "servos_url" ]
+}
