@@ -1,6 +1,8 @@
 # ledmath.py
 
 RGB_min = 16		# below this we get flicker.  Disallow or use Fadecandy dither
+RGB_max = 255		# as per spec
+RGB_range = RGB_max - RGB_min
 
 # values needed for single-strip testing
 numLEDs = 512

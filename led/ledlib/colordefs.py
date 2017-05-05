@@ -3,6 +3,8 @@
 colortable={}
 
 colortable["MUTED_PINK"]	= (150,50,50)					# test color Joey liked
+colortable["AZALEA"]			= (140,20,100)				# a/k/a "Aliza Pink"
+colortable["HOTPINK"]			= (255,55,180)				# my eyes hurt
 colortable["MUTED_GRAY"]	= (20,20,20)
 colortable["SUNSHINE"]		= (100,100,20)				# visible in daylight
 colortable["DIM"]					= (16,16,16)					# dimmest with no flicker
