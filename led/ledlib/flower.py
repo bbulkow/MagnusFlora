@@ -63,6 +63,16 @@ class Pixelmap(object):
 		self.CENTER = Pixelstring("CENTER", 0, 42, 1)
 		self.CENTER.pixels = self.CBOT.pixels + self.CTOP.pixels
 
+		self.list_of_lists_of_pixel_numbers = [ \
+			self.LOC.pixels, \
+			self.LIC.pixels, \
+			self.CENTER.pixels, \
+			self.RIC.pixels, \
+			self.ROC.pixels, \
+			self.LB.pixels, \
+			self.RB.pixels \
+			]
+
 class Ledresonator(Resonator):
 
 	# usage:
@@ -75,6 +85,6 @@ class Ledresonator(Resonator):
 							level, health, faction):
 		Resonator.__init__(self, reso_name)
 		self.pixelmap = Pixelmap (fc, side)
-		run_pattern ("WAKEUP",
-									self.pixelmap)
+		# run_pattern ("WAKEUP",
+		#							self.pixelmap)
 

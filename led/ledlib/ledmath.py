@@ -1,5 +1,7 @@
 # ledmath.py
 
+from ledlib import globalconfig
+
 RGB_min = 16		# below this we get flicker.  Disallow or use Fadecandy dither
 RGB_max = 255		# as per spec
 RGB_range = RGB_max - RGB_min
@@ -71,4 +73,43 @@ def check_COLOR(value):
 	if value in colortable:
 		return value
 	else:
-		raise argparse.ArgumentTypeError("Unknown color ")
+		raise argparse.ArgumentTypeError("Unknown color " + value)
+
+def legal_intensity(value):
+	if value < 8:
+		return 0
+	if value < 16:
+		return 16
+	if value < 255:
+		return int(value)
+	else:
+		return 255
+
+
+def dimmer (rgb_triplet, scale=1.00, maxbright=globalconfig.max_brightness):
+	# usage:  new_rbg = dimmer(old_rgb)				# flatten down over-brightness
+	#					new_rgb = dimmer(old_rgb, 0.6)	# 60%
+	# RGB_min = ledmath.RGB_min
+	# RGB_max = ledmath.RGB_max
+	red = rgb_triplet[0]
+	green = rgb_triplet[1]
+	blue = rgb_triplet[2]
+
+	if (scale < 1.00):
+		red = red * scale
+		green = green * scale
+		blue = blue * scale
+
+	average_brightness = (red + green + blue) / 3
+	percent_brightness = average_brightness / RGB_max
+	if (percent_brightness) > maxbright:
+		red = red * maxbright * percent_brightness
+		green = green * maxbright * percent_brightness
+		blue = blue * maxbright * percent_brightness
+
+	red = legal_intensity(red)
+	green = legal_intensity(green)
+	blue = legal_intensity(blue)
+
+	return (red, green, blue)
+
