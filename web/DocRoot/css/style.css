@@ -1,0 +1,7 @@
+ble {
+  border-collapse: collapse;
+}
+
+.lastrow td {
+  border-bottom: 2px solid black;
+}
