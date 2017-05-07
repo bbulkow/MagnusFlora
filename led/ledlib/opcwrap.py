@@ -34,8 +34,9 @@ def start_opc():
 
 def ledwrite(client, pixels):				# should be a method in a class
 	# ugly workaround suggested on stack overflow
-	client.put_pixels(pixels)
-	client.put_pixels(pixels)
+	if not globalconfig.noop:
+		client.put_pixels(pixels)
+		client.put_pixels(pixels)
 
 
 def ledwriteloop():

@@ -35,6 +35,7 @@ def parse_command_line(argv):
 	parser.add_argument('--nodebug', dest='debug', action='store_false')
 	parser.add_argument('--verbose', dest='verbose', action='store_true')
 	parser.add_argument('--noverbose', dest='verbose', action='store_false')
+	parser.add_argument('--noop', dest='noop', action='store_true')
 	parser.add_argument('--fastwake', dest='fastwake', action='store_true')
 	parser.add_argument('--nofastwake', dest='fastwake', action='store_false')
 	commandline = parser.parse_args()
@@ -48,6 +49,11 @@ def setup(argv):
 	globalconfig.debugflag = commandline.debug
 	globalconfig.verboseflag = commandline.verbose
 	globalconfig.fastwake = commandline.fastwake
+	globalconfig.noop			=	commandline.noop
+
+	if globalconfig.noop:
+		print ("No-op mode.  Pixels will not fire.")
+		debugprint ("No-op mode.  Pixels will not fire.")
 
 	# specified RGB values override named colors
 	if hasattr(commandline, 'color'):

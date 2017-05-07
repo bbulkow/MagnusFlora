@@ -1,6 +1,7 @@
 # class definitions for the flower as a whole
 
 from flask.portal import Resonator, Portal
+from ledlib.helpers import debugprint
 
 class Ledportal(Portal):
 
@@ -44,6 +45,8 @@ class Pixelmap(object):
 		channels = [0, 64, 128, 192]		# TODO these should be in math
 		# TODO: better way for overrides
 
+		debugprint (("fadecandy ", fadecandy, "side ", side))
+
 		cbase = self.base  + channels[0]
 		self.LOC = Pixelstring ( "LOC", cbase, 43, 1)
 		self.CBOT = Pixelstring ("CBOT", cbase + 43, 21, -1)
@@ -72,6 +75,10 @@ class Pixelmap(object):
 			self.LB.pixels, \
 			self.RB.pixels \
 			]
+
+		debugprint (" Here comes the lixel numbers" )
+		debugprint ((self.list_of_lists_of_pixel_numbers))
+		debugprint (" Wheee!!!")
 
 class Ledresonator(Resonator):
 
