@@ -116,10 +116,10 @@ def main(argv):
 # def parallel_fade (list_of_lists_of_pixel_numbers, \
 #      rgb_color_triplet, fade_ratio=0.5, speed=0, steps=100):
 
-	patterns.parallel_fade(ledportal.resos[0].pixelmap.list_of_lists_of_pixel_numbers, \
+	patterns.parallel_blend(ledportal.resos[0].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["R4"], \
-			0.2, \
-			3, \
+			colordefs.colortable["ENL"], \
+			4, \
 			200)
 
 	# start one thread for each resonator to listen for changes

@@ -113,3 +113,16 @@ def dimmer (rgb_triplet, scale=1.00, maxbright=globalconfig.max_brightness):
 
 	return (red, green, blue)
 
+def mix (rgb1, scale1, rgb2, scale2=0, maxbright=globalconfig.max_brightness):
+	# mix two colors in the given proportions.
+	# more Pythonic to have the inputs be structured.  Feel free to fix.
+	# scale1 and scale2 will not necessarily sum to 1
+	if scale2==0:
+		scale2 = 1.0-scale1
+	red		= rgb1[0]*scale1 + rgb2[0]*scale2
+	green	= rgb1[1]*scale1 + rgb2[1]*scale2
+	blue	= rgb1[2]*scale1 + rgb2[2]*scale2
+	return dimmer((int(red), int(green), int(blue)))
+
+	pass
+

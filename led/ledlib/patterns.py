@@ -67,6 +67,48 @@ def fade (list_of_pixel_numbers, rgb_color_triplet, fade_ratio=0.5, speed=0):
 		if speed > 0:
 			time.sleep(speed)
 
+def parallel_blend (list_of_lists_of_pixel_numbers, \
+										rgb1, rgb2, speed=0, steps=100):
+	# pixel 0 is at 100%; pixel last is at fade_ratio;
+	# smooth gradient along multiple strands of LEDs of different lengths.
+
+	strand_count = len(list_of_lists_of_pixel_numbers)
+	strand_sizes = [0] * strand_count
+	strand_pointers = [0] * strand_count
+
+	for strand in range(strand_count):
+		strand_sizes[strand] = len(list_of_lists_of_pixel_numbers[strand])
+		debugprint (("Strand ", strand, "size ", strand_sizes[strand]))
+		globaldata.all_the_pixels \
+					[list_of_lists_of_pixel_numbers[strand][0]]=rgb1
+
+
+	for thisstep in range(steps):
+		# ignore the fencepost errors.  not going for exactness here.
+		# hue will vary due to rounding.  possibly a feature.
+		progress = thisstep/steps
+		newcolor = ledmath.mix(rgb1, progress, rgb2)
+		debugprint (("blend", thisstep, newcolor))
+		for strand in range(strand_count):
+			while progress > (strand_pointers[strand] / strand_sizes[strand]):
+				globaldata.all_the_pixels \
+					[list_of_lists_of_pixel_numbers[strand][strand_pointers[strand]]] = \
+							newcolor
+				strand_pointers[strand] += 1
+		if speed > 0:
+			time.sleep(speed/steps)
+
+	# nail in the last pixel in each strand
+	for strand in range(strand_count):
+		globaldata.all_the_pixels \
+				[list_of_lists_of_pixel_numbers[strand][strand_sizes[strand]-1]]= \
+				rgb2
+
+
+
+
+
+
 def parallel_fade (list_of_lists_of_pixel_numbers, \
 										rgb_color_triplet, fade_ratio=0.5, speed=0, steps=100):
 	# pixel 0 is at 100%; pixel last is at fade_ratio;
@@ -104,6 +146,7 @@ def parallel_fade (list_of_lists_of_pixel_numbers, \
 		globaldata.all_the_pixels \
 				[list_of_lists_of_pixel_numbers[strand][strand_sizes[strand-1]]]= \
 				newcolor
+
 
 
 
