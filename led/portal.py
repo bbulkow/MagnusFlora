@@ -13,6 +13,7 @@ from ledlib import patterns
 from ledlib import heartbeat
 from ledlib import colordefs
 from ledlib import portalconfig			# base/demo state of portal
+from ledlib import patterns
 
 from ledlib.opcwrap import start_opc, ledwrite
 from ledlib import opcwrap
@@ -41,6 +42,8 @@ def parse_command_line(argv):
 	parser.add_argument('--nofastwake', dest='fastwake', action='store_false')
 	parser.add_argument('--north', dest='north', type=check_RESO,
 					help="From 0 to 7, which reso is north?")
+	parser.add_argument('--pattern', dest='pattern', type=patterns.check_PATTERN,
+					help="Name of defined pattern, such as CHASE or TEST")
 	commandline = parser.parse_args()
 	return commandline
 
@@ -54,6 +57,7 @@ def setup(argv):
 	globalconfig.fastwake = commandline.fastwake
 	globalconfig.noop			=	commandline.noop
 	portalconfig.north		= commandline.north
+	portalconfig.pattern	=	commandline.pattern
 
 	if globalconfig.noop:
 		print ("No-op mode.  Pixels will not fire.")

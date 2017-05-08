@@ -21,6 +21,7 @@ def start_opc():
 	client_home = "".join([server,":",port])
 	client = opc.Client(client_home)
 
+	debugprint ("About to test client connection")
 	# Test if it can connect (optional)
 	if client.can_connect():
 		print('connected to %s' % client_home)

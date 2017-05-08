@@ -1,14 +1,30 @@
 import random
 import time
-from ledlib.helpers import debugprint
+from ledlib.helpers import debugprint, verboseprint
 from ledlib import ledmath
 
 from ledlib import globalconfig
 from ledlib import globaldata
 
+static_patterns = ["SOLID", "BLEND", "DIM", "TEST"]
+moving_patterns	=	["TWINKLE", "FLOOD", "FLASH",
+									"SHAKE", "CHASE", "MORSE", "MOVINGTEST"]
+
+portal_patterns = ["NEUTRALIZE", "FRACK", "ADA", "JARVIS"]
+
+defined_patterns = static_patterns + moving_patterns + portal_patterns
+
+def check_PATTERN(pname):
+	pstring = str(pname)
+	if (pstring in defined_patterns):
+		return pstring
+	else:
+		raise argparse.ArgumentTypeError("Unknown pattern name")
+
 def randomcolor(maxbright=.5):
 	# not really random: everything over maxbright collapses to same intensity
 	from ledlib import ledmath
+	# Note well: maxbright is permitted to be larger than global
 
 	RGB_min = ledmath.RGB_min
 	RGB_max = ledmath.RGB_max
@@ -18,9 +34,9 @@ def randomcolor(maxbright=.5):
 	green = random.randint(RGB_min,RGB_max)
 	blue = random.randint(RGB_min,RGB_max)
 
-	debugprint ((red, green, blue))			# print the tuple, not 3 singles
+	debugprint (("random: ", red, green, blue))			# print tuple, not 3 singles
 	rgb = ledmath.dimmer((red,  green, blue),1.0,maxbright)
-	debugprint (rgb)
+	debugprint (("dimmed: ", rgb))
 	return rgb
 
 
