@@ -19,6 +19,7 @@
 	"tecthulu_poll": 0.5,
 
 	"portalfile": "portal.json",
+	"tracefile": "trace.json",
 
-	"drivers": [ "sound_url", "leds_url", "servos_url" ]
+	"drivers": [ "sound_url", "led_url", "servo_url" ]
 }
