@@ -52,6 +52,134 @@ from aiohttp import web
 # import local shared code
 from portal import Resonator, Portal
 
+import wave
+import subprocess
+
+# globals
+command_filename_offset = 1
+command_template = [ "aplay" ]
+
+# !!!
+# Hopefully you will find a way to play both foreground and background
+#
+
+# play a sound start, and allow killing
+def play_sound_start( filename ):
+    global command_template
+    global command_filename_offset
+
+    stat = os.stat( filename )
+
+    # let's check the length, in time
+    wf = wave.open(filename, 'rb')
+    bytes_per_second = wf.getnchannels() * wf.getframerate() * wf.getsampwidth()
+    sec = stat.st_size / bytes_per_second
+    print ("seconds is: ",sec)
+
+    ct = list(command_template)
+    ct.insert(command_filename_offset, filename)
+    print(" passing to popen: ", ct)
+    proc = subprocess.Popen( ct )
+
+#   print (" delaying ")
+#   time.sleep( sec - 1.0 )
+#   time.sleep( 2.0 )
+
+    # test: kill the sound, todo, pass back an object that can respond to a kill
+    return proc
+
+def play_sound_end( proc ):
+    proc.kill()
+
+
+class IngressSound:
+
+    actions_info = {
+        'portal_neutralized': [ '../audio/portal_neutralized.wav', 2.0 ],
+        'portal_captured': [ '../audio/portal_online.wav', 4.0 ],
+        'resonator_add': [ '../audio/resonator_deployed.wav', 3.0 ],
+        'resonator_remove': [ '../audio/resonator_destroyed.wav', 2.0],
+        'attack': [ '../audio/under_attack.wav', 3.0 ],
+    }
+
+    background_sounds = [
+        '../audio/violin-test-PCM16.wav' ]
+
+    legal_actions = [ "attack", "recharge", "resonator_add", "resonator_remove", 
+        "portal_neutralized", "portal_captured",
+        "mod_added", "mod_destroyed", "resonator_upgrade", "jarvis", "ada"
+    ]
+
+    def __init__(self):
+        self.event_audio_obj = None
+        self.event_audio_start = 0.0
+        self.event_audio_end = 0.0
+
+	# action is a string, one defined in the doc:
+	# attack, recharge, resonator_add, resonator_remove, portal_neutralized, portal_captured, 
+	# mod_added, mod_destroyed, resonator_upgrade, jarvis, ada
+
+    def play(self, action ):
+
+        if action not in IngressSound.legal_actions:
+            logger.warning(" received illegal action, ingoring, %s",action)
+            return
+
+        logger.info(" received action: %s",action)
+        ainfo = IngressSound.actions_info.get(action, None)
+        if ainfo == None:
+            logger.warning(" received unsupported action, ignoring, %s",action)
+            return
+
+        now = time.time()
+
+        # if old one playing, kill it
+        if (self.event_audio_obj):
+           if (now > self.event_audio_end):
+                logging.info(" killing old sound ")
+                play_sound_end(self.event_audio_obj)
+                self.event_audio_obj = None
+                self.event_audio_start = 0.0
+                self.event_audio_end = 0.0
+           else:
+                logger.warning("TODO: queue sound until right time, not yet supported")
+                return
+	
+        # play new
+        self.event_audio_obj = play_sound_start( ainfo[0] )		
+        self.event_audio_start = now
+        self.event_audio_end = now + ainfo[1]
+			
+
+# play a sound start, and allow killing
+def play_sound_start( filename ):
+    global command_template
+    global command_filename_offset
+
+    stat = os.stat( filename )
+
+    # let's check the length, in time
+    wf = wave.open(filename, 'rb')
+    bytes_per_second = wf.getnchannels() * wf.getframerate() * wf.getsampwidth()
+    sec = stat.st_size / bytes_per_second
+    print ("seconds is: ",sec)
+
+    ct = list(command_template)
+    ct.insert(command_filename_offset, filename)
+    print(" passing to popen: ", ct)
+    proc = subprocess.Popen( ct )
+
+#   print (" delaying ")
+#   time.sleep( sec - 1.0 )
+#   time.sleep( 2.0 )
+
+    # test: kill the sound, todo, pass back an object that can respond to a kill
+    return proc
+
+def play_sound_end( proc ):
+    proc.kill()
+
+
 # A simple example of a timer function
 async def timer(app):
 
@@ -77,14 +205,21 @@ async def timer(app):
 async def portal_notification(request):
 
     logger = request.app['log']
+    sound = request.app['sound']
     try:
 
         logger.debug(" received notification: %s of type %s",request.method, request.content_type)
 
         req_obj = await request.json()
         logger.debug(" received JSON %s",req_obj)
+
+        action_str = req_obj.get("action", None)
+
+        logger.debug(" action is: %s",action_str)
+        sound.play(action_str)
+
         r = web.Response(text="OK" , charset='utf-8')
-    except Exception as e:
+    except Exception as ex:
         logger.warning(" exception while handing portal notification: %s ",str(ex))
         r = web.Response(text="FAIL")
 
@@ -141,8 +276,11 @@ async def init(app, args, loop):
     # create a portal object and stash it, many will need it
     app['portal'] = Portal(1, app['log'])
 
-    # background tasks are covered near the bottom of this:
-    # http://aiohttp.readthedocs.io/en/stable/web.html
+    # An Object For Sound
+    app['sound'] = IngressSound()
+
+	# background tasks are covered near the bottom of this:
+	# http://aiohttp.readthedocs.io/en/stable/web.html
     app.on_startup.append(start_background_tasks)
     app.on_cleanup.append(cleanup_background_tasks)
 
