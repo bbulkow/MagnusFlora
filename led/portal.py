@@ -12,6 +12,7 @@ from ledlib import globaldata
 from ledlib import patterns
 from ledlib import heartbeat
 from ledlib import colordefs
+from ledlib import portalconfig			# base/demo state of portal
 
 from ledlib.opcwrap import start_opc, ledwrite
 from ledlib import opcwrap
@@ -38,6 +39,8 @@ def parse_command_line(argv):
 	parser.add_argument('--noop', dest='noop', action='store_true')
 	parser.add_argument('--fastwake', dest='fastwake', action='store_true')
 	parser.add_argument('--nofastwake', dest='fastwake', action='store_false')
+	parser.add_argument('--north', dest='north', type=check_RESO,
+					help="From 0 to 7, which reso is north?")
 	commandline = parser.parse_args()
 	return commandline
 
@@ -50,6 +53,7 @@ def setup(argv):
 	globalconfig.verboseflag = commandline.verbose
 	globalconfig.fastwake = commandline.fastwake
 	globalconfig.noop			=	commandline.noop
+	portalconfig.north		= commandline.north
 
 	if globalconfig.noop:
 		print ("No-op mode.  Pixels will not fire.")
@@ -111,6 +115,7 @@ def main(argv):
 
 	# Wake up the whole portal
 	patterns.wake_up (0, globaldata.total_pixels, globaldata.basecolor)
+	verboseprint ("... and there was light.")
 
 	# start a simple thread for asynchronous heartbeat
 	EKG = Thread(target=heartbeat.ticktock)
@@ -122,13 +127,18 @@ def main(argv):
 # def parallel_fade (list_of_lists_of_pixel_numbers, \
 #      rgb_color_triplet, fade_ratio=0.5, speed=0, steps=100):
 
+	# TODO: wrap this in a debug flag, or remove it.
 	patterns.parallel_blend(ledportal.resos[0].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["R4"], \
 			colordefs.colortable["ENL"], \
 			4, \
 			200)
 
-	# start one thread for each resonator to listen for changes
+	# start one thread for each resonator and mod to listen for changes
+	resothreads = [""] * 8
+	modthreads	=	[""] * 4
+
+	# for 
 
 	verboseprint ("Ready for commands.")
 

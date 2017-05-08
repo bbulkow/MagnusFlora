@@ -49,7 +49,7 @@ class Pixelmap(object):
 
 		cbase = self.base  + channels[0]
 		self.LOC = Pixelstring ( "LOC", cbase, 43, 1)
-		self.CBOT = Pixelstring ("CBOT", cbase + 43, 21, -1)
+		self.__CBOT = Pixelstring ("CBOT", cbase + 43, 21, -1)
 
 		cbase = self.base + channels[1]
 		self.LIC = Pixelstring ("LIC", cbase, 36, 1)
@@ -61,10 +61,10 @@ class Pixelmap(object):
 
 		cbase = self.base + channels[3]
 		self.ROC = Pixelstring ( "ROC", cbase, 43, 1)
-		self.CTOP = Pixelstring ("CTOP", cbase + 43, 21, -1)
+		self.__CTOP = Pixelstring ("CTOP", cbase + 43, 21, -1)
 
 		self.CENTER = Pixelstring("CENTER", 0, 42, 1)
-		self.CENTER.pixels = self.CBOT.pixels + self.CTOP.pixels
+		self.CENTER.pixels = self.__CBOT.pixels + self.__CTOP.pixels
 
 		self.list_of_lists_of_pixel_numbers = [ \
 			self.LOC.pixels, \
@@ -76,8 +76,11 @@ class Pixelmap(object):
 			self.RB.pixels \
 			]
 
+		# "lixel" was originally a typo but it's a great unique tag
 		debugprint (" Here comes the lixel numbers" )
 		debugprint ((self.list_of_lists_of_pixel_numbers))
+		debugprint (("Center: ", self.CENTER.pixels))
+		debugprint (("LOC: ", self.LOC.pixels))
 		debugprint (" Wheee!!!")
 
 class Ledresonator(Resonator):
