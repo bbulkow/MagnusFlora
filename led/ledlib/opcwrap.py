@@ -43,7 +43,10 @@ def ledwriteloop():
 	# designed to run in a very simple thread
 
 	while True:
-		globaldata.ledcontrol.put_pixels(globaldata.all_the_pixels)
+		# ugly workaround suggested on stack overflow
+		if not globalconfig.noop:
+			globaldata.ledcontrol.put_pixels(globaldata.all_the_pixels)
+			globaldata.ledcontrol.put_pixels(globaldata.all_the_pixels)
 		time.sleep(globalconfig.framedelay)
 		debugprint ("Tick... ")
 
