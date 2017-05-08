@@ -1,6 +1,19 @@
 #!/usr/bin/env python
 
-# Light each LED in sequence, and repeat.
+# Test that the 4 leads on each petal are connected to the proper
+# leads on a FadeCandy.  Granularity is only even petal/odd petal.
+# if you need to check that the correct petal is connected to the correct
+#	FC you are on your own.
+#
+#	when you look at the flat side of a FadeCandy the letters are at the top
+#	and the 0 connector is at the lower left.
+
+# Standalone code completely isolated from our environment, only depends on
+# finding a copy of opc.py in the current directory and having a running
+# fcserver whose config JSON sees all the fadecandy IDs.
+# Sample usage:
+# $ sudo fcserver ~/etc/fcserver.json &
+# $ ./test_petal.py
 
 import opc, time
 
@@ -10,6 +23,10 @@ chase_size = 4
 gap_size = 3
 frame_delay = 0.03
 
+PINK=(150,50,50)
+BLUE=(5,5,155)
+GREEN=(5,155,5)
+
 # strip0 = pixels 0-63
 # strip1 = 64-127
 # strip2 = 128-191
@@ -17,11 +34,16 @@ frame_delay = 0.03
 
 StripSize = 64
 NumStrips = 8
+NumFC = 4
+pixels = [ PINK ] * numLEDs * NumFC
 
 Bases = [ 0, 64, 128, 192, 256, 320, 384, 448 ]
-PINK=(150,50,50)
-BLUE=(5,5,155)
-GREEN=(5,155,5)
+FC_Bases = [0, 512, 1024, 1536]
+
+def set_pixel_on_all_fc(offset, rgb):
+	global pixels
+	for i in range(NumFC):
+		pixels [FC_Bases[i]+ offset] = rgb
 
 # Yes a dict would have been better.
 TEST_WHITE		= ((200,200,200), "almost white")
@@ -64,25 +86,29 @@ Petal config:
 		Back/Top  left: blue
 		Back/Top right:	purple
 
-	If things don't match up, remember to power down before swapping!
+	If things don't match up, remember to power down LEDs before swapping!
 """)
 
 client = opc.Client('127.0.0.1:7890')
 
+# def set_pixel_on_all_fc(offset, rgb):
+
 while True:
 	for chase in range(StripSize):
-		pixels = [ PINK ] * numLEDs
 		for i in range(NumStrips):
 			base = Bases[i]
 			basecolor = test_colors[i][0]
 			for j in range(StripSize):
-				pixels [base+j] = basecolor
+				# pixels [base+j] = basecolor
+				set_pixel_on_all_fc (base+j, basecolor)
 			for body in range(chase_size):
 				green_dot = chase + body
 				if green_dot < StripSize:
-					pixels[base+green_dot] = GREEN
+					# pixels[base+green_dot] = GREEN
+					set_pixel_on_all_fc (base+green_dot, GREEN)
 				blue_dot = chase + body + chase_size + gap_size
 				if blue_dot < StripSize:
-					pixels[base+blue_dot] = BLUE
+					# pixels[base+blue_dot] = BLUE
+					set_pixel_on_all_fc (base+blue_dot, BLUE)
 		client.put_pixels(pixels)
 		time.sleep(frame_delay)
