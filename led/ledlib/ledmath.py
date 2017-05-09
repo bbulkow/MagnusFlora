@@ -75,6 +75,16 @@ def check_COLOR(value):
 	else:
 		raise argparse.ArgumentTypeError("Unknown color " + value)
 
+def check_RESO(value):
+	try:
+		ivalue = int(value)
+	except:
+		raise argparse.ArgumentTypeError("Resonator number must be between 0 and 7")
+
+	if (ivalue < 0) or (ivalue > 7):
+		raise argparse.ArgumentTypeError("Resonator number must be between 0 and 7")
+	return value
+
 def legal_intensity(value):
 	if value < 8:
 		return 0

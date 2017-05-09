@@ -133,17 +133,18 @@ class Resonator:
             self.distance = 0
         return True
 
-    # Compare returns an object noting the differences
-    # 
-    # the Old value is this value, the New value is "other"
-    #
+    # Compare returns an object noting the differences between the old value and the new.
     # or None if they are the same
+    #
+    # Also returns a list of action types based on what changed or None
+    #
     # Need a static method, because sometimes one or the other is null
     @staticmethod
     def difference(old_p, new_p, logger):
 
         diffs = {}
-        
+        actions = []
+ 
         if old_p == None:
 
             diffs['level'] = new_p.level
@@ -152,14 +153,23 @@ class Resonator:
 #            diffs['position-old'] = ""
             diffs['owner'] = new_p.owner
             diffs['distance'] = new_p.distance
-
+            actions.append("resonator_add")
         else:
             if new_p.level != old_p.level:
                 diffs['level'] = new_p.level
                 diffs['level-change'] = new_p.level - old_p.level
+                if new_p.level > old_p.level:
+                    actions.append("resonator_upgrade")
+                else:
+                    actions.append("resonator_remove")
+                    actions.append("resonator_upgrade")
             if new_p.health != old_p.health:
                 diffs['health'] = new_p.health
                 diffs['health-change'] = new_p.health - old_p.health
+                if new_p.health < old_p.health:
+                    actions.append("attack")
+                else:
+                    actions.append("recharge")
             # this should never happen, because a reso is defined by position
 #            if new_p.position != old_p.position:
 #                diffs['position'] = new_p.position
@@ -168,14 +178,15 @@ class Resonator:
             if new_p.owner != old_p.owner:
                 diffs['owner'] = new_p.owner
                 diffs['owner-old'] = old_p.owner
+                actions.append("resonator_add")
             if new_p.distance != old_p.distance:
                 diffs['distance'] = new_p.distance
                 diffs['distance-old'] = old_p.distance
 
         if len(diffs) == 0:
-            return None
+            return None, None
 
-        return diffs
+        return actions, diffs
 
     # returns TRUE if they are value-wise the same
     # return FALSE if they are the same
@@ -392,6 +403,7 @@ class Portal:
 
         is_changed = False
         what_changed = {}
+        actions = []
 
         # print(" parsed JSON, taking lock. Object is: ",statusObj)
         with self.lock:
@@ -410,13 +422,17 @@ class Portal:
 #       logger.debug("Portal set status: faction  " )
 
         if "faction" in statusObj:
-            if portal.faction != int(statusObj.get("faction")):
+            old_faction = portal.faction
+            new_faction = int(statusObj.get("faction"))
+
+            if old_faction != new_faction:
                 is_changed = True
-                what_changed["faction"] = int(statusObj.get("faction"))
-                portal.faction = int(statusObj.get("faction"))
+                what_changed["faction"] = new_faction
+                portal.faction = new_faction
+
+                actions = self.addAction(actions, self.getFactionAction(old_faction, new_faction))
 
                 logger.debug(" what changed: faction %s",portal.faction)
-
 
 #        logger.debug("Portal set status: owner  " )
 
@@ -425,18 +441,30 @@ class Portal:
                 is_changed = True
                 what_changed["owner"] = str(statusObj.get("owner"))
                 portal.owner = str(statusObj.get("owner"))
+                self.addAction(actions, "portal_neutralized")
+                self.addAction(actions, "portal_captured")
 
                 logger.debug(" what changed: owner %s",portal.owner)
 
-
 #        logger.debug("Portal set status: mods  " )
 
-        # todo: add function
         if "mods" in statusObj:
-            portal.mods = []
-            mods = statusObj.get("mods")
-            for mod in mods:
-                portal.mods.append(mod)
+            old_mods = portal.mods
+            new_mods = statusObj.get("mods")
+
+            if sorted(old_mods) != sorted(new_mods):
+                is_changed = True
+                portal.mods = []
+                #what_changed["mods"] = []
+
+                mods = statusObj.get("mods")
+                for mod in mods:
+                    portal.mods.append(mod)
+                    #what_changed["mods"].append(mod)
+
+                actions = self.addAction(actions, self.getModsAction(old_mods, new_mods))
+
+                logger.debug(" what changed: mods %s", str(portal.mods))
 
 #        logger.debug("Portal set status: reso  " )
 
@@ -447,16 +475,26 @@ class Portal:
         reso_what_changed = {}
         if "resonators" in statusObj:
             resonators = statusObj.get("resonators")
+
+            for p in self.valid_positions:
+                ptl = portal.resonators.get(p, None)
+                if ptl:
+                    if not p in resonators:
+                        actions = self.addAction(actions, "resonator_remove")
+
             for pos, values in resonators.items():
 
                 r = Resonator(pos, logger, values )
-                diffs = Resonator.difference( portal.resonators.get(pos,None), r, logger)
+                acts, diffs = Resonator.difference( portal.resonators.get(pos,None), r, logger)
                 # logger.debug(" what changed: reso %s value %s",pos,diffs)
                 
                 if diffs:
                     reso_is_changed = True
                     reso_what_changed[pos] = diffs
                     portal.resonators[pos] = r
+                    if acts:
+                        for a in acts:
+                            actions = self.addAction(actions, a)
 
             # if we changed the resonators, update the health and level
             # todo: what you really need to do is calculate the health via the
@@ -486,10 +524,44 @@ class Portal:
         # logger.debug("+++++ object after changes: %s",str(self))
 
         if is_changed:
-            return what_changed
+            return actions, what_changed
         else:
-            return None
+            return None, None
 
+    # Add an action to the list if it does not exist
+    def addAction(self, actions, action):
+        if not action in actions:
+            actions.append(action)
+        return actions
+
+    # Get action from faction change
+    #
+    # If change from no faction to faction, it was captured
+    # If change from faction to no faction, it was neutralized
+    # If change from one faction to the other, it was a virus
+    #
+    def getFactionAction(self, old_faction, new_faction):
+        if old_faction == 0:
+            return "portal_captured"
+        else:
+            if new_faction == 0:
+                return "portal_neutralized"
+            else:
+                if old_faction == 1:
+                    return "virus_jarvis"
+                else:
+                    return "virus_ada"
+
+    # Get action from mods change
+    #
+    # If less mods, then it was a mod_remove
+    # If more mods or some mods changed, then it was a mod_add
+    #
+    def getModsAction(self, old_mods, new_mods):
+        if len(new_mods) < len(old_mods):
+            return "mod_remove"
+        else:
+            return "mod_add"
 
     # This is the "current form" that is mussing a lot of information
     def statusLegacy(self):

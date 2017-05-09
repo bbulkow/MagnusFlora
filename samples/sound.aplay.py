@@ -1,4 +1,8 @@
 import sys
+py_ver = sys.version_info[0] + ( sys.version_info[1] / 10.0 )
+if py_ver < 3.5:
+    raise "Must be using Python 3.5 or better"
+
 import os
 import time
 
@@ -8,8 +12,6 @@ import wave
 import random
 
 import subprocess
-
-
 
 
 """
@@ -45,13 +47,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # this will randomly play one from the list
 
 game_audio_files = {
-	'hack_neutral': [ '../audio/neutral_portal_hack.wav' ],
-	'hack_res': [ '../audio/portal_hack_res.wav' ],
-	'hack_enl': [ ],
 	'portal_neutralized': [ '../audio/portal_neutralized.wav' ],
 	'portal_online': [ '../audio/portal_online.wav' ],
-	'portal_deployed': [ '../audio/resonator_deployed_1.wav' ],
-	'reso_destroyed': [ '../audio/resonator_destroyed_1.wav', '../audio/resonator_destroyed_2.wav'],
+	'reso_deployed': [ '../audio/resonator_deployed.wav' ],
+	'reso_destroyed': [ '../audio/resonator_destroyed.wav'],
 	'under_attack': [ '../audio/under_attack.wav' ],
 }
 
@@ -62,22 +61,19 @@ background_sounds = [
 #command_filename_offset = 3
 #command_template = [ 'aplay', ' -f','cd' ]
 command_filename_offset = 1
-command_template = [ 'aplay' ]
+command_template = [ "aplay" ]
 
 
 # returns some kind of object to allow killing
-def play_sound( filename ):
+def play_sound_start( filename ):
 	global command_template
 	global command_filename_offset
 
 	stat = os.stat( filename )
-	print("f_bytes: ",stat.st_size)
 
-	# let's check the length
+	# let's check the length, in time
 	wf = wave.open(filename, 'rb')
-	print (" wave object: channels ",wf.getnchannels()," rate ",wf.getframerate()," samp width ",wf.getsampwidth() )
 	bytes_per_second = wf.getnchannels() * wf.getframerate() * wf.getsampwidth()
-	print (" bytes per second: ",bytes_per_second)
 	sec = stat.st_size / bytes_per_second
 	print ("seconds is: ",sec)
 
@@ -86,16 +82,30 @@ def play_sound( filename ):
 	print(" passing to popen: ", ct)
 	proc = subprocess.Popen( ct )
 
-	print (" delaying ") 
-	time.sleep( sec - 1.0 )
+#	print (" delaying ") 
+#	time.sleep( sec - 1.0 )
+#	time.sleep( 2.0 )
 
-	# test: kill the sound
-	print (" killing " )
+	# test: kill the sound, todo, pass back an object that can respond to a kill
+	return proc
+
+def play_sound_end( proc ):
 	proc.kill()
 	
 
+# Playing sound one and two at the same time, as a test
+# Although the RPI has the hardware capability of playing two sounds,
+# other things don't. So this is a bad test.
+#print( " starting two sounds " )
+#s1 = play_sound_start( '../audio/portal_online.wav' )
+#s2 = play_sound_start( '../audio/violin-test-PCM16.wav' )
 
-play_sound( '../audio/portal_hack_res.wav' )
+#print ( " listen to the sounds! " )
+#time.sleep(10.0)
+
+#print ( " terminating the sounds " )
+#play_sound_end( s1 )
+#play_sound_end( s2 )
 
 def loop_sounds():
 
@@ -114,7 +124,7 @@ def loop_sounds():
 		wf = wave.open(fn, 'rb')
 		print (" wave object: channels ",wf.getnchannels()," rate ",wf.getframerate()," samp width ",wf.getsampwidth() )
 
-		play_sound(fn)
+		play_sound_start(fn)
 
 loop_sounds()
 

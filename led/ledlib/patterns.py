@@ -1,14 +1,30 @@
 import random
 import time
-from ledlib.helpers import debugprint
+from ledlib.helpers import debugprint, verboseprint
 from ledlib import ledmath
 
 from ledlib import globalconfig
 from ledlib import globaldata
 
+static_patterns = ["SOLID", "BLEND", "DIM", "TEST"]
+moving_patterns	=	["TWINKLE", "FLOOD", "FLASH",
+									"SHAKE", "CHASE", "MORSE", "MOVINGTEST"]
+
+portal_patterns = ["NEUTRALIZE", "FRACK", "ADA", "JARVIS"]
+
+defined_patterns = static_patterns + moving_patterns + portal_patterns
+
+def check_PATTERN(pname):
+	pstring = str(pname)
+	if (pstring in defined_patterns):
+		return pstring
+	else:
+		raise argparse.ArgumentTypeError("Unknown pattern name")
+
 def randomcolor(maxbright=.5):
 	# not really random: everything over maxbright collapses to same intensity
 	from ledlib import ledmath
+	# Note well: maxbright is permitted to be larger than global
 
 	RGB_min = ledmath.RGB_min
 	RGB_max = ledmath.RGB_max
@@ -18,9 +34,9 @@ def randomcolor(maxbright=.5):
 	green = random.randint(RGB_min,RGB_max)
 	blue = random.randint(RGB_min,RGB_max)
 
-	debugprint ((red, green, blue))			# print the tuple, not 3 singles
+	debugprint (("random: ", red, green, blue))			# print tuple, not 3 singles
 	rgb = ledmath.dimmer((red,  green, blue),1.0,maxbright)
-	debugprint (rgb)
+	debugprint (("dimmed: ", rgb))
 	return rgb
 
 
@@ -76,9 +92,11 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
 	strand_sizes = [0] * strand_count
 	strand_pointers = [0] * strand_count
 
+	debugprint (("blend between", rgb1, rgb2))
+
 	for strand in range(strand_count):
 		strand_sizes[strand] = len(list_of_lists_of_pixel_numbers[strand])
-		debugprint (("Strand ", strand, "size ", strand_sizes[strand]))
+		debugprint (("Strand ", strand, "size ", strand_sizes[strand], "begin", list_of_lists_of_pixel_numbers[strand][0]))
 		globaldata.all_the_pixels \
 					[list_of_lists_of_pixel_numbers[strand][0]]=rgb1
 
@@ -87,7 +105,7 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
 		# ignore the fencepost errors.  not going for exactness here.
 		# hue will vary due to rounding.  possibly a feature.
 		progress = thisstep/steps
-		newcolor = ledmath.mix(rgb1, progress, rgb2)
+		newcolor = ledmath.mix(rgb1, 1.0-progress, rgb2)
 		debugprint (("blend", thisstep, newcolor))
 		for strand in range(strand_count):
 			while progress > (strand_pointers[strand] / strand_sizes[strand]):
@@ -100,13 +118,12 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
 
 	# nail in the last pixel in each strand
 	for strand in range(strand_count):
-		globaldata.all_the_pixels \
-				[list_of_lists_of_pixel_numbers[strand][strand_sizes[strand]-1]]= \
-				rgb2
-
-
-
-
+		last_pixel = list_of_lists_of_pixel_numbers[strand][strand_sizes[strand]-1]
+		debugprint (("Last pixel, setting end of strand ", str(strand), "pixel number " , str(last_pixel), "rgb2", rgb2))
+		# globaldata.all_the_pixels \
+	#			[list_of_lists_of_pixel_numbers[strand][strand_sizes[strand]-1]]= \
+				#rgb2
+		globaldata.all_the_pixels[last_pixel] = rgb2
 
 
 def parallel_fade (list_of_lists_of_pixel_numbers, \

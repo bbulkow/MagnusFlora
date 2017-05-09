@@ -37,6 +37,7 @@ import threading
 import time
 import datetime
 import os
+import traceback
 
 import logging
 
@@ -93,13 +94,13 @@ class Notification:
 #
 
 # write the portal to disk - since it's local, do it synchronously
-def write_file( filename, portal_str ):
+def write_file( filename, portal_str, mode="w" ):
     
     logger.info(" writing file %s string %s",filename,portal_str)
 
     # open the file, write it
-    with open(filename, "w") as f:
-        f = open(filename, "w")
+    with open(filename, mode) as f:
+        f = open(filename, mode)
         f.write(portal_str)
         f.close()
         
@@ -175,12 +176,16 @@ async def portal_status(session, url, app):
             # Determine if there are differences between the old and new object
             # what_changed is a dict with things that changed
             portal = app['portal']
-            # this sets the status and returns what changed
-            what_changed = portal.setStatusJson(status_obj, logger)
 
-            # If the object has changed,
-            if what_changed:
-                logger.info(" something changed! %s ",what_changed)
+            # this sets the status and returns what changed
+            actions, what_changed = portal.setStatusJson(status_obj, logger)
+
+            # If the object has changed and actions are known,
+            if actions and what_changed:
+                logger.info(" something changed! %s ", what_changed)
+
+                # get a timestamp
+                timestamp = str(datetime.datetime.now())
 
                 # get the encoded string only once
                 with portal.lock:
@@ -195,9 +200,17 @@ async def portal_status(session, url, app):
                 #    Send a JSON request to the drivers
                 logger.debug(" Notifying following clients: drivers %s ",driver_urls)
 
-                for u in driver_urls:
-                    n = Notification(app, u, portal_str)
-                    n.enqueue()
+                for a in actions:
+                    logger.info(" action: %s ", a)
+                    notify_msg = json.dumps({'status': portal_str,'action': a,'what_changed': what_changed,'time': timestamp})
+
+                    # write notifications to a file
+                    if app['debug'] == "DEBUG":
+                        write_file(g_config["tracefile"], notify_msg + "\n", "a")
+
+                    for u in driver_urls:
+                        n = Notification(app, u, notify_msg)
+                        n.enqueue()
 
             else:
                 logger.debug(" nothing changed ")
@@ -239,6 +252,7 @@ async def thulu_poller(app):
                 logger.error( "Poller: timed out fetching from server, trying again ")
 
             except Exception as ex:
+                traceback.print_exc()
                 logger.error( "Poller: unknown exception type %s",type(ex).__name__)
 
             await asyncio.sleep(period) 
@@ -327,6 +341,8 @@ def create_logger(args):
     return logger
 
 async def init(app, args, loop):
+
+    app['debug'] = args.debug
 
     app.router.add_get('/', hello)
     app.router.add_get('/health', health)
