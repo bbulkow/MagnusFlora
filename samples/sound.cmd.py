@@ -11,6 +11,8 @@ import wave
 
 import random
 
+import platform
+
 import subprocess
 
 
@@ -60,8 +62,19 @@ background_sounds = [
 # insert the filename at the command: so 1 is right after the command
 #command_filename_offset = 3
 #command_template = [ 'aplay', ' -f','cd' ]
-command_filename_offset = 1
-command_template = [ "aplay" ]
+
+# globals - how do I play a sound?
+# this kind of dumb. I should check for the existance of different commands
+# instead of coding in something like this
+if (platform.system() == 'Darwin'):
+	command_filename_offset = 1
+	command_template = [ "afplay" ]
+elif (platform.system() == 'Linux'):
+	command_filename_offset = 1
+	command_template = [ "aplay" ]
+else:
+	print ( "unknown operating system, can't play sounds ")
+	sys.exit(0)
 
 
 # returns some kind of object to allow killing
