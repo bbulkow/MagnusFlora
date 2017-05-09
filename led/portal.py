@@ -133,8 +133,8 @@ def main(argv):
 
 	# TODO: wrap this in a debug flag, or remove it.
 	patterns.parallel_blend(ledportal.resos[0].pixelmap.list_of_lists_of_pixel_numbers, \
-			colordefs.colortable["R4"], \
 			colordefs.colortable["ENL"], \
+			colordefs.colortable["R4"], \
 			4, \
 			200)
 

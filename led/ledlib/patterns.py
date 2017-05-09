@@ -92,9 +92,11 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
 	strand_sizes = [0] * strand_count
 	strand_pointers = [0] * strand_count
 
+	debugprint (("blend between", rgb1, rgb2))
+
 	for strand in range(strand_count):
 		strand_sizes[strand] = len(list_of_lists_of_pixel_numbers[strand])
-		debugprint (("Strand ", strand, "size ", strand_sizes[strand]))
+		debugprint (("Strand ", strand, "size ", strand_sizes[strand], "begin", list_of_lists_of_pixel_numbers[strand][0]))
 		globaldata.all_the_pixels \
 					[list_of_lists_of_pixel_numbers[strand][0]]=rgb1
 
@@ -103,7 +105,7 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
 		# ignore the fencepost errors.  not going for exactness here.
 		# hue will vary due to rounding.  possibly a feature.
 		progress = thisstep/steps
-		newcolor = ledmath.mix(rgb1, progress, rgb2)
+		newcolor = ledmath.mix(rgb1, 1.0-progress, rgb2)
 		debugprint (("blend", thisstep, newcolor))
 		for strand in range(strand_count):
 			while progress > (strand_pointers[strand] / strand_sizes[strand]):
@@ -116,13 +118,12 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
 
 	# nail in the last pixel in each strand
 	for strand in range(strand_count):
-		globaldata.all_the_pixels \
-				[list_of_lists_of_pixel_numbers[strand][strand_sizes[strand]-1]]= \
-				rgb2
-
-
-
-
+		last_pixel = list_of_lists_of_pixel_numbers[strand][strand_sizes[strand]-1]
+		debugprint (("Last pixel, setting end of strand ", str(strand), "pixel number " , str(last_pixel), "rgb2", rgb2))
+		# globaldata.all_the_pixels \
+	#			[list_of_lists_of_pixel_numbers[strand][strand_sizes[strand]-1]]= \
+				#rgb2
+		globaldata.all_the_pixels[last_pixel] = rgb2
 
 
 def parallel_fade (list_of_lists_of_pixel_numbers, \
