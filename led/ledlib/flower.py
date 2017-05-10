@@ -1,5 +1,6 @@
 # class definitions for the flower as a whole
 
+# TODO: import from rest.portal
 from flask.portal import Resonator, Portal
 from ledlib.helpers import debugprint
 

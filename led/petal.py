@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+""" Exercise library functions on the leds of a single petal."""
+
+# Not even pretending to be production code, this program lets you run
+# some patterns from the production libraries on a single petal.
 
 # Control the LEDs of the Magnus Flora portal art display
 import opc
@@ -17,6 +21,11 @@ from ledlib import patterns
 
 from ledlib.opcwrap import start_opc, ledwrite
 from ledlib import opcwrap
+
+##### ----------------------------
+import riggeddemo
+##### ----------------------------
+
 
 from threading import Thread
 
@@ -44,6 +53,10 @@ def parse_command_line(argv):
 					help="From 0 to 7, which reso is north?")
 	parser.add_argument('--pattern', dest='pattern', type=patterns.check_PATTERN,
 					help="Name of defined pattern, such as CHASE or TEST")
+	parser.add_argument('--level', dest='level', type=int,
+					help="Starting Level of sample petal.")
+	parser.add_argument('--faction', dest='faction', type=colordefs.faction_rgb,
+					help="RES/ENL/NEUTRAL - rgb is what is stored")
 	commandline = parser.parse_args()
 	return commandline
 
@@ -58,6 +71,8 @@ def setup(argv):
 	globalconfig.noop			=	commandline.noop
 	portalconfig.north		= commandline.north
 	portalconfig.pattern	=	commandline.pattern
+	riggeddemo.level = commandline.level
+	riggeddemo.factionrgb = commandline.faction
 
 	if globalconfig.noop:
 		print ("No-op mode.  Pixels will not fire.")
@@ -127,15 +142,18 @@ def main(argv):
 	verboseprint ("Global heartbeat started.")
 
 	ledportal = Ledportal()
+	level = riggeddemo.level
+	
 
 # def parallel_fade (list_of_lists_of_pixel_numbers, \
 #      rgb_color_triplet, fade_ratio=0.5, speed=0, steps=100):
 
-	# TODO: wrap this in a debug flag, or remove it.
-	# first color=stem, second color=edge
+	# this is the base for one type of pattern. Steal the pixel data
+	# and feed it to the subthreads as static.
+
 	patterns.parallel_blend(ledportal.resos[0].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
-			colordefs.colortable["R4"], \
+			colordefs.colortable[colordefs.RESO_COLOR_NAMES[level]], \
 			4, \
 			200)
 
@@ -143,9 +161,9 @@ def main(argv):
 	resothreads = [""] * 8
 	modthreads	=	[""] * 4
 
-	# for 
+	# for
 
-	verboseprint ("Ready for commands.")
+	# verboseprint ("Ready for commands.")
 
 if __name__ == "__main__":
    main(sys.argv[1:])

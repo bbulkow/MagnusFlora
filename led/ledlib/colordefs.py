@@ -1,4 +1,8 @@
 # Define various colors used by the LED strips
+#
+# Entry points:
+#		function faction_rgb	returns (r,g,b)
+#		dict colortable				entries string: (r,g,b)
 
 colortable={}
 
@@ -18,11 +22,26 @@ BLUE_RES = (16,16,155)
 GREEN_ENL = (16,155,16)
 GRAY_NEUTRAL = (32,32,32)
 
+NOTACOLOR		=	(-1,-1,-1)
+colortable["NOTACOLOR"] = NOTACOLOR
+
 RES = BLUE_RES
 ENL = GREEN_ENL
 NEUTRAL = GRAY_NEUTRAL
 
 FACTION_COLORS = [ RES, ENL ]
+
+def faction_rgb(faction):
+	if faction == "RES":
+		return colortable["RES"]
+	if faction == "ENL":
+		return colortable["ENL"]
+	if faction == "NEUTRAL":
+		return colortable["NEUTRAL"]
+	else:
+		debugprint (("faction_rgb: Undefined faction: ",faction))
+		return colortable["NOTACOLOR"]
+
 
 colortable["RES"] = RES
 colortable["ENL"] = ENL
@@ -30,6 +49,7 @@ colortable["NEUTRAL"] = NEUTRAL
 
 # Level colors from IITC source, http://iitc.me
 # Conversions via https://toolstud.io/color/rgb.php?rgbhex=9627F4
+# Adjustments done by eye
 
 # PURPLE_R8 = (150,39,244)	# 9627F4
 PURPLE_R8 = (70,0,130)			# empirical
@@ -57,6 +77,7 @@ R8 = PURPLE_R8
 
 # The counting shall start at zero.
 RESO_COLORS = [ R0, R1, R2, R3, R4, R5, R6, R7, R8 ]
+RESO_COLOR_NAMES = ["R0","R1","R2","R3","R4","R5","R6","R7","R8"]
 
 colortable["R0"] = R0
 colortable["R1"] = R1
