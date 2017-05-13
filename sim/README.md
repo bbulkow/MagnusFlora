@@ -202,11 +202,14 @@ Yet, the common distributions run Python 3 quite a few versions behind - so let'
 
 The instructions here: https://github.com/pyenv/pyenv
 
-Clone into ~/.pyenv - this probably should be done in /usr/local in a box like this
+Clone into /usr/local/bin - this probably should be done in /usr/local in a box like this
 
-Mark it writable:
+```
+cd /usr/local/bin
+sudo git clone https://github.com/pyenv/pyenv.git 
+sudo chmod a+w /usr/local/bin/pyenv
+```
 
-`sudo chmod a+w /usr/local/bin/pyenv`
 
 ## Environment variables
 
@@ -221,10 +224,38 @@ export CFLAGS='-O2'
 
 Restart, and try `pyenv` which should work
 
-When you try to install python3.6.1, you must be fully up to date on Jessie ( including a dist-upgrade ), and you must install these pre-reques.
+Then, this takes a while:
+```
+pyenv install 3.6.1
+pyenv global 3.6.1
+```
 
-Then, it seems the install succeeds.
+When you try to install python3.6.1, you must be fully up to date on Jessie ( including a dist-upgrade ), and you must install the above pre-reques.
 
 Then you can use pyenv features like `pyenv global 3.6.1` and similar
 
-And that's it.
+## Python prerequs
+
+Aiohttp 2.x must be used. Some well distributed systems include ancient aiohttp, and you'll
+have to upgrade with pip.
+
+```
+pip install aiohttp --upgrade
+```
+
+To install it yourself ( recommended ):
+```
+pip install cchardet
+pip install iodns
+pip install aiohttp
+```
+
+Just check the versions. But if you used our recommended default Python 3.6.1 base install, you'll be i
+business with just pip
+
+
+## Pyenv and Supervisord
+
+Remember to add the necessary exports and evals to use pyenv with supervisor, if you want to
+auto-run the variety of scripts we are talking about
+
