@@ -96,7 +96,7 @@ class Notification:
 # write the portal to disk - since it's local, do it synchronously
 def write_file( filename, portal_str, mode="w" ):
     
-    logger.info(" writing file %s string %s",filename,portal_str)
+    logger.debug(" writing file %s string %s",filename,portal_str)
 
     # open the file, write it
     with open(filename, mode) as f:
@@ -104,7 +104,7 @@ def write_file( filename, portal_str, mode="w" ):
         f.write(portal_str)
         f.close()
         
-    logger.info(" wrote to file ")
+    logger.debug(" wrote to file ")
 
 #
 # Post to an endpoint
@@ -234,7 +234,7 @@ async def thulu_poller(app):
         app['session'] = session
 
         while True:
-            logger.info(" hello says the poller! ")
+            logger.debug(" hello says the poller! ")
 
             # todo: don't bother with user agent, other headers? ( skip_auto_headers )
             try:
