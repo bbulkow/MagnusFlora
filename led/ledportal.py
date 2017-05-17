@@ -5,7 +5,7 @@ import opc
 import sys, argparse, logging
 from ledlib.helpers import usage, debugprint, verboseprint
 from ledlib.ledmath import *
-from ledlib.flower import LedPortal
+from ledlib.flower import LedPortal, LedAction
 from ledlib import globalconfig
 from ledlib import globaldata
 
@@ -176,8 +176,9 @@ def main(argv):
 
 	# send the init action to all the petals
 	# this is now ASYNC so you should see all work together
+	a = LedAction('INIT')
 	for r in Resonator.valid_positions:
-		ledportal.resos[r].action('INIT')
+		ledportal.resos[r].do_action(a)
 
 	log.info ("Ready for commands.")
 

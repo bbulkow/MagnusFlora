@@ -42,19 +42,6 @@ import copy
 import json
 
 
-# Relay class 
-class Relay:
-    def __init__(self):
-        # 1 is "NO and NC", 0 is "Flipped"
-        self.state = 0
-
-        # 0, 1, 2, 3 are possible
-        # 1 = relay is NC /NO when portal is controlled, reversed when neutral
-        # 2 = relay is reversed when portal is controlled, NO/NC when neutral
-        # 3 = relay is NC /NO when portal is controlled, reversed for 3 seconds when faction changes, then reverts to NO/NC
-        # 4 = relay closed when portal is controlled, reversed for 1.5 seconds
-        self.mode = 0
-
 
 # todo: since a mod has an owner, should make it a class as well, for parallelism sake
 
@@ -63,12 +50,14 @@ class Relay:
 
 class Resonator:
 
-    valid_positions = [ "E", "NE", "N", "NW", "W", "SW", "S", "SE" ]
+    # ordering is important. Sorry
+    valid_positions = [  "N", "NE", "E", "SE", "S", "SW","W", "NW" ]
 
-    def __init__(self, position, logger, values=None ):
+    def __init__(self, position, portal, log, values=None ):
         # print ("Resonator create: position ",position)
+        self.portal = portal
         self.position = position
-        self.logger = logger
+        self.log = log
         if values == None:
             self.level = 0
             self.health = 0
@@ -140,7 +129,7 @@ class Resonator:
     #
     # Need a static method, because sometimes one or the other is null
     @staticmethod
-    def difference(old_p, new_p, logger):
+    def difference(old_p, new_p, log):
 
         diffs = {}
         actions = []
@@ -191,7 +180,7 @@ class Resonator:
     # returns TRUE if they are value-wise the same
     # return FALSE if they are the same
     @staticmethod
-    def equal(old_r, new_r, logger):
+    def equal(old_r, new_r, log):
 
         if (old_r == None) and (new_r == None):
             return True
@@ -225,11 +214,11 @@ class Resonator:
 # do not do anything blocking under the lock
 class Portal:
 
-    valid_positions = [ "E", "NE", "N", "NW", "W", "SW", "S", "SE" ]
+    valid_positions = [  "N", "NE", "E", "SE", "S", "SW","W", "NW" ]
     valid_mods = ["FA","HS-C","HS-R","HS-VR","LA-R","LA-VR","SBUL","MH-C","MH-R","MH-VR","PS-C","PS-R","PS-VR","AXA","T"]
     reso_level_XM = [0.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 4000.0, 5000.0, 6000.0 ]
 
-    def __init__(self, id_, logger):
+    def __init__(self, id_, log):
         self.faction = 0
         self.health = 0
         self.level = 0
@@ -243,12 +232,12 @@ class Portal:
         self.lock = threading.Lock()  
         self.create_time = time.time()
         self.last_mod_time = time.time()
-        self.logger = logger
+        self.log = log
         # print("Created a new portal object")  
 
     # returns a new object of the Portal type
     def dup(self):
-        n = Portal(self.id_, self.logger)
+        n = Portal(self.id_, self.log)
         n.faction = self.faction
         n.health = self.health
         n.level = self.level
@@ -281,7 +270,7 @@ class Portal:
         self.links = n.links
         self.mods = n.mods
         self.last_mod_time = n.last_mod_time
-        self.logger = n.logger
+        self.log = n.log
 
     # Health is calculated from resonators states so it is always correct
     def getLevel(self):
@@ -323,7 +312,7 @@ class Portal:
     # This function takes a Json string from the file
     # Returns an object for the next line to read
     def setStatusFile( self, jsonStr, lineNumber ):
-        logger.verbose("Portal set status: line %d using %s ",lineNumber,jsonStr)
+        log.verbose("Portal set status: line %d using %s ",lineNumber,jsonStr)
 
         try:
             statusObj = json.loads(jsonStr)
@@ -386,7 +375,7 @@ class Portal:
             with self.lock:
                 self.set(portal)
 
-#        logger.verbose ("+++++ object after changes: %s",portal)
+#        log.verbose ("+++++ object after changes: %s",portal)
 
         # return value is the amount of delay to add
         delay = 0.0
@@ -397,9 +386,9 @@ class Portal:
     # This function takes a Json string
     # changes the object
     # Returns a dict showing what changed
-    def setStatusJson( self, statusObj, logger ):
+    def setStatusJson( self, statusObj, log ):
 
-        logger.debug("Portal set status: using json: %s  ",str(statusObj) )
+        log.debug("Portal set status: using json: %s  ",str(statusObj) )
 
         is_changed = False
         what_changed = {}
@@ -409,7 +398,7 @@ class Portal:
         with self.lock:
             portal = self.dup()
 
-#        logger.debug("Portal set status: title  " )
+#        log.debug("Portal set status: title  " )
 
         if "title" in statusObj:
             if portal.title != str(statusObj.get("title")):
@@ -417,9 +406,9 @@ class Portal:
                 what_changed["title"] = str(statusObj.get("title"))
                 portal.title = str(statusObj.get("title"))
 
-                logger.debug(" what changed: title %s",portal.title)
+                log.debug(" what changed: title %s",portal.title)
 
-#       logger.debug("Portal set status: faction  " )
+#       log.debug("Portal set status: faction  " )
 
         if "faction" in statusObj:
             old_faction = portal.faction
@@ -432,9 +421,9 @@ class Portal:
 
                 actions = self.addAction(actions, self.getFactionAction(old_faction, new_faction))
 
-                logger.debug(" what changed: faction %s",portal.faction)
+                log.debug(" what changed: faction %s",portal.faction)
 
-#        logger.debug("Portal set status: owner  " )
+#        log.debug("Portal set status: owner  " )
 
         if "owner" in statusObj:
             if portal.owner != str(statusObj.get("owner")):
@@ -444,9 +433,9 @@ class Portal:
                 self.addAction(actions, "portal_neutralized")
                 self.addAction(actions, "portal_captured")
 
-                logger.debug(" what changed: owner %s",portal.owner)
+                log.debug(" what changed: owner %s",portal.owner)
 
-#        logger.debug("Portal set status: mods  " )
+#        log.debug("Portal set status: mods  " )
 
         if "mods" in statusObj:
             old_mods = portal.mods
@@ -464,9 +453,9 @@ class Portal:
 
                 actions = self.addAction(actions, self.getModsAction(old_mods, new_mods))
 
-                logger.debug(" what changed: mods %s", str(portal.mods))
+                log.debug(" what changed: mods %s", str(portal.mods))
 
-#        logger.debug("Portal set status: reso  " )
+#        log.debug("Portal set status: reso  " )
 
         # compare each-by-each
         # TODO! This does not correctly determine the change in health.
@@ -484,9 +473,9 @@ class Portal:
 
             for pos, values in resonators.items():
 
-                r = Resonator(pos, logger, values )
-                acts, diffs = Resonator.difference( portal.resonators.get(pos,None), r, logger)
-                # logger.debug(" what changed: reso %s value %s",pos,diffs)
+                r = Resonator(pos, log, values )
+                acts, diffs = Resonator.difference( portal.resonators.get(pos,None), r, log)
+                # log.debug(" what changed: reso %s value %s",pos,diffs)
                 
                 if diffs:
                     reso_is_changed = True
@@ -508,11 +497,11 @@ class Portal:
                 portal.health = portal.getHealth()
                 what_changed["resonators"] = reso_what_changed
 
-#        logger.debug("Portal set status: check and set  " )
+#        log.debug("Portal set status: check and set  " )
 
         # validate the new object through the validator
         if portal.check() == False:
-            logger.warning (" !!! Bad format after applying delta, ignored ")
+            log.warning (" !!! Bad format after applying delta, ignored ")
 
         else:
  
@@ -521,7 +510,7 @@ class Portal:
                 with self.lock:
                     self.set(portal)
 
-        # logger.debug("+++++ object after changes: %s",str(self))
+        # log.debug("+++++ object after changes: %s",str(self))
 
         if is_changed:
             return actions, what_changed

@@ -47,6 +47,9 @@ colortable["RES"] = RES
 colortable["ENL"] = ENL
 colortable["NEUTRAL"] = NEUTRAL
 
+# also index by integer, which is commonly used elsewhere - use the same 0,1,2 system
+colortable_faction = [ NEUTRAL, ENL, RES ]
+
 # Level colors from IITC source, http://iitc.me
 # Conversions via https://toolstud.io/color/rgb.php?rgbhex=9627F4
 # Adjustments done by eye
@@ -88,4 +91,7 @@ colortable["R5"] = R5
 colortable["R6"] = R6
 colortable["R7"] = R7
 colortable["R8"] = R8
+
+# also create an integer indexed table for levels
+colortable_level = [ R0, R1, R2, R3, R4, R5, R6, R7, R8 ]
 

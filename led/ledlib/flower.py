@@ -31,21 +31,27 @@ class LedPortal(Portal):
 
 		# THIS IS EXAMPLE CODE
 		self.title = "Dreamer Archetype"
-		# initialize the resos - TODO should be from file
+
+		# initial value - for testing - todo pull from file
+		vals = {'level': 4, 'health': 100, 'owner': "az" }
+
+
+		# not sure we need the resonators, or what we will do with them.
+		# we have LedResonators...
 		for pos in Portal.valid_positions:
 			vals = {'level': 4, 'health': 100, 'owner': "az" }
-			r = Resonator(pos, log, vals)
+			r = Resonator(pos, self, log, vals)
 			self.resonators[pos] = r
 
 		self.faction = 1
 
+		# create the resos
 		self.resos = {}
 		for fc in range(4):								# 4 FAdecandy boards
 			for side in range(2):						# 2 sets of 4 channels each
 				reso_number = fc * 2 + side		# 8 resos
-				reso_name = self.valid_positions[reso_number]
-				self.resos[reso_name] = LedResonator(reso_number, reso_name, fc, side, 
-								self.level, self.health, self.faction, log)
+				pos = self.valid_positions[reso_number]
+				self.resos[pos] = LedResonator(pos, self, fc, side, log, vals)
 
 # Pixelstring
 # name
@@ -70,8 +76,8 @@ class PixelString(object):
 				self.pixels[i] = base + size -1 -i
 
 # Input paramters:
-#   'fadecandy', which is an integer which is the base pixel of the FC
-#   side, which is either 0 or 1 ( side of the FC? )
+#   'fadecandy', which is an integer which is 0, 1, 2, 3
+#   side, which is either 0 or 1 ( side of the fade candy )
 #
 # a base, which was the base of the fadecandy
 # self.LOC - a PixelString of Left Outside
@@ -90,15 +96,15 @@ class PixelMap(object):
 		channels = [0, 64, 128, 192]		# TODO these should be in math
 		# TODO: better way for overrides
 
-		debugprint (("fadecandy ", fadecandy, "side ", side))
+		debugprint ((" definining PixelMap: fadecandy ", fadecandy, "side ", side))
 
 		cbase = self.base  + channels[0]
 		self.LOC = PixelString ( "LOC", cbase, 43, 1)
-		self.__CBOT = PixelString ("CBOT", cbase + 43, 21, -1)
+		self.__CBOT = PixelString ("CTOP", cbase + 43, 21, -1)
 
 		cbase = self.base + channels[1]
 		self.LIC = PixelString ("LIC", cbase, 36, 1)
-		self.LB = PixelString ( "LB", cbase+36, 28, 1)
+		self.LB = PixelString ( "LB", cbase+36, 28, -1)
 
 		cbase = self.base + channels[2]
 		self.RIC = PixelString ("RIC", cbase, 36, 1)
@@ -106,10 +112,10 @@ class PixelMap(object):
 
 		cbase = self.base + channels[3]
 		self.ROC = PixelString ( "ROC", cbase, 43, 1)
-		self.__CTOP = PixelString ("CTOP", cbase + 43, 21, -1)
+		self.__CTOP = PixelString ("CBOT", cbase + 43, 21, -1)
 
 		self.CENTER = PixelString("CENTER", 0, 42, 1)
-		self.CENTER.pixels = self.__CBOT.pixels + self.__CTOP.pixels
+		self.CENTER.pixels = self.__CTOP.pixels + self.__CBOT.pixels
 
 		self.list_of_lists_of_pixel_numbers = [ \
 			self.LOC.pixels, \
@@ -128,8 +134,10 @@ class PixelMap(object):
 		debugprint (("LOC: ", self.LOC.pixels))
 		debugprint (" Wheee!!!")
 
-class PetalAction():
-	def __init__(self):
+class LedAction():
+	def __init__(self,action,faction=0,):
+		self.action = action
+		self.faction = faction
 		pass
 
 # AKA a petal
@@ -140,7 +148,22 @@ class LedResonatorThread( threading.Thread):
 	def __init__(self,  ledResonator):
 		threading.Thread.__init__(self)
 		self.ledResonator = ledResonator
-		self.logger = ledResonator.logger
+		self.log = ledResonator.log
+
+	# sets the leds to the init base state for the current colors
+	def init_pattern(self):
+		reso = self.ledResonator
+		self.log.debug(" init pattern: faction %d level %d ",reso.portal.faction,reso.level)
+		patterns.parallel_blend(reso.pixelmap.list_of_lists_of_pixel_numbers, \
+						colordefs.colortable_faction[reso.portal.faction], \
+						colordefs.colortable_level[reso.level], \
+						4, \
+						200)
+
+	def flash_pattern(self):
+		reso = self.ledResonator
+		self.log
+
 
 	def run(self):
 		q = self.ledResonator.queue
@@ -148,16 +171,19 @@ class LedResonatorThread( threading.Thread):
 		while True:
 			action = q.get()
 
-			self.logger.debug( "LedResonator %s received action %s ",reso.position,action)
+			self.log.debug( "LedResonator %s received action %s ",reso.position,str(action))
 			
-			if action == "INIT":
-				debugprint((" resonator ", reso.position, " received action ",action))
+			if action.action == "INIT":
+				debugprint((" resonator ", reso.position, " received action ",action.action))
+				self.init_pattern()
 
-				patterns.parallel_blend(reso.pixelmap.list_of_lists_of_pixel_numbers, \
-						colordefs.colortable["ENL"], \
-						colordefs.colortable["R4"], \
-						4, \
-						200)
+			if action.action == "ATTACK":
+				pass
+
+			if action.action == "DEFEND":
+				pass
+
+
 
 			q.task_done() # tells other guy you are complete
 
@@ -166,12 +192,14 @@ class LedResonator(Resonator):
 
 
 	# usage:
+	# FC is 0,1,2,3 ; side is 0,1 (side of the FC)
 	# resos.append(Ledresonator(reso_number, reso_name, fc, side, level, health, faction)
 
-	def __init__( self, reso_number, reso_name, fc, side, level, health, faction, log ):
+	def __init__( self, position, portal, fc, side, log, values ):
 
 		# superclass init
-		Resonator.__init__(self, reso_name, log)
+		Resonator.__init__(self, position, portal, log, values)
+		# this sets log, portal, values in the superclass
 
 		self.pixelmap = PixelMap (fc, side)
 		# run_pattern ("WAKEUP",
@@ -184,7 +212,7 @@ class LedResonator(Resonator):
 		r_thread = self.thread = LedResonatorThread(self)
 		r_thread.start()
 
-	def action(self,action):
+	def do_action(self,action):
 		self.queue.put(action)
 
 
