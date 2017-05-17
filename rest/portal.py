@@ -63,7 +63,8 @@ class Relay:
 
 class Resonator:
 
-    valid_positions = [ "E", "NE", "N", "NW", "W", "SW", "S", "SE" ]
+    # ordering is important. Sorry
+    valid_positions = [  "N", "NE", "E", "SE", "S", "SW","W", "NW" ]
 
     def __init__(self, position, logger, values=None ):
         # print ("Resonator create: position ",position)
@@ -225,7 +226,7 @@ class Resonator:
 # do not do anything blocking under the lock
 class Portal:
 
-    valid_positions = [ "E", "NE", "N", "NW", "W", "SW", "S", "SE" ]
+    valid_positions = [  "N", "NE", "E", "SE", "S", "SW","W", "NW" ]
     valid_mods = ["FA","HS-C","HS-R","HS-VR","LA-R","LA-VR","SBUL","MH-C","MH-R","MH-VR","PS-C","PS-R","PS-VR","AXA","T"]
     reso_level_XM = [0.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 4000.0, 5000.0, 6000.0 ]
 
