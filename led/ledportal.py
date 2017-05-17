@@ -3,17 +3,19 @@
 # Control the LEDs of the Magnus Flora portal art display
 import opc
 import sys, argparse, logging
-from ledlib.colordefs import *
 from ledlib.helpers import usage, debugprint, verboseprint
 from ledlib.ledmath import *
 from ledlib.flower import LedPortal
 from ledlib import globalconfig
 from ledlib import globaldata
-from ledlib import patterns
+
 from ledlib import heartbeat
-from ledlib import colordefs
-from ledlib import portalconfig			# base/demo state of portal
+
+from ledlib.colordefs import *
+from ledlib import portalconfig					# base/demo state of portal
 from ledlib import patterns
+#from ledlib import colordefs
+#from ledlib import patterns
 
 from ledlib.opcwrap import start_opc, ledwrite
 from ledlib import opcwrap
@@ -57,7 +59,7 @@ def setup(argv):
 
 	commandline = parse_command_line(argv)
 
-	log = create_logger(commandline)
+	log = create_log(commandline)
 
 	# command line flags
 	globalconfig.debugflag = commandline.debug
@@ -117,10 +119,10 @@ def setup(argv):
 
 	return
 
-def create_logger(args):
+def create_log(args):
     # create a logging object and add it to the app object
-    logger = logging.getLogger('MF_LEDLIB')
-    logger.setLevel(args.debuglevel)
+    log = logging.getLogger('MF_LEDLIB')
+    log.setLevel(args.debuglevel)
     # create a file output
     fh = logging.FileHandler(args.log)
     fh.setLevel(args.debug)
@@ -132,10 +134,10 @@ def create_logger(args):
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
 
-    logger.addHandler(fh)
-    logger.addHandler(ch)
+    log.addHandler(fh)
+    log.addHandler(ch)
 
-    return logger
+    return log
 
 def main(argv):
 
@@ -157,28 +159,27 @@ def main(argv):
 	EKG.start()
 	verboseprint ("Global heartbeat started.")
 
-	# create the LedPortal object
+	# create the LedPortal object - fundamental init
 	ledportal = LedPortal(globalconfig.log)
 
 # def parallel_fade (list_of_lists_of_pixel_numbers, \
 #      rgb_color_triplet, fade_ratio=0.5, speed=0, steps=100):
 
-	# TODO: change this to initialzing from file --- right now it's a debug test
+	# TODO: A test initialization. Move this within the LedPortal code
 	# first color=stem, second color=edge
+#	for r in Resonator.valid_positions:
+#		patterns.parallel_blend(ledportal.resos[r].pixelmap.list_of_lists_of_pixel_numbers, \
+#				colordefs.colortable["ENL"], \
+#				colordefs.colortable["R4"], \
+#				4, \
+#				200)
+
+	# send the init action to all the petals
+	# this is now ASYNC so you should see all work together
 	for r in Resonator.valid_positions:
-		patterns.parallel_blend(ledportal.resos[r].pixelmap.list_of_lists_of_pixel_numbers, \
-				colordefs.colortable["ENL"], \
-				colordefs.colortable["R4"], \
-				4, \
-				200)
+		ledportal.resos[r].action('INIT')
 
-	# start one thread for each resonator and mod to listen for changes
-	resothreads = [""] * 8
-	modthreads	=	[""] * 4
-
-	# for 
-
-	verboseprint ("Ready for commands.")
+	log.info ("Ready for commands.")
 
 if __name__ == "__main__":
    main(sys.argv[1:])

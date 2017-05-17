@@ -5,7 +5,13 @@
 from ledlib.portal import Resonator, Portal
 from ledlib.helpers import debugprint
 
+from ledlib import patterns
+from ledlib import colordefs
+
+
 import threading
+import logging
+import time
 # python3 calls it Queue
 import queue
 
@@ -18,6 +24,8 @@ class LedPortal(Portal):
 	def __init__(self, log):
 
 		Portal.__init__(self,id,log)
+
+		log.debug(" LedPortal initializing !!! ")
 
 		verbose=True
 
@@ -132,12 +140,24 @@ class LedResonatorThread( threading.Thread):
 	def __init__(self,  ledResonator):
 		threading.Thread.__init__(self)
 		self.ledResonator = ledResonator
+		self.logger = ledResonator.logger
 
 	def run(self):
 		q = self.ledResonator.queue
+		reso = self.ledResonator # this is myself, for a shortcut
 		while True:
 			action = q.get()
-			# take action!
+
+			self.logger.debug( "LedResonator %s received action %s ",reso.position,action)
+			
+			if action == "INIT":
+				debugprint((" resonator ", reso.position, " received action ",action))
+
+				patterns.parallel_blend(reso.pixelmap.list_of_lists_of_pixel_numbers, \
+						colordefs.colortable["ENL"], \
+						colordefs.colortable["R4"], \
+						4, \
+						200)
 
 			q.task_done() # tells other guy you are complete
 
