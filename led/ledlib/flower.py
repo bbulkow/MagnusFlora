@@ -1,28 +1,51 @@
 # class definitions for the flower as a whole
 
 # TODO: import from rest.portal
-from flask.portal import Resonator, Portal
+
+from ledlib.portal import Resonator, Portal
 from ledlib.helpers import debugprint
 
-class Ledportal(Portal):
+import threading
+# python3 calls it Queue
+import queue
 
-	def __init__(self):
+# LedPortal has LedResonators in the 'resos' object 
+
+class LedPortal(Portal):
+
+	valid_positions = [  "N", "NE", "E", "SE", "S", "SW","W", "NW" ]
+
+	def __init__(self, log):
+
+		Portal.__init__(self,id,log)
+
 		verbose=True
-		Portal.__init__(self,id,verbose)
+
+		# THIS IS EXAMPLE CODE
 		self.title = "Dreamer Archetype"
-		# initialize the resos
-		self.faction = "ENL"										# or flip a coin.
-		self.level = 4
-		self.health = 100
-		self.resos = []
+		# initialize the resos - TODO should be from file
+		for pos in Portal.valid_positions:
+			vals = {'level': 4, 'health': 100, 'owner': "az" }
+			r = Resonator(pos, log, vals)
+			self.resonators[pos] = r
+
+		self.faction = 1
+
+		self.resos = {}
 		for fc in range(4):								# 4 FAdecandy boards
 			for side in range(2):						# 2 sets of 4 channels each
 				reso_number = fc * 2 + side		# 8 resos
 				reso_name = self.valid_positions[reso_number]
-				self.resos.append(Ledresonator(reso_number, reso_name, fc, side, \
-								self.level, self.health, self.faction))
+				self.resos[reso_name] = LedResonator(reso_number, reso_name, fc, side, 
+								self.level, self.health, self.faction, log)
 
-class Pixelstring(object):
+# Pixelstring
+# name
+# base
+# size
+# direction ( for motion? )
+
+class PixelString(object):
 	def __init__(self, name, base, size, direction):
 		self.name = name
 		self.base = base
@@ -38,7 +61,20 @@ class Pixelstring(object):
 			for i in range (size):
 				self.pixels[i] = base + size -1 -i
 
-class Pixelmap(object):
+# Input paramters:
+#   'fadecandy', which is an integer which is the base pixel of the FC
+#   side, which is either 0 or 1 ( side of the FC? )
+#
+# a base, which was the base of the fadecandy
+# self.LOC - a PixelString of Left Outside
+# self.CBOT
+# self.LIC - left inner
+# self.RIC - right inner center?
+# self.RB
+# self.
+# list_of_lists_of_pixel_numbers - all the pixels in the petal
+
+class PixelMap(object):
 
 	def __init__(self, fadecandy, side):
 		# TODO: validate side is 0 or 1
@@ -49,22 +85,22 @@ class Pixelmap(object):
 		debugprint (("fadecandy ", fadecandy, "side ", side))
 
 		cbase = self.base  + channels[0]
-		self.LOC = Pixelstring ( "LOC", cbase, 43, 1)
-		self.__CBOT = Pixelstring ("CBOT", cbase + 43, 21, -1)
+		self.LOC = PixelString ( "LOC", cbase, 43, 1)
+		self.__CBOT = PixelString ("CBOT", cbase + 43, 21, -1)
 
 		cbase = self.base + channels[1]
-		self.LIC = Pixelstring ("LIC", cbase, 36, 1)
-		self.LB = Pixelstring ( "LB", cbase+36, 28, 1)
+		self.LIC = PixelString ("LIC", cbase, 36, 1)
+		self.LB = PixelString ( "LB", cbase+36, 28, 1)
 
 		cbase = self.base + channels[2]
-		self.RIC = Pixelstring ("RIC", cbase, 36, 1)
-		self.RB = Pixelstring ( "RB", cbase+36, 28, -1)
+		self.RIC = PixelString ("RIC", cbase, 36, 1)
+		self.RB = PixelString ( "RB", cbase+36, 28, -1)
 
 		cbase = self.base + channels[3]
-		self.ROC = Pixelstring ( "ROC", cbase, 43, 1)
-		self.__CTOP = Pixelstring ("CTOP", cbase + 43, 21, -1)
+		self.ROC = PixelString ( "ROC", cbase, 43, 1)
+		self.__CTOP = PixelString ("CTOP", cbase + 43, 21, -1)
 
-		self.CENTER = Pixelstring("CENTER", 0, 42, 1)
+		self.CENTER = PixelString("CENTER", 0, 42, 1)
 		self.CENTER.pixels = self.__CBOT.pixels + self.__CTOP.pixels
 
 		self.list_of_lists_of_pixel_numbers = [ \
@@ -78,24 +114,59 @@ class Pixelmap(object):
 			]
 
 		# "lixel" was originally a typo but it's a great unique tag
-		debugprint (" Here comes the lixel numbers" )
+		debugprint (" Here comes the list of pixel numbers" )
 		debugprint ((self.list_of_lists_of_pixel_numbers))
 		debugprint (("Center: ", self.CENTER.pixels))
 		debugprint (("LOC: ", self.LOC.pixels))
 		debugprint (" Wheee!!!")
 
-class Ledresonator(Resonator):
+class PetalAction():
+	def __init__(self):
+		pass
+
+# AKA a petal
+# has a queue and a thread that reads the queue
+
+class LedResonatorThread( threading.Thread):
+	# todo: set more things
+	def __init__(self,  ledResonator):
+		threading.Thread.__init__(self)
+		self.ledResonator = ledResonator
+
+	def run(self):
+		q = self.ledResonator.queue
+		while True:
+			action = q.get()
+			# take action!
+
+			q.task_done() # tells other guy you are complete
+
+
+class LedResonator(Resonator):
+
 
 	# usage:
 	# resos.append(Ledresonator(reso_number, reso_name, fc, side, level, health, faction)
 
-	def __init__(self, \
-							reso_number, \
-							reso_name, \
-							fc, side, \
-							level, health, faction):
-		Resonator.__init__(self, reso_name)
-		self.pixelmap = Pixelmap (fc, side)
+	def __init__( self, reso_number, reso_name, fc, side, level, health, faction, log ):
+
+		# superclass init
+		Resonator.__init__(self, reso_name, log)
+
+		self.pixelmap = PixelMap (fc, side)
 		# run_pattern ("WAKEUP",
 		#							self.pixelmap)
+
+		# create the queue between this and the execution thread
+		self.queue = queue.Queue()
+
+		# may have to fix up argument so self gets to run
+		r_thread = self.thread = LedResonatorThread(self)
+		r_thread.start()
+
+	def action(self,action):
+		self.queue.put(action)
+
+
+
 

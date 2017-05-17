@@ -39,6 +39,9 @@ def randomcolor(maxbright=.5):
 	debugprint (("dimmed: ", rgb))
 	return rgb
 
+# this is an actual pattern.
+# it uses globalconfig.twinkle to figure out the speed
+# it covers "all the pixels"
 
 def wake_up (first, size, rgb_color_triplet):
 	debugprint ("Waking up "+ str(size) + " pixels")
@@ -67,6 +70,7 @@ def wake_up (first, size, rgb_color_triplet):
 			globaldata.all_the_pixels[first+shuffled_index[i]] = rgb_color_triplet
 			time.sleep (globalconfig.twinkle)
 
+# 
 
 def fade (list_of_pixel_numbers, rgb_color_triplet, fade_ratio=0.5, speed=0):
 	# pixel 0 is at 100%; pixel last is at fade_ratio; if sleep defined
@@ -82,6 +86,8 @@ def fade (list_of_pixel_numbers, rgb_color_triplet, fade_ratio=0.5, speed=0):
 						dimmer(rgb_color_triplet,fade)
 		if speed > 0:
 			time.sleep(speed)
+
+# This goes from rgb1 to rgb2 along each list of pixel numbers
 
 def parallel_blend (list_of_lists_of_pixel_numbers, \
 										rgb1, rgb2, speed=0, steps=100):
@@ -126,6 +132,8 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
 		globaldata.all_the_pixels[last_pixel] = rgb2
 
 
+# this fades along each list of pixesl
+
 def parallel_fade (list_of_lists_of_pixel_numbers, \
 										rgb_color_triplet, fade_ratio=0.5, speed=0, steps=100):
 	# pixel 0 is at 100%; pixel last is at fade_ratio;
@@ -164,7 +172,13 @@ def parallel_fade (list_of_lists_of_pixel_numbers, \
 				[list_of_lists_of_pixel_numbers[strand][strand_sizes[strand-1]]]= \
 				newcolor
 
+# flashes a particular RGB
 
+def flash ( list, rgb ):
+	pass
+
+def flash_lol ( list_of_lists, rgb ):
+	pass
 
 
 

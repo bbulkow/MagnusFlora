@@ -10,7 +10,7 @@ import sys, argparse
 from ledlib.colordefs import *
 from ledlib.helpers import usage, debugprint, verboseprint
 from ledlib.ledmath import *
-from ledlib.flower import Ledportal
+from ledlib.flower import LedPortal
 from ledlib import globalconfig
 from ledlib import globaldata
 from ledlib import patterns
@@ -114,7 +114,7 @@ def setup(argv):
 
 	globaldata.ledcontrol = start_opc()
 
-	# ledportal = Ledportal()
+	# ledportal = LedPortal()
 
 	# print ("writing ", finalcolor, " to the LEDs.")
 	# pixels = [ finalcolor ] * numLEDs
@@ -141,7 +141,7 @@ def main(argv):
 	EKG.start()
 	verboseprint ("Global heartbeat started.")
 
-	ledportal = Ledportal()
+	ledportal = LedPortal()
 	level = riggeddemo.level
 	
 

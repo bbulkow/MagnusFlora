@@ -2,11 +2,11 @@
 
 # Control the LEDs of the Magnus Flora portal art display
 import opc
-import sys, argparse
+import sys, argparse, logging
 from ledlib.colordefs import *
 from ledlib.helpers import usage, debugprint, verboseprint
 from ledlib.ledmath import *
-from ledlib.flower import Ledportal
+from ledlib.flower import LedPortal
 from ledlib import globalconfig
 from ledlib import globaldata
 from ledlib import patterns
@@ -17,6 +17,8 @@ from ledlib import patterns
 
 from ledlib.opcwrap import start_opc, ledwrite
 from ledlib import opcwrap
+
+from ledlib.portal import Resonator, Portal
 
 from threading import Thread
 
@@ -44,6 +46,10 @@ def parse_command_line(argv):
 					help="From 0 to 7, which reso is north?")
 	parser.add_argument('--pattern', dest='pattern', type=patterns.check_PATTERN,
 					help="Name of defined pattern, such as CHASE or TEST")
+
+	parser.add_argument('--debuglevel', '-d', help=" debug level: CRITICAL ERROR WARNING INFO DEBUG", default="DEBUG", type=str)
+	parser.add_argument('--log', help="location of the log file", default="ledlib.log", type=str)
+
 	commandline = parser.parse_args()
 	return commandline
 
@@ -51,11 +57,14 @@ def setup(argv):
 
 	commandline = parse_command_line(argv)
 
+	log = create_logger(commandline)
+
 	# command line flags
 	globalconfig.debugflag = commandline.debug
 	globalconfig.verboseflag = commandline.verbose
 	globalconfig.fastwake = commandline.fastwake
 	globalconfig.noop			=	commandline.noop
+	globalconfig.log = log
 	portalconfig.north		= commandline.north
 	portalconfig.pattern	=	commandline.pattern
 
@@ -99,7 +108,7 @@ def setup(argv):
 
 	globaldata.ledcontrol = start_opc()
 
-	# ledportal = Ledportal()
+	# ledportal = LedPortal()
 
 	# print ("writing ", finalcolor, " to the LEDs.")
 	# pixels = [ finalcolor ] * numLEDs
@@ -108,36 +117,60 @@ def setup(argv):
 
 	return
 
+def create_logger(args):
+    # create a logging object and add it to the app object
+    logger = logging.getLogger('MF_LEDLIB')
+    logger.setLevel(args.debuglevel)
+    # create a file output
+    fh = logging.FileHandler(args.log)
+    fh.setLevel(args.debug)
+    # create a console handler
+    ch = logging.StreamHandler()
+    ch.setLevel(args.debug)
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
+    return logger
+
 def main(argv):
 
 	setup (argv)
+	log = globalconfig.log
+
 
 	# start a simple thread to asynchronously push the pixel array to the LEDs
 	let_there_be_light = Thread(target=opcwrap.ledwriteloop)
 	let_there_be_light.start()
-	verboseprint ("Let there be light!")
+	log.debug ("Let there be light!")
 
-	# Wake up the whole portal
+	# Wake up the whole portal - can take a long time unless fastwake
 	patterns.wake_up (0, globaldata.total_pixels, globaldata.basecolor)
-	verboseprint ("... and there was light.")
+	log.debug ("... and there was light.")
 
 	# start a simple thread for asynchronous heartbeat
 	EKG = Thread(target=heartbeat.ticktock)
 	EKG.start()
 	verboseprint ("Global heartbeat started.")
 
-	ledportal = Ledportal()
+	# create the LedPortal object
+	ledportal = LedPortal(globalconfig.log)
 
 # def parallel_fade (list_of_lists_of_pixel_numbers, \
 #      rgb_color_triplet, fade_ratio=0.5, speed=0, steps=100):
 
-	# TODO: wrap this in a debug flag, or remove it.
+	# TODO: change this to initialzing from file --- right now it's a debug test
 	# first color=stem, second color=edge
-	patterns.parallel_blend(ledportal.resos[0].pixelmap.list_of_lists_of_pixel_numbers, \
-			colordefs.colortable["ENL"], \
-			colordefs.colortable["R4"], \
-			4, \
-			200)
+	for r in Resonator.valid_positions:
+		patterns.parallel_blend(ledportal.resos[r].pixelmap.list_of_lists_of_pixel_numbers, \
+				colordefs.colortable["ENL"], \
+				colordefs.colortable["R4"], \
+				4, \
+				200)
 
 	# start one thread for each resonator and mod to listen for changes
 	resothreads = [""] * 8
