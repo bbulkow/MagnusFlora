@@ -201,7 +201,7 @@ def set_values(pixel_numbers_lol, rgb_values_lol):
 # number of flashes you want to do
 # speed is total amount of time in float seconds
 
-def flash ( pixel_numbers_lol, rgb, n_flashes, speed ):
+def flash ( pixel_numbers_lol, rgb, n_flashes, secs ):
 
 	strand_count = len(pixel_numbers_lol)
 	strand_sizes = [0] * strand_count
@@ -218,7 +218,8 @@ def flash ( pixel_numbers_lol, rgb, n_flashes, speed ):
 		for idx in range(0,len(strand)):
 			old_pixel_values[strand_n][idx] = globaldata.all_the_pixels[strand[idx]]
 
-	flash_time = speed / n_flashes
+	# todo: would really like the flashes to get faster instead of being all-the-same
+	flash_time = secs / n_flashes
 	flash_time = flash_time / 2.0    # on and off
 
 	# for the number of flashes

@@ -192,7 +192,7 @@ def main(argv):
 	for r in Resonator.valid_positions:
 		ledportal.resos[r].do_action(a)
 
-	time.sleep(12.0)
+	time.sleep(8.0)
 	log.info(" generating attack by RES")
 
 	a = LedAction('ATTACK', 1)
