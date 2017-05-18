@@ -23,6 +23,7 @@ from ledlib import opcwrap
 from ledlib.portal import Resonator, Portal
 
 from threading import Thread
+import time
 
 def parse_command_line(argv):
 	print ('Number of arguments:', len(sys.argv), 'arguments.')
@@ -181,6 +182,25 @@ def main(argv):
 		ledportal.resos[r].do_action(a)
 
 	log.info ("Ready for commands.")
+
+	# some test code - a 
+	log.info ("sleeping 5 seconds")
+	time.sleep(5.0)
+
+	log.info(" generating attack by ENL")
+	a = LedAction('ATTACK', 2)
+	ledportal.resos['N'].do_action(a)
+
+#	for r in Resonator.valid_positions:
+#		ledportal.resos[r].do_action(a)
+
+#	time.sleep(12.0)
+#	log.info(" generating attack by RES")
+#	a = LedAction('ATTACK', 1)
+#	for r in Resonator.valid_positions:
+#		ledportal.resos[r].do_action(a)
+
+	time.sleep(100.0)
 
 if __name__ == "__main__":
    main(sys.argv[1:])

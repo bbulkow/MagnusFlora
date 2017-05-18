@@ -8,6 +8,8 @@ from ledlib.helpers import debugprint
 from ledlib import patterns
 from ledlib import colordefs
 
+from ledlib.colordefs import *
+
 
 import threading
 import logging
@@ -135,7 +137,7 @@ class PixelMap(object):
 		debugprint (" Wheee!!!")
 
 class LedAction():
-	def __init__(self,action,faction=0,):
+	def __init__(self,action,faction=0):
 		self.action = action
 		self.faction = faction
 		pass
@@ -160,9 +162,18 @@ class LedResonatorThread( threading.Thread):
 						4, \
 						200)
 
-	def flash_pattern(self):
+	def flash_pattern(self, faction ):
 		reso = self.ledResonator
-		self.log
+
+		self.log.info(" FLASH pattern: faction %d",faction)
+
+		# 10 flashes in 10 seconds
+		if faction == 1:
+			rgb = colortable["ENL"]
+		elif faction == 2:
+			rgb = colortable["RES"]
+
+		patterns.flash(reso.pixelmap.list_of_lists_of_pixel_numbers, rgb, 10, 10.0)
 
 
 	def run(self):
@@ -178,15 +189,17 @@ class LedResonatorThread( threading.Thread):
 				self.init_pattern()
 
 			if action.action == "ATTACK":
+				# faction is the number-form here
+				self.flash_pattern(action.faction)
 				pass
 
 			if action.action == "DEFEND":
 				pass
 
-
-
 			q.task_done() # tells other guy you are complete
 
+			# TODO: add here the background chase, and have it check the queue for new work
+			# frequently
 
 class LedResonator(Resonator):
 
@@ -202,8 +215,6 @@ class LedResonator(Resonator):
 		# this sets log, portal, values in the superclass
 
 		self.pixelmap = PixelMap (fc, side)
-		# run_pattern ("WAKEUP",
-		#							self.pixelmap)
 
 		# create the queue between this and the execution thread
 		self.queue = queue.Queue()

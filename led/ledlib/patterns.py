@@ -172,13 +172,71 @@ def parallel_fade (list_of_lists_of_pixel_numbers, \
 				[list_of_lists_of_pixel_numbers[strand][strand_sizes[strand-1]]]= \
 				newcolor
 
+
+# set a list-of-lists to a single color
+def set_color(pixel_numbers_lol, rgb):
+	for strand in pixel_numbers_lol:
+		for p in strand:
+			debugprint(("set_color: setting to "))
+			globaldata.all_the_pixels[p]= rgb
+
+
+
+# set a list-of-lists to a previously captured color
+#     SOURCE is the rgb_values_lol where values were stashed
+#     DEST is the global memory array
+def set_values(pixel_numbers_lol, rgb_values_lol):
+
+	strand_count = len(pixel_numbers_lol)
+
+	for strand_n in range(0,strand_count):
+		strand_len = len( pixel_numbers_lol[ strand_n ] )
+		for p_n in range(0,strand_len):
+			globaldata.all_the_pixels[ pixel_numbers_lol[strand_n][p_n] ] = rgb_values_lol [strand_n] [p_n]
+
+
+
 # flashes a particular RGB
+# ends up with the old pattern after the flashes
+# number of flashes you want to do
+# speed is total amount of time in float seconds
 
-def flash ( list, rgb ):
-	pass
+def flash ( pixel_numbers_lol, rgb, n_flashes, speed ):
 
-def flash_lol ( list_of_lists, rgb ):
-	pass
+	strand_count = len(pixel_numbers_lol)
+	strand_sizes = [0] * strand_count
+	for strand in range(strand_count):
+		strand_sizes[strand] = len(pixel_numbers_lol[strand])
+
+	old_pixel_values = [0] * strand_count
+
+	# take a duplicate of all the old valuescopy the curent values of all the lists of lists
+	# you will have strands with RGB in them, not with pixel values
+	for strand_n in range(0,strand_count):
+		strand = pixel_numbers_lol[strand_n]
+		old_pixel_values[strand_n] = [0] * len(strand)
+		for idx in range(0,len(strand)):
+			old_pixel_values[strand_n][idx] = globaldata.all_the_pixels[strand[idx]]
+
+	flash_time = speed / n_flashes
+	flash_time = flash_time / 2.0    # on and off
+
+	# for the number of flashes
+	for i in range(0,n_flashes):
+
+		# set all the values to known number
+		set_color( pixel_numbers_lol, rgb)
+
+		time.sleep(flash_time)
+
+		# set all the values back to what I grabbed before
+		set_values( pixel_numbers_lol, old_pixel_values)
+
+		time.sleep(flash_time)
+
+
+
+
 
 
 
