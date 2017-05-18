@@ -189,16 +189,15 @@ def main(argv):
 
 	log.info(" generating attack by ENL")
 	a = LedAction('ATTACK', 2)
-	ledportal.resos['N'].do_action(a)
+	for r in Resonator.valid_positions:
+		ledportal.resos[r].do_action(a)
 
-#	for r in Resonator.valid_positions:
-#		ledportal.resos[r].do_action(a)
+	time.sleep(12.0)
+	log.info(" generating attack by RES")
 
-#	time.sleep(12.0)
-#	log.info(" generating attack by RES")
-#	a = LedAction('ATTACK', 1)
-#	for r in Resonator.valid_positions:
-#		ledportal.resos[r].do_action(a)
+	a = LedAction('ATTACK', 1)
+	for r in Resonator.valid_positions:
+		ledportal.resos[r].do_action(a)
 
 	time.sleep(100.0)
 
