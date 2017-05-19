@@ -17,7 +17,7 @@ import time
 # python3 calls it Queue
 import queue
 
-# LedPortal has LedResonators in the 'resos' object 
+# LedPortal has LedResonators in the 'resos' object
 
 class LedPortal(Portal):
 
