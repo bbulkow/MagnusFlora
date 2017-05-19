@@ -38,6 +38,7 @@ import threading
 import time
 import datetime
 import os
+from threading import Thread
 
 import logging
 
@@ -46,6 +47,22 @@ import argparse
 
 import asyncio
 import textwrap
+
+# things that led controllers want
+# Control the LEDs of the Magnus Flora portal art display
+import opc
+from ledlib.helpers import usage, debugprint, verboseprint
+from ledlib.ledmath import *
+from ledlib.flower import LedPortal, LedAction
+from ledlib import globalconfig
+from ledlib import globaldata
+
+from ledlib.colordefs import *
+from ledlib import portalconfig                 # base/demo state of portal
+from ledlib import patterns
+
+from ledlib.opcwrap import start_opc, ledwrite
+from ledlib import opcwrap
 
 from aiohttp import web
 
@@ -57,11 +74,11 @@ async def timer(app):
 
     period = 5.0
 
-    logger = app['log']
-    logger.info(" started timer routine, running every %f seconds",period)
+    log = app['log']
+    log.info(" started timer routine, running every %f seconds",period)
 
     while True:
-        logger.info(" hello says the timer! ")
+        log.info(" hello says the timer! ")
 
         # read the portal file, for example?
         
@@ -76,16 +93,16 @@ async def timer(app):
 # this needs UTF8 because names might have utf8
 async def portal_notification(request):
 
-    logger = request.app['log']
+    log = request.app['log']
     try:
 
-        logger.debug(" received notification: %s of type %s",request.method, request.content_type)
+        log.debug(" received notification: %s of type %s",request.method, request.content_type)
 
         req_obj = await request.json()
-        logger.debug(" received JSON %s",req_obj)
+        log.debug(" received JSON %s",req_obj)
         r = web.Response(text="OK" , charset='utf-8')
     except Exception as e:
-        logger.warning(" exception while handing portal notification: %s ",str(ex))
+        log.warning(" exception while handing portal notification: %s ",str(ex))
         r = web.Response(text="FAIL")
 
     return r
@@ -130,7 +147,6 @@ def create_logger(args):
 
     return logger
 
-
 async def init(app, args, loop):
 
     app.router.add_get('/', hello)
@@ -148,13 +164,73 @@ async def init(app, args, loop):
 
     return 
 
+def led_init(args, log):
+
+
+    # command line flags
+    globalconfig.debugflag = False
+    globalconfig.verboseflag = False
+    globalconfig.fastwake = False
+    globalconfig.log = log
+    portalconfig.north      = args.north
+
+    if globalconfig.noop:
+        print ("No-op mode.  Pixels will not fire.")
+        debugprint ("No-op mode.  Pixels will not fire.")
+
+    # specified RGB values override named colors
+    if hasattr(args, 'color'):
+        try:
+            basecolor = colortable[args.color]
+        except KeyError:
+            basecolor = colortable["MUTED_PINK"]
+            basecolor = colortable["DIM"]
+    debugprint ("Base color 0 is ")
+    debugprint (basecolor)
+
+    if hasattr(args, 'red') and args.red:
+        red = args.red
+    else:
+        red = basecolor[0]
+
+    if hasattr(args, 'green') and args.green:
+        green = args.green
+    else:
+        green = basecolor[1]
+
+    if hasattr(args, 'blue') and args.blue:
+        blue = args.blue
+    else:
+        blue = basecolor[2]
+
+    globaldata.basecolor = (red, green, blue)
+
+    globaldata.ledcontrol = start_opc()
+
+    # ledportal = LedPortal()
+
+    # print ("writing ", finalcolor, " to the LEDs.")
+    # pixels = [ finalcolor ] * numLEDs
+
+    # ledwrite (ledcontrol, pixels)
+
+    return
+
+
 
 # Parse the command line options
 
-parser = argparse.ArgumentParser(description="MagnusFlora Led")
+parser = argparse.ArgumentParser(description="MagnusFlora Led", fromfile_prefix_chars='@')
 parser.add_argument('--config', '-c', help="JSON file with configuration", default="config.json", type=str)
 parser.add_argument('--log', help="location of the log file", default="led.log", type=str)
 parser.add_argument('--debug', '-d', help=" debug level: CRITICAL ERROR WARNING INFO DEBUG", default="INFO", type=str)
+
+parser.add_argument('--color', type=check_COLOR, help="Named color, can be overridden piecewise.")
+parser.add_argument('--red', type=check_RGB)
+parser.add_argument('--green', type=check_RGB)
+parser.add_argument('--blue', type=check_RGB)
+parser.add_argument('--north', dest='north', type=check_RESO, help="From 0 to 7, which reso is north?")
+
 args = parser.parse_args()
 
 # Load config.json
@@ -167,18 +243,30 @@ except Exception as e:
     print(e)
     sys.exit(0)
 
-logger = create_logger(args)
-logger.info('starting MagnusFlora Led: there will be %d cakes', 9 )
+log = create_logger(args)
+log.info('starting MagnusFlora Led: there will be %d cakes', 9 )
+
+# init including the OPC server connectors & remapping
+led_init(args, log)
 
 print("starting MagnusFlora Led monitoring ",g_config["portalfile"]," on port ",g_config["led_port"])
 
+# start a simple thread to asynchronously push the pixel array to the LEDs
+let_there_be_light = Thread(target=opcwrap.ledwriteloop)
+let_there_be_light.start()
+log.debug ("Let there be light!")
+
+# Wake up the whole portal - can take a long time unless fastwake
+# todo: this should be turned into something else but I want to see SOMETHING
+patterns.wake_up (0, globaldata.total_pixels, globaldata.basecolor)
+log.debug ("... and there was light.")
 
 # register all the async stuff
 loop = asyncio.get_event_loop()
 
 app = web.Application()
 app['config'] = g_config
-app['log'] = logger
+app['log'] = log
 
 loop.run_until_complete(init(app, args, loop))
 
