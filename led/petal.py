@@ -195,6 +195,10 @@ def main(argv):
 			4, \
 			200)
 
+	patterns.chase(thisledportal.resos["SE"].pixelmap.list_of_lists_of_pixel_numbers, \
+		"ww--ww--ww", -1)
+
+
 # Not needed -- init of a reso starts the thread.
 	# start one thread for each resonator and mod to listen for changes
 	# resothreads = [""] * 8

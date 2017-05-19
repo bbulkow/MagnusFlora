@@ -5,6 +5,7 @@ from ledlib import ledmath
 
 from ledlib import globalconfig
 from ledlib import globaldata
+from ledlib import masking
 
 static_patterns = ["SOLID", "BLEND", "DIM", "TEST"]
 moving_patterns	=	["TWINKLE", "FLOOD", "FLASH",
@@ -130,6 +131,71 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
 	#			[list_of_lists_of_pixel_numbers[strand][strand_sizes[strand]-1]]= \
 				#rgb2
 		globaldata.all_the_pixels[last_pixel] = rgb2
+
+
+def chase (list_of_lists_of_pixel_numbers, maskstring, repeat):
+	# note that this should support a chase on only some components of a reso
+	# repeat = -1 : infinite repeat
+	strand_count = len(list_of_lists_of_pixel_numbers)
+	strand_sizes = [0] * strand_count
+	strand_pointers = [0] * strand_count
+	base_pixels	=	[0,0,0] * strand_sizes[0] * strand_count
+	# TODO: should be configurable params
+	steps = 200
+	speed = 3			# how long to do one pass?
+	chasemask = masking.Mask(maskstring)
+	print ("entering chase loop with %s", chasemask.name)
+
+	def single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed):
+		print ("entering single chase with %s", chasemask.name)
+		strand_pointers = [0] * strand_count
+		for thisstep in range(steps):
+			progress = thisstep/steps
+			for strand in range(strand_count):
+				while progress > (strand_pointers[strand] / strand_sizes[strand]):
+					for i in range(chasemask.size):
+							# set previous N pixels (if in bounds) to base
+							backpix = strand_pointers[strand] - chasemask.size - i
+							if backpix >=0:
+								globaldata.all_the_pixels \
+											[list_of_lists_of_pixel_numbers[strand][backpix]] = \
+											base_pixels[strand][backpix]
+							# set current N pixels (if in bounds) to masked base
+							frontpix = strand_pointers[strand] - i
+							if frontpix >= 0 and frontpix < strand_sizes[strand]:
+											# temp hardcode for algo testing
+								globaldata.all_the_pixels \
+											[list_of_lists_of_pixel_numbers[strand][frontpix]] = \
+											[200,50,50]
+					strand_pointers[strand] += 1
+			# clear out the final chase area
+			for i in range(chasemask.size):
+				backpix = strand_sizes[strand] - (chasemask.size - i)
+				if backpix >= 0:
+					globaldata.all_the_pixels \
+								[list_of_lists_of_pixel_numbers[strand][backpix]] = \
+								base_pixels[strand][backpix]
+			if speed > 0:
+				time.sleep(speed/steps)
+		pass
+
+
+	base_pixels = [0,0,0] * strand_count * 1
+	for strand in range(strand_count):
+		strand_sizes[strand] = len(list_of_lists_of_pixel_numbers[strand])
+		# TODO: dimension and fill in one step
+		# quite doable see http://stackoverflow.com/questions/10623302/how-assignment-works-with-python-list-slice
+		base_pixels[strand] = [0,0,0] * strand_sizes[strand]
+		for pix in range(strand_sizes[strand]):
+			base_pixels[strand][pix] = \
+						globaldata.all_the_pixels[list_of_lists_of_pixel_numbers[strand][pix]]
+
+	if repeat >= 1:
+		for loop in range(repeat):
+			single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
+	else:
+		while True:
+			single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
 
 
 # this fades along each list of pixesl

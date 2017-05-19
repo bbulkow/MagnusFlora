@@ -161,6 +161,7 @@ class LedResonatorThread( threading.Thread):
 						colordefs.colortable_level[reso.level], \
 						4, \
 						200)
+		self.basic_chase_pattern("ww--ww--ww")
 
 	def flash_pattern(self, faction ):
 		reso = self.ledResonator
@@ -176,6 +177,12 @@ class LedResonatorThread( threading.Thread):
 		patterns.flash(reso.pixelmap.list_of_lists_of_pixel_numbers, rgb, 10, 10.0)
 
 
+	def basic_chase_pattern(self, maskstring):
+		reso = self.ledResonator
+		self.log.info(" New basic CHASE pattern %s started.", maskstring)
+		patterns.chase(reso.pixelmap.list_of_lists_of_pixel_numbers, maskstring, -1)		# infinite chase
+
+
 	def run(self):
 		q = self.ledResonator.queue
 		reso = self.ledResonator # this is myself, for a shortcut
@@ -183,7 +190,9 @@ class LedResonatorThread( threading.Thread):
 			action = q.get()
 
 			self.log.debug( "LedResonator %s received action %s ",reso.position,str(action))
-			
+
+			# TODO: Send the chase thread a stop signal.  Or have it check.
+
 			if action.action == "INIT":
 				debugprint((" resonator ", reso.position, " received action ",action.action))
 				self.init_pattern()
@@ -200,6 +209,7 @@ class LedResonatorThread( threading.Thread):
 
 			# TODO: add here the background chase, and have it check the queue for new work
 			# frequently
+			
 
 class LedResonator(Resonator):
 
