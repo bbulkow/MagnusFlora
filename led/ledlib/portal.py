@@ -131,23 +131,32 @@ class Resonator:
     @staticmethod
     def difference(old_p, new_p, log):
 
+#        log.info(" reso difference called ")
+
+#       log.info(" old_p %s ", old_p)
+
+#        log.info(" new_p %s ", new_p)
+
         diffs = {}
         actions = []
- 
+
         if old_p == None:
 
             diffs['level'] = new_p.level
             diffs['health'] = new_p.health
 #            diffs['position'] = new_p.position
 #            diffs['position-old'] = ""
-            diffs['owner'] = new_p.owner
-            diffs['distance'] = new_p.distance
+            #diffs['owner'] = new_p.owner
+            #diffs['distance'] = new_p.distance
             actions.append("resonator_add")
+
         else:
             if new_p.level != old_p.level:
                 diffs['level'] = new_p.level
                 diffs['level-change'] = new_p.level - old_p.level
-                if new_p.level > old_p.level:
+                if new_p.level == 0:
+                    actions.append("resonator_remove")
+                elif new_p.level > old_p.level:
                     actions.append("resonator_upgrade")
                 else:
                     actions.append("resonator_remove")
@@ -197,6 +206,10 @@ class Resonator:
             return False
 
         return True
+
+    # only care about a few things at the moment
+    def __str__(self):
+        return '"{0}": {{"level": {1}, "health": {2} }}'.format(self.position, self.level, self.health)
 
     def toLegacyStr(self):
         # print (" grabbing reso string: level ",self.level)
@@ -357,7 +370,7 @@ class Portal:
         if "resonators" in statusObj:
             resonators = statusObj.get("resonators")
             for pos, values in resonators.items():
-                r = Resonator(pos, None, values  )
+                r = Resonator(pos, None, None, values  )
                 portal.resonators[pos] = r
 
             # if we changed the resonators, update the health and level
@@ -465,19 +478,24 @@ class Portal:
         if "resonators" in statusObj:
             resonators = statusObj.get("resonators")
 
+            # iterate over everything in the old
             for p in self.valid_positions:
                 ptl = portal.resonators.get(p, None)
                 if ptl:
+                    # if not in the new, removed
                     if not p in resonators:
+                        reso_is_changed = True
                         actions = self.addAction(actions, "resonator_remove")
 
             for pos, values in resonators.items():
 
-                r = Resonator(pos, log, values )
+                r = Resonator(pos, None, log, values )
                 acts, diffs = Resonator.difference( portal.resonators.get(pos,None), r, log)
+
                 # log.debug(" what changed: reso %s value %s",pos,diffs)
                 
                 if diffs:
+
                     reso_is_changed = True
                     reso_what_changed[pos] = diffs
                     portal.resonators[pos] = r
