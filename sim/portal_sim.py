@@ -274,6 +274,10 @@ class Portal:
             print( message )
             raise # pass it upstack
 
+
+        if self.verbose:
+            print ("+++++ object BEFORE changes: ",str(self))
+
         # print(" parsed JSON, taking lock. Object is: ",statusObj)
         with self.lock:
             portal = self.dup()
@@ -315,6 +319,7 @@ class Portal:
             raise ValueError('JSON Portal line is not consistant')
 
         else:
+
             # copy the parts that should be copied ( ie, not the lock or create time )
             with self.lock:
                 self.set(portal)
