@@ -1,0 +1,19 @@
+
+# THe first line should have all the information, this is a good example
+# delay is in seconds until the next line is processed
+# CAN'T BREAK LINES, but you can have a second line with 0.0 delay
+   { "delay": 0.0, "title": "myportal", "faction": "1", "owner": "bbulkow",  "resonators": { "N": {"level": 4, "health": 100}  } }
+
+   { "delay": 3.0, "resonators": { "NE": {"level": 4, "health": 100} } } 
+
+   { "delay": 3.0, "resonators": { "E": {"level": 4, "health": 100} } } 
+
+   { "delay": 3.0, "resonators": { "SE": {"level": 4, "health": 100} } } 
+
+   { "delay": 3.0, "resonators": { "S": {"level": 4, "health": 100} } } 
+
+   { "delay": 3.0, "resonators": { "SW": {"level": 4, "health": 100} } } 
+
+   { "delay": 3.0, "resonators": { "W": {"level": 4, "health": 100} } } 
+
+   { "delay": 3.0, "resonators": { "NW": {"level": 4, "health": 100} } } 

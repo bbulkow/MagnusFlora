@@ -8,11 +8,19 @@
    { "delay": 4.0, "resonators": { "S": {"level": 4, "health": 100},"SW": {"level": 4, "health": 100} } } 
    { "delay": 4.0, "resonators": { "W": {"level": 4, "health": 100},"NW": {"level": 4, "health": 100} } } 
 
-# fully deployed - under attack
+# fully deployed - resonators under attack
 
-   { "delay": 4.0, "resonators": { "N": {"level": 0},"NE": {"level": 0} } } 
+   { "delay": 4.0, "resonators": { "N": {"level": 4, "health": 90} } } 
+   { "delay": 4.0, "resonators": {"NE": {"level": 4, "health": 90} } } 
+   { "delay": 4.0, "resonators": {"S": {"level": 4, "health": 90} } } 
+   { "delay": 4.0, "resonators": { "N": {"level": 4, "health": 90} } } 
 
-   { "delay": 4.0, "resonators": { "S": {"level": 0},"SW": {"level": 0} } } 
+# being removed
+
+   { "delay": 4.0, "resonators": { "N": {"level": 0} } } 
+   { "delay": 4.0, "resonators": { "NE": {"level": 0} } } 
+   { "delay": 4.0, "resonators": { "S": {"level": 0} } } 
+   { "delay": 4.0, "resonators": { "N": {"level": 0} } } 
 
    { "delay": 1.0,  "mods": [ ]  }
 
