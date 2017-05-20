@@ -3,27 +3,27 @@
 # delay is in seconds until the next line is processed
 # CAN'T BREAK LINES, but you can have a second line with 0.0 delay
    { "delay": 0.0, "title": "myportal", "faction": "1", "owner": "bbulkow",  "mods": [ "PS-C", "HS-C", "HS-R" ]  }
-   { "delay": 4.0, "resonators": { "N": {"level": 4, "health": 100},"NE": {"level": 4, "health": 100} } } 
-   { "delay": 4.0, "resonators": { "E": {"level": 4, "health": 100},"SE": {"level": 4, "health": 100} } } 
-   { "delay": 4.0, "resonators": { "S": {"level": 4, "health": 100},"SW": {"level": 4, "health": 100} } } 
-   { "delay": 4.0, "resonators": { "W": {"level": 4, "health": 100},"NW": {"level": 4, "health": 100} } } 
+   { "delay": 6.0, "resonators": { "N": {"level": 4, "health": 100},"NE": {"level": 4, "health": 100} } } 
+   { "delay": 6.0, "resonators": { "E": {"level": 4, "health": 100},"SE": {"level": 4, "health": 100} } } 
+   { "delay": 6.0, "resonators": { "S": {"level": 4, "health": 100},"SW": {"level": 4, "health": 100} } } 
+   { "delay": 6.0, "resonators": { "W": {"level": 4, "health": 100},"NW": {"level": 4, "health": 100} } } 
 
 # fully deployed - resonators under attack
 
-   { "delay": 4.0, "resonators": { "N": {"level": 4, "health": 90} } } 
-   { "delay": 4.0, "resonators": {"NE": {"level": 4, "health": 90} } } 
-   { "delay": 4.0, "resonators": {"S": {"level": 4, "health": 90} } } 
-   { "delay": 4.0, "resonators": { "N": {"level": 4, "health": 90} } } 
+   { "delay": 6.0, "resonators": { "N": {"level": 4, "health": 90} } } 
+   { "delay": 6.0, "resonators": {"NE": {"level": 4, "health": 90} } } 
+   { "delay": 6.0, "resonators": {"S": {"level": 4, "health": 90} } } 
+   { "delay": 6.0, "resonators": { "N": {"level": 4, "health": 90} } } 
 
 # being removed
 
-   { "delay": 4.0, "resonators": { "N": {"level": 0} } } 
-   { "delay": 4.0, "resonators": { "NE": {"level": 0} } } 
-   { "delay": 4.0, "resonators": { "S": {"level": 0} } } 
-   { "delay": 4.0, "resonators": { "N": {"level": 0} } } 
+   { "delay": 6.0, "resonators": { "N": {"level": 0} } } 
+   { "delay": 6.0, "resonators": { "NE": {"level": 0} } } 
+   { "delay": 6.0, "resonators": { "S": {"level": 0} } } 
+   { "delay": 6.0, "resonators": { "N": {"level": 0} } } 
 
 # some time for the background sounds to play
-   { "delay": 20.0,  "mods": [ ]  }
+   { "delay": 30.0,  "mods": [ ]  }
 
 
 # upgraded
@@ -45,19 +45,19 @@
    { "delay": 4.0, "resonators": { "SE": { "level": 7, "health": 50} } } 
    { "delay": 4.0, "resonators": { "S": { "level": 5, "health": 50} } } 
 
-   { "delay": 60, "mods": [ ]}
+   { "delay": 60.0, "mods": [ ]}
 
-   { "delay": 1.0, "resonators": { "N": {"level": 0 },"NE": {"level": 0} } } 
-   { "delay": 1.0, "resonators": { "E": {"level": 0 },"SE": {"level": 0} } } 
-   { "delay": 1.0, "resonators": { "S": {"level": 0 },"SW": {"level": 0} } } 
-   { "delay": 1.0, "resonators": { "W": {"level": 0},"NW": {"level": 0} } } 
+   { "delay": 4.0, "resonators": { "N": {"level": 0 },"NE": {"level": 0} } } 
+   { "delay": 4.0, "resonators": { "E": {"level": 0 },"SE": {"level": 0} } } 
+   { "delay": 4.0, "resonators": { "S": {"level": 0 },"SW": {"level": 0} } } 
+   { "delay": 4.0, "resonators": { "W": {"level": 0},"NW": {"level": 0} } } 
 
    { "delay": 2.0, "faction": "2", "resonators": { "N": {"level": 3, "health": 100} } }
 
-   { "delay": 1.0, "resonators": { "N": {"level": 8, "health": 100},"NE": {"level": 8, "health": 100} } } 
-   { "delay": 1.0, "resonators": { "E": {"level": 8, "health": 100},"SE": {"level": 7, "health": 100} } } 
-   { "delay": 1.0, "resonators": { "S": {"level": 7, "health": 100},"SW": {"level": 5, "health": 100} } } 
-   { "delay": 1.0, "resonators": { "W": {"level": 0, "health": 100},"NW": {"level": 7, "health": 100} } } 
+   { "delay": 4.0, "resonators": { "N": {"level": 8, "health": 100},"NE": {"level": 8, "health": 100} } } 
+   { "delay": 4.0, "resonators": { "E": {"level": 8, "health": 100},"SE": {"level": 7, "health": 100} } } 
+   { "delay": 4.0, "resonators": { "S": {"level": 7, "health": 100},"SW": {"level": 5, "health": 100} } } 
+   { "delay": 45.0, "resonators": { "W": {"level": 0, "health": 100},"NW": {"level": 7, "health": 100} } } 
 
 # attack
 
@@ -68,34 +68,33 @@
 
 # Jarvis
 
-	{ "delay": 2.0, "faction": 1 }
+	{ "delay": 20.0, "faction": 1 }
 
 # attack
 
-   { "delay": 1.0, "resonators": { "N": {"level": 0, "health": 100},"NE": {"level": 0, "health": 100} } } 
-   { "delay": 1.0, "resonators": { "E": {"level": 0, "health": 100},"SE": {"level": 0, "health": 100} } } 
-   { "delay": 1.0, "resonators": { "S": {"level": 0, "health": 100},"SW": {"level": 0, "health": 100} } } 
-   { "delay": 1.0, "resonators": { "W": {"level": 0, "health": 100},"NW": {"level": 0, "health": 100} } } 
+   { "delay": 5.0, "resonators": { "N": {"level": 0, "health": 100},"NE": {"level": 0, "health": 100} } } 
+   { "delay": 5.0, "resonators": { "E": {"level": 0, "health": 100},"SE": {"level": 0, "health": 100} } } 
+   { "delay": 5.0, "resonators": { "S": {"level": 0, "health": 100},"SW": {"level": 0, "health": 100} } } 
+   { "delay": 5.0, "resonators": { "W": {"level": 0, "health": 100},"NW": {"level": 0, "health": 100} } } 
 
-   { "delay": 2.0, "faction": 0 }
-   { "delay": 2.0, "faction": 0 }
+   { "delay": 25.0, "faction": 0 }
 
 # rebuild
 
-   { "delay": 2.0, "faction": 2 }
+   { "delay": 10.0, "faction": 2 }
 
-   { "delay": 1.0, "resonators": { "N": {"level": 2, "health": 100},"NE": {"level": 3, "health": 100} } } 
-   { "delay": 1.0, "resonators": { "E": {"level": 4, "health": 100},"SE": {"level": 5, "health": 100} } } 
-   { "delay": 1.0, "resonators": { "S": {"level": 6, "health": 100},"SW": {"level": 7, "health": 100} } } 
-   { "delay": 1.0, "resonators": { "W": {"level": 8, "health": 100},"NW": {"level": 8, "health": 100} } } 
+   { "delay": 4.0, "resonators": { "N": {"level": 2, "health": 100},"NE": {"level": 3, "health": 100} } } 
+   { "delay": 4.0, "resonators": { "E": {"level": 4, "health": 100},"SE": {"level": 5, "health": 100} } } 
+   { "delay": 4.0, "resonators": { "S": {"level": 6, "health": 100},"SW": {"level": 7, "health": 100} } } 
+   { "delay": 4.0, "resonators": { "W": {"level": 8, "health": 100},"NW": {"level": 8, "health": 100} } } 
 
 # attack again
 
-   { "delay": 1.0, "resonators": { "N": {"level": 0, "health": 100},"NE": {"level": 0, "health": 100} } } 
-   { "delay": 1.0, "resonators": { "E": {"level": 0, "health": 100},"SE": {"level": 0, "health": 100} } } 
-   { "delay": 1.0, "resonators": { "S": {"level": 0, "health": 100},"SW": {"level": 0, "health": 100} } } 
-   { "delay": 1.0, "resonators": { "W": {"level": 0, "health": 100},"NW": {"level": 0, "health": 100} } } 
+   { "delay": 4.0, "resonators": { "N": {"level": 0, "health": 100},"NE": {"level": 0, "health": 100} } } 
+   { "delay": 4.0, "resonators": { "E": {"level": 0, "health": 100},"SE": {"level": 0, "health": 100} } } 
+   { "delay": 4.0, "resonators": { "S": {"level": 0, "health": 100},"SW": {"level": 0, "health": 100} } } 
+   { "delay": 4.0, "resonators": { "W": {"level": 0, "health": 100},"NW": {"level": 0, "health": 100} } } 
 
-   { "delay": 2.0, "faction": 0 }
+   { "delay": 30.0, "faction": 0 }
 
 

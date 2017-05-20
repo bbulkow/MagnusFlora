@@ -38,6 +38,7 @@ import threading
 import time
 import datetime
 import os
+import random
 
 import logging
 
@@ -85,11 +86,11 @@ def play_sound_start( filename ):
     wf = wave.open(filename, 'rb')
     bytes_per_second = wf.getnchannels() * wf.getframerate() * wf.getsampwidth()
     secs = stat.st_size / bytes_per_second
-    log.debug ("play sound start: seconds is: ",sec)
+    # log.debug ("play sound start: seconds is: ",sec)
 
     ct = list(command_template)
     ct.insert(command_filename_offset, filename)
-    log.debug("play sound start: passing to popen: ", ct)
+    # log.debug("play sound start: passing to popen: ", ct)
     proc = subprocess.Popen( ct )
 
 #   print (" delaying ")
@@ -201,7 +202,9 @@ class IngressSound:
     }
 
     background_sounds_prod = [
-        '../audio/magnus_the_song.wav' ]
+        '../audio/magnus_the_song.wav', 
+        '../audio/background_ENL.wav', 
+        '../audio/background_RES.wav' ]
 
     legal_actions = [ "attack", "recharge", "resonator_add", "resonator_remove", 
         "portal_neutralized", "portal_captured",
@@ -320,7 +323,16 @@ class IngressSound:
         self.log.info(" PLAY BACKGROUND SOUND")
 
         now = time.time()
-        self.event_audio_obj, secs = play_sound_start( self.background_sounds[0] )     
+
+        # pick one randomly
+        if len(self.background_sounds) == 0:
+            sfile = self.background_sounds[0]
+        else:
+            rand = random.randint( 0, len(self.background_sounds) - 1)
+            self.log.info(" playing random sound %d %s",rand, self.background_sounds[rand])
+            sfile = self.background_sounds[rand]
+
+        self.event_audio_obj, secs = play_sound_start( sfile )     
         self.event_audio_start = now
         self.event_audio_minimum = now
         self.event_audio_maximum = now + secs
