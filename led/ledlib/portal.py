@@ -479,12 +479,14 @@ class Portal:
             resonators = statusObj.get("resonators")
 
             # iterate over everything in the old
-            for p in self.valid_positions:
-                ptl = portal.resonators.get(p, None)
+            for pos in self.valid_positions:
+                ptl = portal.resonators.get(pos, None)
                 if ptl:
                     # if not in the new, removed
-                    if not p in resonators:
+                    if not pos in resonators:
                         reso_is_changed = True
+                        reso_what_changed[pos] = {'level': 0, 'health': 0}
+                        portal.resonators.pop(pos)
                         actions = self.addAction(actions, "resonator_remove")
 
             for pos, values in resonators.items():
