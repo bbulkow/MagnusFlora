@@ -86,6 +86,13 @@ Petal config:
 		Back/Top  left: blue
 		Back/Top right:	purple
 
+Petal wiring:
+		Blue is left outside
+		Green is left inside
+		Yellow is right outside
+		Red is  right inside
+
+
 	If things don't match up, remember to power down LEDs before swapping!
 """)
 
