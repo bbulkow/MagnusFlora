@@ -110,19 +110,20 @@ def switch_sound_cb(i_sound, sequence):
 
     global maximum_age
 
-    log.info( " switch_sound_cb called ")
+    log = i_sound.log
+    log.debug( " switch_sound_cb called ")
 
     # check for duplicates which is legal
     if (i_sound.sequence != sequence):
         log.warning(" received duplicate call later %d ignoring ", sequence)
         return
 
-    log.warning(" killing old sound, sequence %d ",sequence)
+    log.debug(" killing old sound, sequence %d ",sequence)
     if (i_sound.event_audio_obj):
         play_sound_end(i_sound.event_audio_obj)
         i_sound.clean()
 
-    log.warning(" start background, or play from queue? ")
+    log.debug(" start background, or play from queue? ")
 
     # nothing, play background
     if i_sound.q.empty() :
@@ -149,6 +150,9 @@ def switch_sound_cb(i_sound, sequence):
 
 
 # the kind of thing that should be on the queue
+# action is the STRING of the action
+# add more if you need more in your handler
+# time is the time we got it
 class SoundEvent:
     def __init__(self, action, received_time):
         self.action = action
@@ -192,7 +196,7 @@ class IngressSound:
         'mod_destroyed': [ '../audio/mod_destroyed.wav', 2.0],
         'attack': [ '../audio/under_attack.wav', 3.0 ],
         'recharge': [ '../audio/test/recharged.wav', 3.0],
-        'virus_ada': [ '../audio/test/virus_ada_refactor.wav', 3.0],
+        'virus_ada': [ '../audio/virus_ada_refactor.wav', 3.0],
         'virus_jarvis': [ '../audio/virus_jarvis_vocal.wav', 3.0],
     }
 
@@ -212,7 +216,7 @@ class IngressSound:
         self.app = app
         self.sequence = 0
         self.background = False # set to true if playing a background sound
-        self.action = ""   # the action type if something is playing
+        self.action = None   # the action type if something is playing
         self.actions_sounds = app['actions_sounds']
         self.background_sounds = app['background_sounds']
         self.log = app['log']
@@ -226,23 +230,28 @@ class IngressSound:
         self.event_audio_minimum = 0.0
         self.event_audio_maximum = 0.0
         self.background = False
-        self.action = ""   
+        self.action = None 
 
     # only to be used if you know nothing is currently playing
-    def play_sound_immediate(self, action):
+    # action is 
+    def play_sound_immediate(self, sound_event):
 
-        ainfo = self.actions_sounds.get(action)
+        self.log.debug(" play immediate: action_sounds %s action %s",self.actions_sounds, sound_event.action )
 
-        # play new
+
+        ainfo = self.actions_sounds.get(sound_event.action)
+
+        now = time.time()
+
         self.event_audio_obj, secs = play_sound_start( ainfo[0] )       
         self.event_audio_start = now
         self.event_audio_minimum = now + ainfo[1]
         self.event_audio_maximum = now + secs
-        self.action = action
+        self.action = sound_event.action
         self.sequence += 1
 
         # register a callback to switch
-        self.log.info(" play immediate: scheduling callback for switch_sound %f seconds from now",secs)
+        self.log.debug(" play immediate: scheduling callback for switch_sound %f seconds from now",secs)
         loop = self.app['loop']
         loop.call_later(secs, switch_sound_cb, self, self.sequence)
 
@@ -250,9 +259,9 @@ class IngressSound:
 	# attack, recharge, resonator_add, resonator_remove, portal_neutralized, portal_captured, 
 	# mod_added, mod_destroyed, resonator_upgrade, jarvis, ada
 
-    def play_action(self, action ):
+    def play_action_str(self, action ):
 
-        self.log.info(" play_action:  %s",action)
+        self.log.debug(" play_action:  %s",action)
 
         if action not in IngressSound.legal_actions:
             self.log.warning(" received illegal action, ingoring, %s",action)
@@ -357,10 +366,10 @@ async def timer(app):
     period = 5.0
 
     log = app['log']
-    log.info(" started timer routine, running every %f seconds",period)
+    log.debug(" started timer routine, running every %f seconds",period)
 
     while True:
-        log.debug(" hello says the timer! ")
+        # log.debug(" hello says the timer! ")
 
         # read the portal file, for example?
         
@@ -391,7 +400,7 @@ async def portal_notification(request):
 
         log.debug(" action is: %s sound is: %s",action_str, sound)
 
-        sound.play_action(action_str)
+        sound.play_action_str(action_str)
 
         r = web.Response(text="OK" , charset='utf-8')
     except:
