@@ -278,7 +278,8 @@ async def notifier_task(app):
         try:
             await work.notify()
         except Exception as e:
-            logger.error(" notification failed, %s",str(e))
+            #logger.error(" notification failed, %s",str(e))
+            pass
 
 
 #
