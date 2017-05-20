@@ -1,6 +1,7 @@
 {
 	"sound_url": "http://127.0.0.1:2003/portal",
 	"sound_port": 2003,
+	"sound_type": "prod",
 
 	"template_url": "http://127.0.0.1:2002/portal",
 	"template_port": 2002,
@@ -16,7 +17,7 @@
 
 	"tecthulu_url": "http://127.0.0.1:5050/",
 	"tecthulu_port": 5050,
-	"tecthulu_poll": 0.5,
+	"tecthulu_poll": 1.0,
 
 	"portalfile": "portal.json",
 	"tracefile": "trace.json",
