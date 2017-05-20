@@ -164,7 +164,7 @@ class IngressSound:
 #        'attack': [ '../audio/under_attack.wav', 3.0 ],
 #    }
 
-    actions_info = {
+    actions_sounds_test = {
         'portal_neutralized': [ '../audio/test/scream.wav', 2.0 ],
         'portal_captured': [ '../audio/test/portal_captured_by_RES.wav', 4.0 ],
         'resonator_add': [ '../audio/test/resonator_deployed.wav', 3.0 ],
@@ -178,9 +178,26 @@ class IngressSound:
         'virus_jarvis': [ '../audio/test/jarvis.wav', 3.0],
     }
 
-
-    background_sounds = [
+    background_sounds_test = [
         '../audio/violin-test-PCM16.wav' ]
+
+
+    actions_sounds_prod = {
+        'portal_neutralized': [ '../audio/portal_neutralized.wav', 2.0 ],
+        'portal_captured': [ '../audio/portal_online.wav', 4.0 ],
+        'resonator_add': [ '../audio/resonator_deployed.wav', 3.0 ],
+        'resonator_remove': [ '../audio/resonator_destroyed.wav', 2.0],
+        'resonator_upgrade': [ '../audio/test/resonator_upgraded.wav', 2.0],
+        'mod_added': [ '../audio/mod_deployed.wav', 2.0],
+        'mod_destroyed': [ '../audio/mod_destroyed.wav', 2.0],
+        'attack': [ '../audio/under_attack.wav', 3.0 ],
+        'recharge': [ '../audio/test/recharged.wav', 3.0],
+        'virus_ada': [ '../audio/test/virus_ada_refactor.wav', 3.0],
+        'virus_jarvis': [ '../audio/virus_jarvis_vocal.wav', 3.0],
+    }
+
+    background_sounds_prod = [
+        '../audio/magnus_the_song.wav' ]
 
     legal_actions = [ "attack", "recharge", "resonator_add", "resonator_remove", 
         "portal_neutralized", "portal_captured",
@@ -196,6 +213,9 @@ class IngressSound:
         self.sequence = 0
         self.background = False # set to true if playing a background sound
         self.action = ""   # the action type if something is playing
+        self.actions_sounds = app['actions_sounds']
+        self.background_sounds = app['background_sounds']
+        self.log = app['log']
 
         # the queue will hold some number of sounds, too many gets too far behind
         self.q = asyncio.Queue(maxsize=20)
@@ -211,7 +231,7 @@ class IngressSound:
     # only to be used if you know nothing is currently playing
     def play_sound_immediate(self, action):
 
-        ainfo = IngressSound.actions_info.get(action)
+        ainfo = self.actions_sounds.get(action)
 
         # play new
         self.event_audio_obj, secs = play_sound_start( ainfo[0] )       
@@ -222,7 +242,7 @@ class IngressSound:
         self.sequence += 1
 
         # register a callback to switch
-        logger.info(" play immediate: scheduling callback for switch_sound %f seconds from now",secs)
+        self.log.info(" play immediate: scheduling callback for switch_sound %f seconds from now",secs)
         loop = self.app['loop']
         loop.call_later(secs, switch_sound_cb, self, self.sequence)
 
@@ -232,20 +252,24 @@ class IngressSound:
 
     def play_action(self, action ):
 
+        self.log.info(" play_action:  %s",action)
+
         if action not in IngressSound.legal_actions:
-            logger.warning(" received illegal action, ingoring, %s",action)
+            self.log.warning(" received illegal action, ingoring, %s",action)
             return
 
-        logger.info(" received action: %s",action)
-        ainfo = IngressSound.actions_info.get(action, None)
+        self.log.info(" received valid action: %s",action)
+        self.log.debug(" action sounds struct: %s",self.actions_sounds)
+        ainfo = self.actions_sounds.get(action, None)
         if ainfo == None:
-            logger.warning(" received unsupported action, ignoring, %s",action)
+            self.log.warning(" received unsupported action, ignoring, %s",action)
             return
+        self.log.debug(" ainfo %s",ainfo)
 
         # special case: for attack and defend, ignore multiples
         if (action == "attack" or action == "defend"):
             if self.action == action:
-                logger.warning(" ignoring duplicate %s sound ",action)
+                self.log.warning(" ignoring duplicate %s sound ",action)
                 return
 
         now = time.time()
@@ -258,12 +282,12 @@ class IngressSound:
                 self.clean()
 
             elif (now > self.event_audio_minimum):
-                logging.info(" killing old sound ")
+                self.log.info(" killing old sound ")
                 play_sound_end(self.event_audio_obj)
                 self.clean()
 
             else:
-                logger.info(" queing sound: %s %f",action,now)
+                self.log.info(" queing sound: %s %f",action,now)
                 queue = self.q
                 queue.put_nowait( SoundEvent(action, now ) )
                 return
@@ -277,7 +301,7 @@ class IngressSound:
         self.sequence += 1
 
         # register a callback to switch
-        logger.info(" playing sound, and scheduling callback for switch_sound %f seconds from now",secs)
+        self.log.info(" playing sound, and scheduling callback for switch_sound %f seconds from now",secs)
         loop = self.app['loop']
         loop.call_later(secs, switch_sound_cb, self, self.sequence)
 
@@ -287,14 +311,14 @@ class IngressSound:
         logger.info(" PLAY BACKGROUND SOUND")
 
         now = time.time()
-        self.event_audio_obj, secs = play_sound_start( IngressSound.background_sounds[0] )     
+        self.event_audio_obj, secs = play_sound_start( self.background_sounds[0] )     
         self.event_audio_start = now
         self.event_audio_minimum = now
         self.event_audio_maximum = now + secs
         self.sequence += 1
 
 		# register a callback to switch
-        logger.info(" background: scheduling callback for switch_sound %f seconds from now",secs)
+        self.log.info(" background: scheduling callback for switch_sound %f seconds from now",secs)
         loop = self.app['loop']
         loop.call_later(secs, switch_sound_cb, self, self.sequence)
 
@@ -354,18 +378,19 @@ async def timer(app):
 #
 async def portal_notification(request):
 
-    logger = request.app['log']
+    log = request.app['log']
     sound = request.app['sound']
     try:
 
-        logger.debug(" received notification: %s of type %s",request.method, request.content_type)
+        log.debug(" received notification: %s of type %s",request.method, request.content_type)
 
         req_obj = await request.json()
-        logger.debug(" received JSON %s",req_obj)
+        log.debug(" received JSON %s",req_obj)
 
         action_str = req_obj.get("action", None)
 
-        logger.debug(" action is: %s",action_str)
+        log.debug(" action is: %s sound is: %s",action_str, sound)
+
         sound.play_action(action_str)
 
         r = web.Response(text="OK" , charset='utf-8')
@@ -431,6 +456,7 @@ async def init(app, args, loop):
     # An Object For Sound
     app['sound'] = IngressSound(app)
 
+
 	# background tasks are covered near the bottom of this:
 	# http://aiohttp.readthedocs.io/en/stable/web.html
     app.on_startup.append(start_background_tasks)
@@ -457,19 +483,32 @@ except Exception as e:
     print(e)
     sys.exit(0)
 
-logger = create_logger(args)
-logger.info('starting MagnusFlora Sound: there will be %d cakes', 2 )
+log = create_logger(args)
+log.info('starting MagnusFlora Sound: there will be %d cakes', 2 )
 
 print("starting MagnusFlora Sound monitoring ",g_config["portalfile"]," on port ",g_config["sound_port"])
-
 
 # register all the async stuff
 loop = asyncio.get_event_loop()
 
 app = web.Application()
 app['config'] = g_config
-app['log'] = logger
+app['log'] = log
 app['loop'] = loop
+
+#
+if g_config['sound_type'] == 'prod':
+    log.info(" Using Sound Type Prod")
+    app['actions_sounds'] = IngressSound.actions_sounds_prod
+    app['background_sounds'] = IngressSound.background_sounds_prod
+elif g_config['sound_type'] == 'test':
+    log.info(" Using Sound Type Prod")
+    app['actions_sounds'] = IngressSound.actions_sounds_test
+    app['background_sounds'] = IngressSound.background_sounds_test
+else:
+    log.warning(" Sound Type %s NOT SUPPORTED", g_config['sound_type'])
+    app['action_sounds'] = None
+    app['background_sounds'] = None
 
 loop.run_until_complete(init(app, args, loop))
 
