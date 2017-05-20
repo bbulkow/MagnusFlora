@@ -19,7 +19,7 @@ including without limitation the rights to use, copy, modify, merge, publish, di
 and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do 
 so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or 
+The above copyright notice aasyncnd this permission notice shall be included in all copies or 
 substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING 
@@ -84,12 +84,12 @@ def play_sound_start( filename ):
     # let's check the length, in time
     wf = wave.open(filename, 'rb')
     bytes_per_second = wf.getnchannels() * wf.getframerate() * wf.getsampwidth()
-    sec = stat.st_size / bytes_per_second
-    print ("seconds is: ",sec)
+    secs = stat.st_size / bytes_per_second
+    log.debug ("play sound start: seconds is: ",sec)
 
     ct = list(command_template)
     ct.insert(command_filename_offset, filename)
-    print(" passing to popen: ", ct)
+    log.debug("play sound start: passing to popen: ", ct)
     proc = subprocess.Popen( ct )
 
 #   print (" delaying ")
@@ -97,7 +97,7 @@ def play_sound_start( filename ):
 #   time.sleep( 2.0 )
 
     # test: kill the sound, todo, pass back an object that can respond to a kill
-    return proc
+    return proc, secs
 
 def play_sound_end( proc ):
     proc.kill()
@@ -110,19 +110,19 @@ def switch_sound_cb(i_sound, sequence):
 
     global maximum_age
 
-    logger.info( " switch_sound_cb called ")
+    log.info( " switch_sound_cb called ")
 
     # check for duplicates which is legal
     if (i_sound.sequence != sequence):
-        logger.warning(" received duplicate call later %d ignoring ", sequence)
+        log.warning(" received duplicate call later %d ignoring ", sequence)
         return
 
-    logging.warning(" killing old sound, sequence %d ",sequence)
+    log.warning(" killing old sound, sequence %d ",sequence)
     if (i_sound.event_audio_obj):
         play_sound_end(i_sound.event_audio_obj)
         i_sound.clean()
 
-    logging.warning(" start background, or play from queue? ")
+    log.warning(" start background, or play from queue? ")
 
     # nothing, play background
     if i_sound.q.empty() :
@@ -133,16 +133,16 @@ def switch_sound_cb(i_sound, sequence):
     while True:
         try:
             s_event = i_sound.q.get_nowait()
-        except QueueEmpty:
+        except asyncio.queues.QueueEmpty:
             # drained queue: play background: exit
-            logging.warning(" ignored all elements on queue, play background ")
+            log.warning(" ignored all elements on queue, play background ")
 
             i_sound.play_background()
             return
             
         # if ancient, drop
         if (s_event.received_time + maximum_age < time.time() ):
-            logging.warning(" ignoring sound too long on queue ")
+            log.warning(" ignoring sound too long on queue ")
             continue
 
         i_sound.play_sound_immediate(s_event)
@@ -183,10 +183,10 @@ class IngressSound:
 
 
     actions_sounds_prod = {
-        'portal_neutralized': [ '../audio/portal_neutralized.wav', 2.0 ],
-        'portal_captured': [ '../audio/portal_online.wav', 4.0 ],
+        'portal_neutralized': [ '../audio/portal_neutralized.wav', 3.0 ],
+        'portal_captured': [ '../audio/portal_online.wav', 6.0 ],
         'resonator_add': [ '../audio/resonator_deployed.wav', 3.0 ],
-        'resonator_remove': [ '../audio/resonator_destroyed.wav', 2.0],
+        'resonator_remove': [ '../audio/resonator_destroyed.wav', 3.0],
         'resonator_upgrade': [ '../audio/test/resonator_upgraded.wav', 2.0],
         'mod_added': [ '../audio/mod_deployed.wav', 2.0],
         'mod_destroyed': [ '../audio/mod_destroyed.wav', 2.0],
@@ -277,7 +277,7 @@ class IngressSound:
         # if old one playing, kill it
         if (self.event_audio_obj):
             if (self.background):
-                logging.info(" killing background ")
+                self.log.info(" killing background ")
                 play_sound_end(self.event_audio_obj)
                 self.clean()
 
@@ -308,7 +308,7 @@ class IngressSound:
     def play_background(self):
 
         #
-        logger.info(" PLAY BACKGROUND SOUND")
+        self.log.info(" PLAY BACKGROUND SOUND")
 
         now = time.time()
         self.event_audio_obj, secs = play_sound_start( self.background_sounds[0] )     
@@ -356,11 +356,11 @@ async def timer(app):
 
     period = 5.0
 
-    logger = app['log']
-    logger.info(" started timer routine, running every %f seconds",period)
+    log = app['log']
+    log.info(" started timer routine, running every %f seconds",period)
 
     while True:
-        logger.debug(" hello says the timer! ")
+        log.debug(" hello says the timer! ")
 
         # read the portal file, for example?
         
@@ -396,7 +396,7 @@ async def portal_notification(request):
         r = web.Response(text="OK" , charset='utf-8')
     except:
         print("Unexpected error:", sys.exc_info()[0])
-        # logger.warning(" exception while handing portal notification: %s ",str(ex))
+        # log.warning(" exception while handing portal notification: %s ",str(ex))
         r = web.Response(text="FAIL")
 
 
