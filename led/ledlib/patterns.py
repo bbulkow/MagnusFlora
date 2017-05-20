@@ -5,6 +5,7 @@ from ledlib import ledmath
 
 from ledlib import globalconfig
 from ledlib import globaldata
+from ledlib import masking
 
 static_patterns = ["SOLID", "BLEND", "DIM", "TEST"]
 moving_patterns	=	["TWINKLE", "FLOOD", "FLASH",
@@ -39,6 +40,9 @@ def randomcolor(maxbright=.5):
 	debugprint (("dimmed: ", rgb))
 	return rgb
 
+# this is an actual pattern.
+# it uses globalconfig.twinkle to figure out the speed
+# it covers "all the pixels"
 
 def wake_up (first, size, rgb_color_triplet):
 	debugprint ("Waking up "+ str(size) + " pixels")
@@ -67,6 +71,7 @@ def wake_up (first, size, rgb_color_triplet):
 			globaldata.all_the_pixels[first+shuffled_index[i]] = rgb_color_triplet
 			time.sleep (globalconfig.twinkle)
 
+# 
 
 def fade (list_of_pixel_numbers, rgb_color_triplet, fade_ratio=0.5, speed=0):
 	# pixel 0 is at 100%; pixel last is at fade_ratio; if sleep defined
@@ -82,6 +87,8 @@ def fade (list_of_pixel_numbers, rgb_color_triplet, fade_ratio=0.5, speed=0):
 						dimmer(rgb_color_triplet,fade)
 		if speed > 0:
 			time.sleep(speed)
+
+# This goes from rgb1 to rgb2 along each list of pixel numbers
 
 def parallel_blend (list_of_lists_of_pixel_numbers, \
 										rgb1, rgb2, speed=0, steps=100):
@@ -126,6 +133,73 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
 		globaldata.all_the_pixels[last_pixel] = rgb2
 
 
+def chase (list_of_lists_of_pixel_numbers, maskstring, repeat):
+	# note that this should support a chase on only some components of a reso
+	# repeat = -1 : infinite repeat
+	strand_count = len(list_of_lists_of_pixel_numbers)
+	strand_sizes = [0] * strand_count
+	strand_pointers = [0] * strand_count
+	base_pixels	=	[0,0,0] * strand_sizes[0] * strand_count
+	# TODO: should be configurable params
+	steps = 200
+	speed = 3			# how long to do one pass?
+	chasemask = masking.Mask(maskstring)
+	print ("entering chase loop with %s", chasemask.name)
+
+	def single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed):
+		print ("entering single chase with %s", chasemask.name)
+		strand_pointers = [0] * strand_count
+		for thisstep in range(steps):
+			progress = thisstep/steps
+			for strand in range(strand_count):
+				while progress > (strand_pointers[strand] / strand_sizes[strand]):
+					for i in range(chasemask.size):
+							# set previous N pixels (if in bounds) to base
+							backpix = strand_pointers[strand] - chasemask.size - i
+							if backpix >=0:
+								globaldata.all_the_pixels \
+											[list_of_lists_of_pixel_numbers[strand][backpix]] = \
+											base_pixels[strand][backpix]
+							# set current N pixels (if in bounds) to masked base
+							frontpix = strand_pointers[strand] - i
+							if frontpix >= 0 and frontpix < strand_sizes[strand]:
+											# temp hardcode for algo testing
+								globaldata.all_the_pixels \
+											[list_of_lists_of_pixel_numbers[strand][frontpix]] = \
+											[200,50,50]
+					strand_pointers[strand] += 1
+			# clear out the final chase area
+			for i in range(chasemask.size):
+				backpix = strand_sizes[strand] - (chasemask.size - i)
+				if backpix >= 0:
+					globaldata.all_the_pixels \
+								[list_of_lists_of_pixel_numbers[strand][backpix]] = \
+								base_pixels[strand][backpix]
+			if speed > 0:
+				time.sleep(speed/steps)
+		pass
+
+
+	base_pixels = [0,0,0] * strand_count * 1
+	for strand in range(strand_count):
+		strand_sizes[strand] = len(list_of_lists_of_pixel_numbers[strand])
+		# TODO: dimension and fill in one step
+		# quite doable see http://stackoverflow.com/questions/10623302/how-assignment-works-with-python-list-slice
+		base_pixels[strand] = [0,0,0] * strand_sizes[strand]
+		for pix in range(strand_sizes[strand]):
+			base_pixels[strand][pix] = \
+						globaldata.all_the_pixels[list_of_lists_of_pixel_numbers[strand][pix]]
+
+	if repeat >= 1:
+		for loop in range(repeat):
+			single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
+	else:
+		while True:
+			single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
+
+
+# this fades along each list of pixesl
+
 def parallel_fade (list_of_lists_of_pixel_numbers, \
 										rgb_color_triplet, fade_ratio=0.5, speed=0, steps=100):
 	# pixel 0 is at 100%; pixel last is at fade_ratio;
@@ -163,6 +237,71 @@ def parallel_fade (list_of_lists_of_pixel_numbers, \
 		globaldata.all_the_pixels \
 				[list_of_lists_of_pixel_numbers[strand][strand_sizes[strand-1]]]= \
 				newcolor
+
+
+# set a list-of-lists to a single color
+def set_color(pixel_numbers_lol, rgb):
+	for strand in pixel_numbers_lol:
+		for p in strand:
+			debugprint(("set_color: setting to "))
+			globaldata.all_the_pixels[p]= rgb
+
+
+
+# set a list-of-lists to a previously captured color
+#     SOURCE is the rgb_values_lol where values were stashed
+#     DEST is the global memory array
+def set_values(pixel_numbers_lol, rgb_values_lol):
+
+	strand_count = len(pixel_numbers_lol)
+
+	for strand_n in range(0,strand_count):
+		strand_len = len( pixel_numbers_lol[ strand_n ] )
+		for p_n in range(0,strand_len):
+			globaldata.all_the_pixels[ pixel_numbers_lol[strand_n][p_n] ] = rgb_values_lol [strand_n] [p_n]
+
+
+
+# flashes a particular RGB
+# ends up with the old pattern after the flashes
+# number of flashes you want to do
+# speed is total amount of time in float seconds
+
+def flash ( pixel_numbers_lol, rgb, n_flashes, secs ):
+
+	strand_count = len(pixel_numbers_lol)
+	strand_sizes = [0] * strand_count
+	for strand in range(strand_count):
+		strand_sizes[strand] = len(pixel_numbers_lol[strand])
+
+	old_pixel_values = [0] * strand_count
+
+	# take a duplicate of all the old valuescopy the curent values of all the lists of lists
+	# you will have strands with RGB in them, not with pixel values
+	for strand_n in range(0,strand_count):
+		strand = pixel_numbers_lol[strand_n]
+		old_pixel_values[strand_n] = [0] * len(strand)
+		for idx in range(0,len(strand)):
+			old_pixel_values[strand_n][idx] = globaldata.all_the_pixels[strand[idx]]
+
+	# todo: would really like the flashes to get faster instead of being all-the-same
+	flash_time = secs / n_flashes
+	flash_time = flash_time / 2.0    # on and off
+
+	# for the number of flashes
+	for i in range(0,n_flashes):
+
+		# set all the values to known number
+		set_color( pixel_numbers_lol, rgb)
+
+		time.sleep(flash_time)
+
+		# set all the values back to what I grabbed before
+		set_values( pixel_numbers_lol, old_pixel_values)
+
+		time.sleep(flash_time)
+
+
 
 
 

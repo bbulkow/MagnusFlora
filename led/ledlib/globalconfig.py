@@ -38,3 +38,6 @@ framedelay				=	0.01
 twinkle						=	framedelay / 10
 
 max_brightness		=	0.8		# default for dimmer function
+
+# starts out none, gets filled in
+log		= None

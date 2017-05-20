@@ -10,7 +10,7 @@ import sys, argparse
 from ledlib.colordefs import *
 from ledlib.helpers import usage, debugprint, verboseprint
 from ledlib.ledmath import *
-from ledlib.flower import Ledportal
+from ledlib.flower import LedPortal
 from ledlib import globalconfig
 from ledlib import globaldata
 from ledlib import patterns
@@ -25,6 +25,8 @@ from ledlib import opcwrap
 ##### ----------------------------
 import riggeddemo
 ##### ----------------------------
+
+import ledportal							# so I can steal the logging code
 
 
 from threading import Thread
@@ -74,6 +76,9 @@ def setup(argv):
 	riggeddemo.level = commandline.level
 	riggeddemo.factionrgb = commandline.faction
 
+	# logging
+	globalconfig.log = ledportal.create_log(commandline)
+
 	if globalconfig.noop:
 		print ("No-op mode.  Pixels will not fire.")
 		debugprint ("No-op mode.  Pixels will not fire.")
@@ -108,13 +113,13 @@ def setup(argv):
 # 			red = commandline.red
 # 		except TypeError:
 # 			red = basecolor[0]
-# 
+#
 
 	globaldata.basecolor = (red, green, blue)
 
 	globaldata.ledcontrol = start_opc()
 
-	# ledportal = Ledportal()
+	# ledportal = LedPortal()
 
 	# print ("writing ", finalcolor, " to the LEDs.")
 	# pixels = [ finalcolor ] * numLEDs
@@ -125,7 +130,7 @@ def setup(argv):
 
 def main(argv):
 
-	setup (argv)
+	ledportal.setup(argv)
 
 	# start a simple thread to asynchronously push the pixel array to the LEDs
 	let_there_be_light = Thread(target=opcwrap.ledwriteloop)
@@ -141,9 +146,9 @@ def main(argv):
 	EKG.start()
 	verboseprint ("Global heartbeat started.")
 
-	ledportal = Ledportal()
+	thisledportal = LedPortal(globalconfig.log)
 	level = riggeddemo.level
-	
+
 
 # def parallel_fade (list_of_lists_of_pixel_numbers, \
 #      rgb_color_triplet, fade_ratio=0.5, speed=0, steps=100):
@@ -151,15 +156,53 @@ def main(argv):
 	# this is the base for one type of pattern. Steal the pixel data
 	# and feed it to the subthreads as static.
 
-	patterns.parallel_blend(ledportal.resos[0].pixelmap.list_of_lists_of_pixel_numbers, \
+# 	patterns.parallel_blend(thisledportal.resos[0].pixelmap.list_of_lists_of_pixel_numbers, \
+# 			colordefs.colortable["ENL"], \
+# 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[level]], \
+# 			4, \
+# 			200)
+# 
+
+# Normally patterns are invoked in parallel through the threads running inside each reso object.
+
+	patterns.parallel_blend(thisledportal.resos["E"].pixelmap.list_of_lists_of_pixel_numbers, \
+			colordefs.colortable["ENL"], \
+			colordefs.colortable[colordefs.RESO_COLOR_NAMES[4]], \
+			4, \
+			200)
+
+	patterns.parallel_blend(thisledportal.resos["SE"].pixelmap.list_of_lists_of_pixel_numbers, \
+			colordefs.colortable["ENL"], \
+			colordefs.colortable[colordefs.RESO_COLOR_NAMES[8]], \
+			4, \
+			200)
+
+	patterns.parallel_blend(thisledportal.resos["S"].pixelmap.list_of_lists_of_pixel_numbers, \
+			colordefs.colortable["ENL"], \
+			colordefs.colortable[colordefs.RESO_COLOR_NAMES[7]], \
+			4, \
+			200)
+
+	patterns.parallel_blend(thisledportal.resos["SW"].pixelmap.list_of_lists_of_pixel_numbers, \
+			colordefs.colortable["ENL"], \
+			colordefs.colortable[colordefs.RESO_COLOR_NAMES[3]], \
+			4, \
+			200)
+
+	patterns.parallel_blend(thisledportal.resos["N"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[level]], \
 			4, \
 			200)
 
+	patterns.chase(thisledportal.resos["SE"].pixelmap.list_of_lists_of_pixel_numbers, \
+		"ww--ww--ww", -1)
+
+
+# Not needed -- init of a reso starts the thread.
 	# start one thread for each resonator and mod to listen for changes
-	resothreads = [""] * 8
-	modthreads	=	[""] * 4
+	# resothreads = [""] * 8
+	# modthreads	=	[""] * 4
 
 	# for
 
