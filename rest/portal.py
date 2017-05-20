@@ -139,7 +139,7 @@ class Resonator:
 
         diffs = {}
         actions = []
- 
+
         if old_p == None:
 
             diffs['level'] = new_p.level
@@ -154,10 +154,11 @@ class Resonator:
             if new_p.level != old_p.level:
                 diffs['level'] = new_p.level
                 diffs['level-change'] = new_p.level - old_p.level
-                if new_p.level > old_p.level:
+                if new_p.level == 0:
+                    actions.append("resonator_remove")
+                elif new_p.level > old_p.level:
                     actions.append("resonator_upgrade")
                 else:
-                    log.info(" resonator removed and re-added old %d new %d",old_p.level,new_p.level)
                     actions.append("resonator_remove")
                     actions.append("resonator_upgrade")
             if new_p.health != old_p.health:
@@ -477,10 +478,13 @@ class Portal:
         if "resonators" in statusObj:
             resonators = statusObj.get("resonators")
 
+            # iterate over everything in the old
             for p in self.valid_positions:
                 ptl = portal.resonators.get(p, None)
                 if ptl:
+                    # if not in the new, removed
                     if not p in resonators:
+                        reso_is_changed = True
                         actions = self.addAction(actions, "resonator_remove")
 
             for pos, values in resonators.items():
