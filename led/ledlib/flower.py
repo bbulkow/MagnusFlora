@@ -161,7 +161,9 @@ class LedResonatorThread( threading.Thread):
 						colordefs.colortable_level[reso.level], \
 						4, \
 						200)
-		self.basic_chase_pattern("ww--ww--ww")
+		# self.basic_chase_pattern("ww--ww--ww")
+		patterns.chase(reso.pixelmap.list_of_lists_of_pixel_numbers, \
+						"ww--ww--ww", -1, reso)
 
 	def flash_pattern(self, faction ):
 		reso = self.ledResonator

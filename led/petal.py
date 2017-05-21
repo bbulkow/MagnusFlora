@@ -168,7 +168,7 @@ def main(argv):
 	if True:
 		patterns.parallel_blend(thisledportal.resos["E"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
-			colordefs.colortable[colordefs.RESO_COLOR_NAMES[4]], \
+			colordefs.colortable[colordefs.RESO_COLOR_NAMES[3]], \
 			4, \
 			200)
 
