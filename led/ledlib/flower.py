@@ -241,10 +241,10 @@ class LedResonator(Resonator):
 	def hasinterrupt(self):
 		if self.queue.empty() == False:
 			# log.info(" resonator %s has nothing better to do",self.position)
-			return False
+			return True
 		else:
 			self.log.debug(" resonator %s has SOMETHING better to do",self.position)
-			return True
+			return False
 
 
 
