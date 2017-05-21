@@ -165,31 +165,36 @@ def main(argv):
 
 # Normally patterns are invoked in parallel through the threads running inside each reso object.
 
-	patterns.parallel_blend(thisledportal.resos["E"].pixelmap.list_of_lists_of_pixel_numbers, \
+	if False:
+		patterns.parallel_blend(thisledportal.resos["E"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[4]], \
 			4, \
 			200)
 
-	patterns.parallel_blend(thisledportal.resos["SE"].pixelmap.list_of_lists_of_pixel_numbers, \
+	if True:
+		patterns.parallel_blend(thisledportal.resos["SE"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[8]], \
 			4, \
 			200)
 
-	patterns.parallel_blend(thisledportal.resos["S"].pixelmap.list_of_lists_of_pixel_numbers, \
+	if False:
+		patterns.parallel_blend(thisledportal.resos["S"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[7]], \
 			4, \
 			200)
 
-	patterns.parallel_blend(thisledportal.resos["SW"].pixelmap.list_of_lists_of_pixel_numbers, \
+	if False:
+		patterns.parallel_blend(thisledportal.resos["SW"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[3]], \
 			4, \
 			200)
 
-	patterns.parallel_blend(thisledportal.resos["N"].pixelmap.list_of_lists_of_pixel_numbers, \
+	if False:
+		patterns.parallel_blend(thisledportal.resos["N"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[level]], \
 			4, \

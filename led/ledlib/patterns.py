@@ -146,38 +146,55 @@ def chase (list_of_lists_of_pixel_numbers, maskstring, repeat):
 	chasemask = masking.Mask(maskstring)
 	print ("entering chase loop with %s", chasemask.name)
 
-	def single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed):
+	def __single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed):
 		print ("entering single chase with %s", chasemask.name)
 		strand_pointers = [0] * strand_count
 		for thisstep in range(steps):
 			progress = thisstep/steps
 			for strand in range(strand_count):
-				while progress > (strand_pointers[strand] / strand_sizes[strand]):
+				while progress > (strand_pointers[strand] / (strand_sizes[strand]+chasemask.size)):
 					for i in range(chasemask.size):
 							# set previous N pixels (if in bounds) to base
 							backpix = strand_pointers[strand] - chasemask.size - i
 							if backpix >=0:
-								globaldata.all_the_pixels \
-											[list_of_lists_of_pixel_numbers[strand][backpix]] = \
-											base_pixels[strand][backpix]
+								#globaldata.all_the_pixels \
+								#			[list_of_lists_of_pixel_numbers[strand][backpix]] = \
+								#			base_pixels[strand][backpix]
+								print ("line 164")
+								globaldata.setpixel(list_of_lists_of_pixel_numbers[strand][backpix], base_pixels[strand][backpix])
 							# set current N pixels (if in bounds) to masked base
 							frontpix = strand_pointers[strand] - i
-							if frontpix >= 0 and frontpix < strand_sizes[strand]:
+							leadpix = min(frontpix + chasemask.size, strand_sizes[strand])
+							if frontpix >= 0 and frontpix < strand_sizes[strand] and leadpix > frontpix:
 											# temp hardcode for algo testing
-								globaldata.all_the_pixels \
-											[list_of_lists_of_pixel_numbers[strand][frontpix]] = \
-											[200,50,50]
+								#globaldata.all_the_pixels \
+											#[list_of_lists_of_pixel_numbers[strand][frontpix]] = \
+											#[200,50,50]
+								print ("frontpix = ", frontpix, "leadpix= ", leadpix)
+								masked_pixels = chasemask.apply(globaldata.all_the_pixels[frontpix:leadpix])
+								print ("line 175", "frontpix = ", frontpix, "i= ", i)
+								try:
+									globaldata.setpixel(list_of_lists_of_pixel_numbers[strand][frontpix], masked_pixels[i])
+								except:
+									# fencepost somewhere.
+									pass
 					strand_pointers[strand] += 1
-			# clear out the final chase area
-			for i in range(chasemask.size):
-				backpix = strand_sizes[strand] - (chasemask.size - i)
-				if backpix >= 0:
-					globaldata.all_the_pixels \
-								[list_of_lists_of_pixel_numbers[strand][backpix]] = \
-								base_pixels[strand][backpix]
 			if speed > 0:
 				time.sleep(speed/steps)
-		pass
+# 		# clear out the final chase area
+# 		for i in range(chasemask.size):
+# 			backpix = strand_sizes[strand] - (chasemask.size - i)
+# 			if backpix >= 0:
+# 				globaldata.setpixel( \
+# 							[list_of_lists_of_pixel_numbers[strand][backpix]], \
+# 							base_pixels[strand][backpix])
+# 			if speed > 0:
+# 				time.sleep(speed/steps)
+		# return to base state
+		print ("returning to base state")
+		for strand in range(strand_count):
+			for i in range(strand_sizes[strand]):
+				globaldata.setpixel(list_of_lists_of_pixel_numbers[strand][i], base_pixels[strand][i])
 
 
 	base_pixels = [0,0,0] * strand_count * 1
@@ -192,10 +209,10 @@ def chase (list_of_lists_of_pixel_numbers, maskstring, repeat):
 
 	if repeat >= 1:
 		for loop in range(repeat):
-			single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
+			__single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
 	else:
 		while True:
-			single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
+			__single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
 
 
 # this fades along each list of pixesl

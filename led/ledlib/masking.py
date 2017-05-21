@@ -30,7 +30,7 @@ class MaskPos(object):
 		self.rgb = rgb
 		if maskchar == "-":
 			self.opacity = 0.00
-			self.rgb = [0,0,0]
+			self.rgb = (0,0,0)
 		elif maskchar == 0:
 			pass
 		elif maskchar == "N":
@@ -39,7 +39,7 @@ class MaskPos(object):
 			self.rgb = maskcolortable[maskchar]
 		else:
 			self.opacity = 0.00
-			self.rgb = [0,0,0]
+			self.rgb = (0,0,0)
 			log.info (" bad or unimplemented mask  %s, using transparent", maskchar)
 
 defaultmaskpos = MaskPos("-")
@@ -60,9 +60,9 @@ class Mask (object):
 	def apply(self, pixel_list):
 		pixel_list_size = len(pixel_list)
 		scope = min(pixel_list_size, self.size)
-		result = [0,0,0] * scope			# dimension result list
+		result = [(150,150,150)] * scope			# dimension result list
 
 
-
-
+		print ("mask apply result ", result, "size = ", pixel_list_size)
+		return result
 
