@@ -164,7 +164,7 @@ async def init(app, args, loop):
 
     return 
 
-def led_init(args, log):
+def led_init(args, g_config, log):
 
 
     # command line flags
@@ -210,6 +210,17 @@ def led_init(args, log):
     # this is the key class that has worker threads and everything,
     # it'll get put onto the app soon
     ledportal = LedPortal(log)
+
+    # load the JSON file if it's around
+    try:
+        with open(g_config.datafile) as data_file:    
+            portal_json = json.load(data_file)
+        ledportal.setStatusJson(portal_json, log)
+    except:
+        log.warning(" initial json object does not exist or can't be parsed")
+        pass
+    log.info(" loaded from file, level is %d",ledportal.getLevel() )
+    log.info(" loaded from file, resos are %s", str(ledportal.resonators) )
 
     # send the init action to all the petals
     # this is now ASYNC so you should see all work together
@@ -258,7 +269,7 @@ log = create_logger(args)
 log.info('starting MagnusFlora Led: there will be %d cakes', 9 )
 
 # init including the OPC server connectors & remapping
-led_init(args, log)
+led_init(args, g_config, log)
 
 print("starting MagnusFlora Led monitoring ",g_config["portalfile"]," on port ",g_config["led_port"])
 
