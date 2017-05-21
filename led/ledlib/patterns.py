@@ -212,9 +212,13 @@ def chase (list_of_lists_of_pixel_numbers, maskstring, repeat, thisreso):
 	if repeat >= 1:
 		for loop in range(repeat):
 			__single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
+			if thisreso.hasinterrupt():
+				break
 	else:
 		while True:
 			__single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
+			if thisreso.hasinterrupt():
+				break
 
 
 # this fades along each list of pixesl
