@@ -122,6 +122,9 @@ class Resonator:
             self.distance = 0
         return True
 
+    def hasinterrupt(self):
+        return False
+
     # Compare returns an object noting the differences between the old value and the new.
     # or None if they are the same
     #
