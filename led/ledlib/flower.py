@@ -243,7 +243,7 @@ class LedResonator(Resonator):
 			# log.info(" resonator %s has nothing better to do",self.position)
 			return False
 		else:
-			log.debug(" resonator %s has SOMETHING better to do",self.position)
+			self.log.debug(" resonator %s has SOMETHING better to do",self.position)
 			return True
 
 
