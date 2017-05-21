@@ -6,14 +6,14 @@
    { "delay": 6.0, "resonators": { "N": {"level": 4, "health": 100},"NE": {"level": 4, "health": 100} } } 
    { "delay": 6.0, "resonators": { "E": {"level": 4, "health": 100},"SE": {"level": 4, "health": 100} } } 
    { "delay": 6.0, "resonators": { "S": {"level": 4, "health": 100},"SW": {"level": 4, "health": 100} } } 
-   { "delay": 6.0, "resonators": { "W": {"level": 4, "health": 100},"NW": {"level": 4, "health": 100} } } 
+   { "delay": 600.0, "resonators": { "W": {"level": 4, "health": 100},"NW": {"level": 4, "health": 100} } } 
 
 # fully deployed - resonators under attack
 
    { "delay": 6.0, "resonators": { "N": {"level": 4, "health": 90} } } 
    { "delay": 6.0, "resonators": {"NE": {"level": 4, "health": 90} } } 
    { "delay": 6.0, "resonators": {"S": {"level": 4, "health": 90} } } 
-   { "delay": 6.0, "resonators": { "N": {"level": 4, "health": 90} } } 
+   { "delay": 600.0, "resonators": { "N": {"level": 4, "health": 90} } } 
 
 # being removed
 
@@ -23,7 +23,7 @@
    { "delay": 6.0, "resonators": { "N": {"level": 0} } } 
 
 # some time for the background sounds to play
-   { "delay": 120.0,  "mods": [ ]  }
+   { "delay": 600.0,  "mods": [ ]  }
 
 
 # upgraded
@@ -33,7 +33,7 @@
    { "delay": 8.0, "resonators": { "S": {"level": 5, "health": 100},"SW": {"level": 5, "health": 100} } } 
    { "delay": 8.0, "resonators": { "W": {"level": 8, "health": 100},"NW": {"level": 8, "health": 100} } } 
 
-   { "delay": 10.0,  "mods": [  "HS-C" ]  }
+   { "delay": 100.0,  "mods": [  "HS-C" ]  }
 
 # under attack
 
@@ -50,14 +50,14 @@
    { "delay": 40.0, "resonators": { "N": {"level": 0 },"NE": {"level": 0} } } 
    { "delay": 4.0, "resonators": { "E": {"level": 0 },"SE": {"level": 0} } } 
    { "delay": 4.0, "resonators": { "S": {"level": 0 },"SW": {"level": 0} } } 
-   { "delay": 40.0, "resonators": { "W": {"level": 0},"NW": {"level": 0} } } 
+   { "delay": 600.0, "resonators": { "W": {"level": 0},"NW": {"level": 0} } } 
 
    { "delay": 20.0, "faction": "2", "resonators": { "N": {"level": 3, "health": 100} } }
 
    { "delay": 4.0, "resonators": { "N": {"level": 8, "health": 100},"NE": {"level": 8, "health": 100} } } 
    { "delay": 4.0, "resonators": { "E": {"level": 8, "health": 100},"SE": {"level": 7, "health": 100} } } 
    { "delay": 4.0, "resonators": { "S": {"level": 7, "health": 100},"SW": {"level": 5, "health": 100} } } 
-   { "delay": 145.0, "resonators": { "W": {"level": 0, "health": 100},"NW": {"level": 7, "health": 100} } } 
+   { "delay": 600.0, "resonators": { "W": {"level": 0, "health": 100},"NW": {"level": 7, "health": 100} } } 
 
 # attack
 
@@ -77,7 +77,7 @@
    { "delay": 15.0, "resonators": { "S": {"level": 0, "health": 100},"SW": {"level": 0, "health": 100} } } 
    { "delay": 15.0, "resonators": { "W": {"level": 0, "health": 100},"NW": {"level": 0, "health": 100} } } 
 
-   { "delay": 160.0, "faction": 0 }
+   { "delay": 600.0, "faction": 0 }
 
 # rebuild
 
