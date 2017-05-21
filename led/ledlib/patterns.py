@@ -133,9 +133,11 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
 		globaldata.all_the_pixels[last_pixel] = rgb2
 
 
-def chase (list_of_lists_of_pixel_numbers, maskstring, repeat):
+def chase (list_of_lists_of_pixel_numbers, maskstring, repeat, thisreso):
 	# note that this should support a chase on only some components of a reso
 	# repeat = -1 : infinite repeat
+	# note:  if we were going to have to feed in the reso anyway, we could have used attributes of the
+	# reso and make this code a function inside the reso.  Oh well.  Lesson for next time.
 	strand_count = len(list_of_lists_of_pixel_numbers)
 	strand_sizes = [0] * strand_count
 	strand_pointers = [0] * strand_count

@@ -165,14 +165,14 @@ def main(argv):
 
 # Normally patterns are invoked in parallel through the threads running inside each reso object.
 
-	if False:
+	if True:
 		patterns.parallel_blend(thisledportal.resos["E"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[4]], \
 			4, \
 			200)
 
-	if True:
+	if False:
 		patterns.parallel_blend(thisledportal.resos["SE"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[8]], \
@@ -193,15 +193,15 @@ def main(argv):
 			4, \
 			200)
 
-	if False:
-		patterns.parallel_blend(thisledportal.resos["N"].pixelmap.list_of_lists_of_pixel_numbers, \
+	if True:
+		patterns.parallel_blend(thisledportal.resos["NE"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[level]], \
 			4, \
 			200)
 
-	patterns.chase(thisledportal.resos["SE"].pixelmap.list_of_lists_of_pixel_numbers, \
-		"ww--ww--ww", -1)
+	patterns.chase(thisledportal.resos["NE"].pixelmap.list_of_lists_of_pixel_numbers, \
+		"ww--ww--ww", -1, thisledportal.resos["SE"])
 
 
 # Not needed -- init of a reso starts the thread.
