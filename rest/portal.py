@@ -450,23 +450,23 @@ class Portal:
 
 #        log.debug("Portal set status: mods  " )
 
-        if "mods" in statusObj:
-            old_mods = portal.mods
-            new_mods = statusObj.get("mods")
-
-            if sorted(old_mods) != sorted(new_mods):
-                is_changed = True
-                portal.mods = []
+#        if "mods" in statusObj:
+#            old_mods = portal.mods
+#            new_mods = statusObj.get("mods")
+#
+#            if sorted(old_mods) != sorted(new_mods):
+#                is_changed = True
+#                portal.mods = []
                 #what_changed["mods"] = []
 
-                mods = statusObj.get("mods")
-                for mod in mods:
-                    portal.mods.append(mod)
+#                mods = statusObj.get("mods")
+#                for mod in mods:
+#                    portal.mods.append(mod)
                     #what_changed["mods"].append(mod)
 
-                actions = self.addAction(actions, self.getModsAction(old_mods, new_mods))
+#                actions = self.addAction(actions, self.getModsAction(old_mods, new_mods))
 
-                log.debug(" what changed: mods %s", str(portal.mods))
+#                log.debug(" what changed: mods %s", str(portal.mods))
 
 #        log.debug("Portal set status: reso  " )
 

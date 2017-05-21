@@ -243,7 +243,7 @@ async def thulu_poller(app):
                 logger.debug( "Poller: thulu is up, root received valid response")
 
                 # gets the status and decodes the json into an object
-                res = await portal_status(session, 'http://localhost:5050/status/json', app)
+                res = await portal_status(session, g_config['tecthulu_url'], app)
 
             except aiohttp.ClientConnectionError as ex:
                 logger.error( "Poller: could not connect to server, reason %s ",ex)

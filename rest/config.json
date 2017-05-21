@@ -15,9 +15,9 @@
 	"jarvis_url": "http://127.0.0.1:2005/",
 	"jarvis_port": 2005,
 
-	"tecthulu_url": "http://127.0.0.1:5050/",
-	"tecthulu_port": 5050,
-	"tecthulu_poll": 1.0,
+	"tecthulu_url": "http://192.168.66.22:80/status/jsonforwhiners",
+	"tecthulu_port": 80,
+	"tecthulu_poll": 0.5,
 
 	"portalfile": "portal.json",
 	"tracefile": "trace.json",
