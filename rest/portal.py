@@ -125,6 +125,15 @@ class Resonator:
     def hasinterrupt(self):
         return False
 
+    # sometimes it's nice to have the interesting values as a dict
+    def getValues(self):
+        v = {}
+        v["level"] = self.level
+        v["health"] = self.health
+        v["distance"] = self.distance
+        v["owner"] = self.owner
+        return v
+
     # Compare returns an object noting the differences between the old value and the new.
     # or None if they are the same
     #
@@ -316,6 +325,8 @@ class Portal:
         if r > 100:
             r = 100
         return r
+
+
 
     # returns true or false if the two resonator maps are different
     @staticmethod

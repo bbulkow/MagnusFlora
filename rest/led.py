@@ -207,9 +207,22 @@ def led_init(args, g_config, log):
 
     globaldata.ledcontrol = start_opc()
 
+    # load the JSON file if it's around
+    portal_json = ""
+    try:
+        with open(g_config.datafile) as data_file:    
+            portal_json = json.load(data_file)
+    except:
+        log.warning(" initial json object does not exist or can't be parsed")
+        pass
+
     # this is the key class that has worker threads and everything,
     # it'll get put onto the app soon
-    ledportal = LedPortal(log)
+    ledportal = LedPortal(portal_json, log)
+
+    log.info(" loaded from file, level is %d", ledportal.getLevel() )
+    log.info(" loaded from file, resos are %s", str(ledportal.resonators) )
+    log.info(" loaded from file, LedResos are %s", str(ledportal.resos) )
 
     # load the JSON file if it's around
     try:
