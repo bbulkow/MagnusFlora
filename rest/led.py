@@ -155,7 +155,7 @@ async def init(app, args, loop):
     app.router.add_post('/portal', portal_notification)
 
     # create a portal object and stash it, many will need it
-    app['portal'] = Portal(1, app['log'])
+    # app['portal'] = Portal(1, app['log'])
 
     # background tasks are covered near the bottom of this:
     # http://aiohttp.readthedocs.io/en/stable/web.html
@@ -207,14 +207,25 @@ def led_init(args, log):
 
     globaldata.ledcontrol = start_opc()
 
-    # ledportal = LedPortal()
+    # this is the key class that has worker threads and everything,
+    # it'll get put onto the app soon
+    ledportal = LedPortal(log)
+
+    # send the init action to all the petals
+    # this is now ASYNC so you should see all work together
+    a = LedAction('INIT')
+    for r in Resonator.valid_positions:
+        ledportal.resos[r].do_action(a)
+
+    globaldata.ledportal = ledportal
+
 
     # print ("writing ", finalcolor, " to the LEDs.")
     # pixels = [ finalcolor ] * numLEDs
 
     # ledwrite (ledcontrol, pixels)
 
-    return
+    return 
 
 
 
@@ -267,6 +278,7 @@ loop = asyncio.get_event_loop()
 app = web.Application()
 app['config'] = g_config
 app['log'] = log
+app['ledportal'] = globaldata.ledportal
 
 loop.run_until_complete(init(app, args, loop))
 
