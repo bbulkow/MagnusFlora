@@ -155,7 +155,7 @@ async def init(app, args, loop):
     app.router.add_post('/portal', portal_notification)
 
     # create a portal object and stash it, many will need it
-    app['portal'] = Portal(1, app['log'])
+    # app['portal'] = Portal(1, app['log'])
 
     # background tasks are covered near the bottom of this:
     # http://aiohttp.readthedocs.io/en/stable/web.html
@@ -164,7 +164,7 @@ async def init(app, args, loop):
 
     return 
 
-def led_init(args, log):
+def led_init(args, g_config, log):
 
 
     # command line flags
@@ -207,14 +207,49 @@ def led_init(args, log):
 
     globaldata.ledcontrol = start_opc()
 
-    # ledportal = LedPortal()
+    # load the JSON file if it's around
+    portal_json = ""
+    try:
+        with open(g_config.datafile) as data_file:    
+            portal_json = json.load(data_file)
+    except:
+        log.warning(" initial json object does not exist or can't be parsed")
+        pass
+
+    # this is the key class that has worker threads and everything,
+    # it'll get put onto the app soon
+    ledportal = LedPortal(portal_json, log)
+
+    log.info(" loaded from file, level is %d", ledportal.getLevel() )
+    log.info(" loaded from file, resos are %s", str(ledportal.resonators) )
+    log.info(" loaded from file, LedResos are %s", str(ledportal.resos) )
+
+    # load the JSON file if it's around
+    try:
+        with open(g_config.datafile) as data_file:    
+            portal_json = json.load(data_file)
+        ledportal.setStatusJson(portal_json, log)
+    except:
+        log.warning(" initial json object does not exist or can't be parsed")
+        pass
+    log.info(" loaded from file, level is %d",ledportal.getLevel() )
+    log.info(" loaded from file, resos are %s", str(ledportal.resonators) )
+
+    # send the init action to all the petals
+    # this is now ASYNC so you should see all work together
+    a = LedAction('INIT')
+    for r in Resonator.valid_positions:
+        ledportal.resos[r].do_action(a)
+
+    globaldata.ledportal = ledportal
+
 
     # print ("writing ", finalcolor, " to the LEDs.")
     # pixels = [ finalcolor ] * numLEDs
 
     # ledwrite (ledcontrol, pixels)
 
-    return
+    return 
 
 
 
@@ -247,7 +282,7 @@ log = create_logger(args)
 log.info('starting MagnusFlora Led: there will be %d cakes', 9 )
 
 # init including the OPC server connectors & remapping
-led_init(args, log)
+led_init(args, g_config, log)
 
 print("starting MagnusFlora Led monitoring ",g_config["portalfile"]," on port ",g_config["led_port"])
 
@@ -267,6 +302,7 @@ loop = asyncio.get_event_loop()
 app = web.Application()
 app['config'] = g_config
 app['log'] = log
+app['ledportal'] = globaldata.ledportal
 
 loop.run_until_complete(init(app, args, loop))
 

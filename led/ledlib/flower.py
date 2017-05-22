@@ -23,29 +23,17 @@ class LedPortal(Portal):
 
 	valid_positions = [  "N", "NE", "E", "SE", "S", "SW","W", "NW" ]
 
-	def __init__(self, log):
+	def __init__(self, jsonObj, log):
 
 		Portal.__init__(self,id,log)
 
 		log.debug(" LedPortal initializing !!! ")
 
+		# this will init all the Portal's fields
+		if jsonObj != None:
+			self.setStatusJson(jsonObj, log)
+
 		verbose=True
-
-		# THIS IS EXAMPLE CODE
-		self.title = "Dreamer Archetype"
-
-		# initial value - for testing - todo pull from file
-		vals = {'level': 4, 'health': 100, 'owner': "az" }
-
-
-		# not sure we need the resonators, or what we will do with them.
-		# we have LedResonators...
-		for pos in Portal.valid_positions:
-			vals = {'level': 4, 'health': 100, 'owner': "az" }
-			r = Resonator(pos, self, log, vals)
-			self.resonators[pos] = r
-
-		self.faction = 1
 
 		# create the resos
 		self.resos = {}
@@ -53,7 +41,11 @@ class LedPortal(Portal):
 			for side in range(2):						# 2 sets of 4 channels each
 				reso_number = fc * 2 + side		# 8 resos
 				pos = self.valid_positions[reso_number]
-				self.resos[pos] = LedResonator(pos, self, fc, side, log, vals)
+				portal_res = self.resonators.get(pos, None)
+				v = None
+				if portal_res:
+					v = portal_res.getValues()
+				self.resos[pos] = LedResonator(pos, self, fc, side, log, v)
 
 # Pixelstring
 # name
@@ -161,7 +153,9 @@ class LedResonatorThread( threading.Thread):
 						colordefs.colortable_level[reso.level], \
 						4, \
 						200)
-		self.basic_chase_pattern("ww--ww--ww")
+		# self.basic_chase_pattern("ww--ww--ww")
+		patterns.chase(reso.pixelmap.list_of_lists_of_pixel_numbers, \
+						"ww--ww--ww", -1, reso)
 
 	def flash_pattern(self, faction ):
 		reso = self.ledResonator

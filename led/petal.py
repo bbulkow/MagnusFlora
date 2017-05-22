@@ -119,7 +119,7 @@ def setup(argv):
 
 	globaldata.ledcontrol = start_opc()
 
-	# ledportal = LedPortal()
+	# ledportal = LedPortal(log, None)
 
 	# print ("writing ", finalcolor, " to the LEDs.")
 	# pixels = [ finalcolor ] * numLEDs
@@ -146,7 +146,7 @@ def main(argv):
 	EKG.start()
 	verboseprint ("Global heartbeat started.")
 
-	thisledportal = LedPortal(globalconfig.log)
+	thisledportal = LedPortal(globalconfig.log, None)
 	level = riggeddemo.level
 
 
@@ -168,7 +168,7 @@ def main(argv):
 	if True:
 		patterns.parallel_blend(thisledportal.resos["E"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
-			colordefs.colortable[colordefs.RESO_COLOR_NAMES[4]], \
+			colordefs.colortable[colordefs.RESO_COLOR_NAMES[3]], \
 			4, \
 			200)
 
