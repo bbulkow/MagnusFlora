@@ -41,8 +41,12 @@ class MaskPos(object):
 			self.opacity = 0.00
 			self.rgb = (0,0,0)
 			log.info (" bad or unimplemented mask  %s, using transparent", maskchar)
+	def __apply_single(maskpos, rgb_triplet):
+		pass
 
 defaultmaskpos = MaskPos("-")
+
+	
 
 class Mask (object):
 	def __init__(self,string,opacity=[1.00],
@@ -57,12 +61,12 @@ class Mask (object):
 		for i in range(self.size):
 			self.pos[i] = MaskPos(self.name[i], self.opacity[i])
 
-	def apply(self, pixel_list):
-		pixel_list_size = len(pixel_list)
-		scope = min(pixel_list_size, self.size)
+	def apply(self, rgb_list):
+		rgb_list_size = len(rgb_list)
+		scope = min(rgb_list_size, self.size)
 		result = [(150,150,150)] * scope			# dimension result list
-
-
-		print ("mask apply result ", result, "size = ", pixel_list_size)
+		for i in range(rgb_list_size):
+			result[i] = self.pos[i].__apply_single(rgb_list[i])
+		# print ("mask apply result ", result, "size = ", rgb_list_size)
 		return result
 
