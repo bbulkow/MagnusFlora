@@ -119,7 +119,7 @@ def setup(argv):
 
 	globaldata.ledcontrol = start_opc()
 
-	# ledportal = LedPortal(log, None)
+	# ledportal = LedPortal( None, log )
 
 	# print ("writing ", finalcolor, " to the LEDs.")
 	# pixels = [ finalcolor ] * numLEDs
@@ -146,7 +146,7 @@ def main(argv):
 	EKG.start()
 	verboseprint ("Global heartbeat started.")
 
-	thisledportal = LedPortal(globalconfig.log, None)
+	thisledportal = LedPortal( None, globalconfig.log)
 	level = riggeddemo.level
 
 

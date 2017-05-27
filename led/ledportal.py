@@ -111,7 +111,7 @@ def setup(argv):
 
 	globaldata.ledcontrol = start_opc()
 
-	# ledportal = LedPortal(log, None)
+	# ledportal = LedPortal( None, log)
 
 	# print ("writing ", finalcolor, " to the LEDs.")
 	# pixels = [ finalcolor ] * numLEDs
@@ -145,7 +145,6 @@ def main(argv):
 	setup (argv)
 	log = globalconfig.log
 
-
 	# start a simple thread to asynchronously push the pixel array to the LEDs
 	let_there_be_light = Thread(target=opcwrap.ledwriteloop)
 	let_there_be_light.start()
@@ -161,7 +160,7 @@ def main(argv):
 	verboseprint ("Global heartbeat started.")
 
 	# create the LedPortal object - fundamental init
-	ledportal = LedPortal(globalconfig.log, None)
+	ledportal = LedPortal(None, globalconfig.log )
 
 # def parallel_fade (list_of_lists_of_pixel_numbers, \
 #      rgb_color_triplet, fade_ratio=0.5, speed=0, steps=100):
