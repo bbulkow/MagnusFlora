@@ -224,17 +224,6 @@ def led_init(args, g_config, log):
     log.info(" loaded from file, resos are %s", str(ledportal.resonators) )
     log.info(" loaded from file, LedResos are %s", str(ledportal.resos) )
 
-    # load the JSON file if it's around
-    try:
-        with open(g_config.datafile) as data_file:    
-            portal_json = json.load(data_file)
-        ledportal.setStatusJson(portal_json, log)
-    except:
-        log.warning(" initial json object does not exist or can't be parsed")
-        pass
-    log.info(" loaded from file, level is %d",ledportal.getLevel() )
-    log.info(" loaded from file, resos are %s", str(ledportal.resonators) )
-
     # send the init action to all the petals
     # this is now ASYNC so you should see all work together
     a = LedAction('INIT')
