@@ -238,10 +238,10 @@ class LedResonator(Resonator):
     def hasinterrupt(self):
         if self.queue.empty() == False:
             # log.info(" resonator %s has nothing better to do",self.position)
-            return True
+            return False
         else:
             self.log.debug(" resonator %s has SOMETHING better to do",self.position)
-            return False
+            return True
 
     def __str__(self):
         return '"{0}": {{"level": {1}, "health": {2} }}'.format(self.position, self.level, self.health)
