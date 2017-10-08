@@ -1,1 +1,1 @@
-python led.py -c ../rest/config.py -d DEBUG
+python led.py -c ../rest/config.json -d DEBUG

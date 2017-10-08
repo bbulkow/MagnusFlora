@@ -67,7 +67,7 @@ from ledlib import opcwrap
 from aiohttp import web
 
 # import local shared code
-from portal import Resonator, Portal
+from ledlib.portal import Resonator, Portal
 
 # A simple example of a timer function
 async def timer(app):
