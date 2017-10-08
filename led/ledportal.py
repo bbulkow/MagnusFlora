@@ -178,7 +178,7 @@ def main(argv):
 	# this is now ASYNC so you should see all work together
 	a = LedAction('INIT')
 	for r in Resonator.valid_positions:
-		ledportal.resos[r].do_action(a)
+		ledportal.ledResonators[r].do_action(a)
 
 	log.info ("Ready for commands.")
 
@@ -189,14 +189,14 @@ def main(argv):
 	log.info(" generating attack by ENL")
 	a = LedAction('ATTACK', 2)
 	for r in Resonator.valid_positions:
-		ledportal.resos[r].do_action(a)
+		ledportal.ledResonators[r].do_action(a)
 
 	time.sleep(8.0)
 	log.info(" generating attack by RES")
 
 	a = LedAction('ATTACK', 1)
 	for r in Resonator.valid_positions:
-		ledportal.resos[r].do_action(a)
+		ledportal.ledResonators[r].do_action(a)
 
 	time.sleep(100.0)
 
