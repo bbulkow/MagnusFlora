@@ -133,6 +133,8 @@ class LedAction():
         self.action = action
         self.faction = faction
         pass
+    def __str__(self):
+        return "LedAction: action: {0} faction {1}".format(self.action,self.faction)
 
 # AKA a petal
 # has a queue and a thread that reads the queue
@@ -213,6 +215,8 @@ class LedResonator(Resonator):
     # resos.append(Ledresonator(reso_number, reso_name, fc, side, level, health, faction)
 
     def __init__( self, position, portal, fc, side, log, values ):
+
+        log.warning(" creating Ledresonator at position %s",position)
 
         # superclass init
         Resonator.__init__(self, position, portal, log, values)

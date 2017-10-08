@@ -222,13 +222,14 @@ def led_init(args, g_config, log):
 
     log.info(" initial state, level is %d", ledportal.getLevel() )
     log.info(" initial state, resos are %s", str(ledportal.resonators) )
-    log.info(" initial state, LedResos are %s", str(ledportal.resos) )
+    for key, value in ledportal.ledResonators.items():
+        log.info(" initial stated: LedReso %s is %s", key, value )
 
     # send the init action to all the petals
     # this is now ASYNC so you should see all work together
     a = LedAction('INIT')
     for r in Resonator.valid_positions:
-        ledportal.resos[r].do_action(a)
+        ledportal.ledResonators[r].do_action(a)
 
     globaldata.ledportal = ledportal
 
