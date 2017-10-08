@@ -258,9 +258,9 @@ class IngressSound:
         loop = self.app['loop']
         loop.call_later(secs, switch_sound_cb, self, self.sequence)
 
-	# action is a string, one defined in the doc:
-	# attack, recharge, resonator_add, resonator_remove, portal_neutralized, portal_captured, 
-	# mod_added, mod_destroyed, resonator_upgrade, jarvis, ada
+    # action is a string, one defined in the doc:
+    # attack, recharge, resonator_add, resonator_remove, portal_neutralized, portal_captured, 
+    # mod_added, mod_destroyed, resonator_upgrade, jarvis, ada
 
     def play_action_str(self, action ):
 
@@ -303,9 +303,9 @@ class IngressSound:
                 queue = self.q
                 queue.put_nowait( SoundEvent(action, now ) )
                 return
-	
+    
         # play new
-        self.event_audio_obj, secs = play_sound_start( ainfo[0] )		
+        self.event_audio_obj, secs = play_sound_start( ainfo[0] )       
         self.event_audio_start = now
         self.event_audio_minimum = now + ainfo[1]
         self.event_audio_maximum = now + secs
@@ -338,7 +338,7 @@ class IngressSound:
         self.event_audio_maximum = now + secs
         self.sequence += 1
 
-		# register a callback to switch
+        # register a callback to switch
         self.log.info(" background: scheduling callback for switch_sound %f seconds from now",secs)
         loop = self.app['loop']
         loop.call_later(secs, switch_sound_cb, self, self.sequence)
@@ -478,8 +478,8 @@ async def init(app, args, loop):
     app['sound'] = IngressSound(app)
 
 
-	# background tasks are covered near the bottom of this:
-	# http://aiohttp.readthedocs.io/en/stable/web.html
+    # background tasks are covered near the bottom of this:
+    # http://aiohttp.readthedocs.io/en/stable/web.html
     app.on_startup.append(start_background_tasks)
     app.on_cleanup.append(cleanup_background_tasks)
 
