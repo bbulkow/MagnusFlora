@@ -27,7 +27,7 @@ while True:
         print ("Reso = ", resolevel)
         for chase in range(StripSize):
             pixels = [ MUTED_GRAY ] * numLEDs 
-                for base in Bases:
+            for base in Bases:
                 for body in range(chase_size):
                     pixel_dot = chase + body
                     if pixel_dot < StripSize:
