@@ -156,7 +156,7 @@ def main(argv):
 	# this is the base for one type of pattern. Steal the pixel data
 	# and feed it to the subthreads as static.
 
-# 	patterns.parallel_blend(thisledportal.resos[0].pixelmap.list_of_lists_of_pixel_numbers, \
+# 	patterns.parallel_blend(thisledportal.ledResonators[0].pixelmap.list_of_lists_of_pixel_numbers, \
 # 			colordefs.colortable["ENL"], \
 # 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[level]], \
 # 			4, \
@@ -166,42 +166,42 @@ def main(argv):
 # Normally patterns are invoked in parallel through the threads running inside each reso object.
 
 	if True:
-		patterns.parallel_blend(thisledportal.resos["E"].pixelmap.list_of_lists_of_pixel_numbers, \
+		patterns.parallel_blend(thisledportal.ledResonators["E"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[3]], \
 			4, \
 			200)
 
 	if False:
-		patterns.parallel_blend(thisledportal.resos["SE"].pixelmap.list_of_lists_of_pixel_numbers, \
+		patterns.parallel_blend(thisledportal.ledResonators["SE"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[8]], \
 			4, \
 			200)
 
 	if False:
-		patterns.parallel_blend(thisledportal.resos["S"].pixelmap.list_of_lists_of_pixel_numbers, \
+		patterns.parallel_blend(thisledportal.ledResonators["S"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[7]], \
 			4, \
 			200)
 
 	if False:
-		patterns.parallel_blend(thisledportal.resos["SW"].pixelmap.list_of_lists_of_pixel_numbers, \
+		patterns.parallel_blend(thisledportal.ledResonators["SW"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[3]], \
 			4, \
 			200)
 
 	if True:
-		patterns.parallel_blend(thisledportal.resos["NE"].pixelmap.list_of_lists_of_pixel_numbers, \
+		patterns.parallel_blend(thisledportal.ledResonators["NE"].pixelmap.list_of_lists_of_pixel_numbers, \
 			colordefs.colortable["ENL"], \
 			colordefs.colortable[colordefs.RESO_COLOR_NAMES[level]], \
 			4, \
 			200)
 
-	patterns.chase(thisledportal.resos["NE"].pixelmap.list_of_lists_of_pixel_numbers, \
-		"ww--ww--ww", -1, thisledportal.resos["SE"])
+	patterns.chase(thisledportal.ledResonators["NE"].pixelmap.list_of_lists_of_pixel_numbers, \
+		"ww--ww--ww", -1, thisledportal.ledResonators["SE"])
 
 
 # Not needed -- init of a reso starts the thread.
