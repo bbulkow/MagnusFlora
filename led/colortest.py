@@ -16,21 +16,21 @@ frame_delay = 0.04
 # strip2 = 128-191
 # etc. 
 
-StripSize = 64	
+StripSize = 64  
 
 Bases = [ 0, 64, 128, 192, 256, 320, 384, 448 ]
 
 client = opc.Client('127.0.0.1:7890')
 
 while True:
-	for resolevel in range(9):
-		print ("Reso = ", resolevel)
-		for chase in range(StripSize):
-			pixels = [ MUTED_GRAY ] * numLEDs 
-	    		for base in Bases:
-				for body in range(chase_size):
-					pixel_dot = chase + body
-					if pixel_dot < StripSize:
-						pixels[base+pixel_dot] = RESO_COLORS[resolevel]
-			client.put_pixels(pixels)
-			time.sleep(frame_delay)
+    for resolevel in range(9):
+        print ("Reso = ", resolevel)
+        for chase in range(StripSize):
+            pixels = [ MUTED_GRAY ] * numLEDs 
+                for base in Bases:
+                for body in range(chase_size):
+                    pixel_dot = chase + body
+                    if pixel_dot < StripSize:
+                        pixels[base+pixel_dot] = RESO_COLORS[resolevel]
+            client.put_pixels(pixels)
+            time.sleep(frame_delay)
