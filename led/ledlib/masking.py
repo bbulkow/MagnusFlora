@@ -25,7 +25,7 @@ maskcolortable = {
 }
 
 class MaskPos(object):
-    def __init__(self, maskchar, opacity=1.00, rgb=[0,0,0]):
+    def __init__(self, maskchar, opacity=1.00, rgb=(0,0,0)):
         self.opacity=opacity
         self.rgb = rgb
         if maskchar == "-":
@@ -41,8 +41,25 @@ class MaskPos(object):
             self.opacity = 0.00
             self.rgb = (0,0,0)
             log.info (" bad or unimplemented mask  %s, using transparent", maskchar)
-    def __apply_single(maskpos, rgb_triplet):
-        pass
+    def apply_single(self, rgb_triplet):
+        # not sure what kind of compositing to use. Let's at least do the right thing
+        # for 0 and 1 opacity
+        if self.opacity <= 0.001:
+            return self.rgb
+        elif self.opacity == 1.00:
+            return rgb_triplet
+        # not sure what to do. Try multiplying.
+        # print ( "apply single: rgb {0} maskrgb {1} opacity {2}".format(rgb_triplet,self.rgb,self.opacity))
+        r = ( self.rgb[0] * self.opacity ) + rgb_triplet[0]
+        if r > 255:
+            r = 255
+        g = ( self.rgb[1] * self.opacity ) + rgb_triplet[1]
+        if g > 255:
+            g = 255
+        b = ( self.rgb[2] * self.opacity ) + rgb_triplet[2]
+        if b > 255:
+            b = 255
+        return ( r, g, b )
 
 defaultmaskpos = MaskPos("-")
 
@@ -64,9 +81,10 @@ class Mask (object):
     def apply(self, rgb_list):
         rgb_list_size = len(rgb_list)
         scope = min(rgb_list_size, self.size)
+        #print( "apply mask: rgb_list_size {0} selfsize {1} scope {2} rgb_list {3}".format(rgb_list_size,self.size,scope,rgb_list))
         result = [(150,150,150)] * scope            # dimension result list
         for i in range(rgb_list_size):
-            result[i] = self.pos[i].__apply_single(rgb_list[i])
+            mp = self.pos[i].apply_single(rgb_list[i])
         # print ("mask apply result ", result, "size = ", rgb_list_size)
         return result
 
