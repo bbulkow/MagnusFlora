@@ -94,12 +94,21 @@ async def timer(app):
 async def portal_notification(request):
 
     log = request.app['log']
+    ledPortal = request.app['ledportal']
     try:
 
         log.debug(" received notification: %s of type %s",request.method, request.content_type)
 
         req_obj = await request.json()
         log.debug(" received JSON %s",req_obj)
+
+        action, action_parm = req_obj.get("action", None)
+        what_changed = req_obj.get("what_changed", None)
+
+        log.warning(" action: %s on: %s",action, action_parm )
+        log.warning(" what changed: {0}".format(what_changed))
+        
+
         r = web.Response(text="OK" , charset='utf-8')
     except Exception as e:
         log.warning(" exception while handing portal notification: %s ",str(ex))

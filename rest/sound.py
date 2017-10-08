@@ -262,9 +262,9 @@ class IngressSound:
     # attack, recharge, resonator_add, resonator_remove, portal_neutralized, portal_captured, 
     # mod_added, mod_destroyed, resonator_upgrade, jarvis, ada
 
-    def play_action_str(self, action ):
+    def play_action(self, action, action_parm ):
 
-        self.log.debug(" play_action:  %s",action)
+        self.log.debug(" play_action:  %s parm %s",action,action_parm)
 
         if action not in IngressSound.legal_actions:
             self.log.warning(" received illegal action, ingoring, %s",action)
@@ -408,11 +408,13 @@ async def portal_notification(request):
         req_obj = await request.json()
         log.debug(" received JSON %s",req_obj)
 
-        action_str = req_obj.get("action", None)
+        # the action parm is the thing that's changing, which doesn't
+        # matter much for sound ( maybe for faction changes )
+        action, action_parm = req_obj.get("action", None)
 
-        log.debug(" action is: %s sound is: %s",action_str, sound)
+        log.debug(" action is: %s sound is: %s",action, sound)
 
-        sound.play_action_str(action_str)
+        sound.play_action(action, action_parm)
 
         r = web.Response(text="OK" , charset='utf-8')
     except:
