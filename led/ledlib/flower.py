@@ -17,14 +17,13 @@ import time
 # python3 calls it Queue
 import queue
 
-# LedPortal has LedResonators in the 'resos' object
 
 class LedPortal(Portal):
 
 	valid_positions = [  "N", "NE", "E", "SE", "S", "SW","W", "NW" ]
 
 	def __init__(self, jsonObj, log):
-
+		# superclass
 		Portal.__init__(self,id,log)
 
 		log.debug(" LedPortal initializing !!! ")
@@ -35,8 +34,9 @@ class LedPortal(Portal):
 
 		verbose=True
 
-		# create the resos
-		self.resos = {}
+		# create the LedResonators
+		# They probably should actually be 'resonators'
+		self.ledResonators = {}
 		for fc in range(4):								# 4 FAdecandy boards
 			for side in range(2):						# 2 sets of 4 channels each
 				reso_number = fc * 2 + side		# 8 resos
@@ -45,7 +45,7 @@ class LedPortal(Portal):
 				v = None
 				if portal_res:
 					v = portal_res.getValues()
-				self.resos[pos] = LedResonator(pos, self, fc, side, log, v)
+				self.ledResonators[pos] = LedResonator(pos, self, fc, side, log, v)
 
 # Pixelstring
 # name
@@ -239,6 +239,9 @@ class LedResonator(Resonator):
 		else:
 			self.log.debug(" resonator %s has SOMETHING better to do",self.position)
 			return False
+
+	def __str__(self):
+        return '"{0}": {{"level": {1}, "health": {2} }}'.format(self.position, self.level, self.health)
 
 
 
