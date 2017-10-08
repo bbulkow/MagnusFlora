@@ -200,9 +200,9 @@ async def portal_status(session, url, app):
                 #    Send a JSON request to the drivers
                 logger.debug(" Notifying following clients: drivers %s ",driver_urls)
 
-                for a in actions:
-                    logger.info(" action: %s ", a)
-                    notify_msg = json.dumps({'status': portal_str,'action': a,'what_changed': what_changed,'time': timestamp})
+                for a, b in actions:
+                    logger.info(" action: %s : %s ", a, b)
+                    notify_msg = json.dumps({'status': portal_str,'action': [ a, b ] ,'what_changed': what_changed,'time': timestamp})
 
                     # write notifications to a file
                     if app['debug'] == "DEBUG":

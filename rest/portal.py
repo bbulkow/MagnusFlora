@@ -134,10 +134,11 @@ class Resonator:
         v["owner"] = self.owner
         return v
 
-    # Compare returns an object noting the differences between the old value and the new.
+    # Compare returns an object noting the differences between the old value and the new resonator
     # or None if they are the same
     #
-    # Also returns a list of action types based on what changed or None
+    # Also returns a list of action types based on what changed or None.
+    # The list is a list of what chagned, but a tuple, so the action and the thing that changed.
     #
     # Need a static method, because sometimes one or the other is null
     @staticmethod
@@ -150,7 +151,9 @@ class Resonator:
 #        log.info(" new_p %s ", new_p)
 
         diffs = {}
+        # actions contain a tuple of the action string and a parameter
         actions = []
+        pos = new_p.position
 
         if old_p == None:
 
@@ -160,26 +163,26 @@ class Resonator:
 #            diffs['position-old'] = ""
             #diffs['owner'] = new_p.owner
             #diffs['distance'] = new_p.distance
-            actions.append("resonator_add")
+            actions.append( ( "resonator_add", pos ) )
 
         else:
             if new_p.level != old_p.level:
                 diffs['level'] = new_p.level
                 diffs['level-change'] = new_p.level - old_p.level
                 if new_p.level == 0:
-                    actions.append("resonator_remove")
+                    actions.append( ("resonator_remove", pos ) )
                 elif new_p.level > old_p.level:
-                    actions.append("resonator_upgrade")
+                    actions.append( ("resonator_upgrade", pos ) )
                 else:
-                    actions.append("resonator_remove")
-                    actions.append("resonator_upgrade")
+                    actions.append( ( "resonator_remove", pos ) )
+                    actions.append( ( "resonator_upgrade", pos ) )
             if new_p.health != old_p.health:
                 diffs['health'] = new_p.health
                 diffs['health-change'] = new_p.health - old_p.health
                 if new_p.health < old_p.health:
-                    actions.append("attack")
+                    actions.append( ( "attack", pos ) )
                 else:
-                    actions.append("recharge")
+                    actions.append( ( "recharge", pos ) )
             # this should never happen, because a reso is defined by position
 #            if new_p.position != old_p.position:
 #                diffs['position'] = new_p.position
@@ -188,12 +191,12 @@ class Resonator:
             if new_p.owner != old_p.owner:
                 diffs['owner'] = new_p.owner
                 diffs['owner-old'] = old_p.owner
-                actions.append("resonator_add")
+                actions.append(( "resonator_add", pos ) )
             if new_p.distance != old_p.distance:
                 diffs['distance'] = new_p.distance
                 diffs['distance-old'] = old_p.distance
 
-        if len(diffs) == 0:
+        if len(actions) == 0:
             return None, None
 
         return actions, diffs
@@ -446,7 +449,7 @@ class Portal:
                 what_changed["faction"] = new_faction
                 portal.faction = new_faction
 
-                actions = self.addAction(actions, self.getFactionAction(old_faction, new_faction))
+                actions.append( ( self.getFactionAction(old_faction, new_faction), str(new_faction ) ) )
 
                 log.debug(" what changed: faction %s",portal.faction)
 
@@ -457,8 +460,8 @@ class Portal:
                 is_changed = True
                 what_changed["owner"] = str(statusObj.get("owner"))
                 portal.owner = str(statusObj.get("owner"))
-                self.addAction(actions, "portal_neutralized")
-                self.addAction(actions, "portal_captured")
+                actions.append( ( "portal_neutralized", "" ))
+                actions.append( ( "portal_captured", portal.faction))
 
                 log.debug(" what changed: owner %s",portal.owner)
 
@@ -501,7 +504,7 @@ class Portal:
                         reso_is_changed = True
                         reso_what_changed[pos] = {'level': 0, 'health': 0}
                         portal.resonators.pop(pos)
-                        actions = self.addAction(actions, "resonator_remove")
+                        actions.append( ( "resonator_remove", pos) ) 
 
             for pos, values in resonators.items():
 
@@ -515,9 +518,8 @@ class Portal:
                     reso_is_changed = True
                     reso_what_changed[pos] = diffs
                     portal.resonators[pos] = r
-                    if acts:
-                        for a in acts:
-                            actions = self.addAction(actions, a)
+                    # add the portal's changes to the list
+                    actions.extend(acts)
 
             # if we changed the resonators, update the health and level
             # todo: what you really need to do is calculate the health via the
@@ -550,12 +552,6 @@ class Portal:
             return actions, what_changed
         else:
             return None, None
-
-    # Add an action to the list if it does not exist
-    def addAction(self, actions, action):
-        if not action in actions:
-            actions.append(action)
-        return actions
 
     # Get action from faction change
     #
