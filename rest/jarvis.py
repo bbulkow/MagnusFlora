@@ -294,7 +294,7 @@ async def statusJson(request):
     portal_str = ""
     with portal.lock:
         portal_str = str(portal)
-    return web.Response(text=portal_str , charset='utf-8')
+    return web.Response(text=portal_str , charset='utf-8', headers={'Access-Control-Allow-Origin':'*'})
 
 async def hello(request):
     return web.Response(text="Welcome to Magnus Flora Jarvis Server! Please replace me.")
