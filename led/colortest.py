@@ -26,7 +26,7 @@ while True:
     for resolevel in range(9):
         print ("Reso = ", resolevel)
         for chase in range(StripSize):
-            pixels = [ MUTED_GRAY ] * numLEDs 
+            pixels = [ colortable["DIM"] ] * numLEDs 
             for base in Bases:
                 for body in range(chase_size):
                     pixel_dot = chase + body

@@ -22,7 +22,7 @@ Bases = [ 0, 64, 128, 192, 256, 320, 384, 448 ]
 
 client = opc.Client('127.0.0.1:7890')
 
-pixels = [ MUTED_GRAY ] * numLEDs 
+pixels = [ colortable["MUTED_GRAY"] ]  * numLEDs 
 for base in Bases:
 	for resolevel in range(9):
 		print ("Reso = ", resolevel)
