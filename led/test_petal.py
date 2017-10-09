@@ -52,8 +52,8 @@ TEST_ORANGE	=	((170,120,20), "orange")
 TEST_YELLOW	=	((200,200,80), "yellow")
 TEST_GREEN		=	((20,180,20), "green")
 TEST_BLUE		=	((20,20,180),	"blue")
-TEST_PURPLE	=	((70,0,130),	"purple")
-TEST_BLACK		=	((20,20,20), "blackish")
+TEST_PURPLE	=	((200,0,200),	"purple")
+TEST_BLACK		=	((40,200,200), "blackish")
 
 # test_colors = [ TEST_WHITE[0], TEST_RED[0], TEST_ORANGE[0],
 # 								TEST_YELLOW[0], TEST_GREEN[0],
