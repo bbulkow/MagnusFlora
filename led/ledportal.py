@@ -176,7 +176,7 @@ def main(argv):
 
 	# send the init action to all the petals
 	# this is now ASYNC so you should see all work together
-	a = LedAction('INIT')
+	a = LedAction('init')
 	for r in Resonator.valid_positions:
 		ledportal.ledResonators[r].do_action(a)
 
@@ -187,14 +187,14 @@ def main(argv):
 	time.sleep(5.0)
 
 	log.info(" generating attack by ENL")
-	a = LedAction('ATTACK', 2)
+	a = LedAction('attack', 2)
 	for r in Resonator.valid_positions:
 		ledportal.ledResonators[r].do_action(a)
 
 	time.sleep(8.0)
 	log.info(" generating attack by RES")
 
-	a = LedAction('ATTACK', 1)
+	a = LedAction('attack', 1)
 	for r in Resonator.valid_positions:
 		ledportal.ledResonators[r].do_action(a)
 

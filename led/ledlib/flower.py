@@ -35,7 +35,6 @@ class LedPortal(Portal):
         verbose=True
 
         # create the LedResonators
-        # They probably should actually be 'resonators'
         self.ledResonators = {}
         for fc in range(4):                             # 4 FAdecandy boards
             for side in range(2):                       # 2 sets of 4 channels each
@@ -46,6 +45,69 @@ class LedPortal(Portal):
                 if portal_res:
                     v = portal_res.getValues()
                 self.ledResonators[pos] = LedResonator(pos, self, fc, side, log, v)
+
+
+    # actions come here from the led.py rest service
+    # the action strings are defined somewhere. In a document. Which I lost.
+    def action(self, action, action_parm):
+        self.log.warning(" LedPortal receiving action %s : %s", action, action_parm)
+
+        if action == 'portal_neutralized':
+            # flash grey a lot, leave it grey
+            for pos, reso in self.ledResonators.items():
+                reso.do_action( LedAction( "neutralized" ) )
+
+        elif action == 'portal_captured':
+            # flash the new portal flavor, redraw
+            for pos, reso in self.ledResonators.items():
+                reso.do_action( LedAction( "captured" ) )
+
+        elif action == 'resonator_add':
+            # flash the resonator a lot
+            reso = self.ledResonators[action_parm]
+            reso.do_action( LedAction("add") )
+
+        elif action == 'resonator_remove':
+            # flash the resonator a lot leave it grey
+            reso = self.ledResonators[action_parm]
+            reso.do_action( LedAction("remove") )
+
+        elif action == 'mod_added':
+            self.log.debug(" no led action for adding a mod")
+
+        elif action == 'mod_destroyed':
+            self.log.debug(" no led action for removing a mod")
+
+        elif action == 'attack':
+            # invert the current portal owner
+            act = None
+            if self.faction == 0:
+                self.log.warning("received attack on unowned portal ignoring")
+            elif self.faction == 1:   
+                act = LedAction("attack", 2)
+            elif self.faction == 2:
+                act = LedAction("attack", 1)
+            if act:
+                # route to the particular resonator
+                reso = self.ledResonators[action_parm]
+                reso.do_action( act )
+
+        elif action == 'recharge':
+            if self.faction != 0:
+                reso = self.ledResonators[action_parm]
+                reso.do_action( LedAction("defend", self.faction) )
+
+        elif action == 'virus_ada':
+            self.log.debug(" no action yet for virus ada, add one! )")
+
+        elif action == 'virus_jarvis':
+            self.log.debug(" no action yet for virus jarvis, add one! ")
+
+        else:
+            self.log.warning(" UNKNOWN ACTION STRING %s ",action )
+    
+        
+
 
 # Pixelstring
 # name
@@ -149,7 +211,7 @@ class LedResonatorThread( threading.Thread):
     # sets the leds to the init base state for the current colors
     def init_pattern(self):
         reso = self.ledResonator
-        self.log.debug(" init pattern: faction %d level %d ",reso.portal.faction,reso.level)
+        self.log.info(" init pattern: faction %d level %d ",reso.portal.faction,reso.level)
         patterns.parallel_blend(reso.pixelmap.list_of_lists_of_pixel_numbers, \
                         colordefs.colortable_faction[reso.portal.faction], \
                         colordefs.colortable_level[reso.level], \
@@ -177,7 +239,7 @@ class LedResonatorThread( threading.Thread):
         self.log.info(" New basic CHASE pattern %s started.", maskstring)
         patterns.chase(reso.pixelmap.list_of_lists_of_pixel_numbers, maskstring, -1)        # infinite chase
 
-
+    # each resonator has this thread running
     def run(self):
         q = self.ledResonator.queue
         reso = self.ledResonator # this is myself, for a shortcut
@@ -186,19 +248,19 @@ class LedResonatorThread( threading.Thread):
 
             self.log.debug( "LedResonator %s received action %s ",reso.position,str(action))
 
-            # TODO: Send the chase thread a stop signal.  Or have it check.
-
-            if action.action == "INIT":
-                debugprint((" resonator ", reso.position, " received action ",action.action))
+            if action.action == "init":
                 self.init_pattern()
 
-            if action.action == "ATTACK":
-                # faction is the number-form here
+            elif action.action == "attack":
+                # faction is the number-form here - it means the faction that is attacking
                 self.flash_pattern(action.faction)
-                pass
 
-            if action.action == "DEFEND":
-                pass
+            elif action.action == "defend":
+                # faction is the number form - it is the faction that is defending
+                self.flash_pattern(action.faction)
+
+            else:
+                self.log.warning( "resonator received unknown command %s",action.action)
 
             q.task_done() # tells other guy you are complete
 

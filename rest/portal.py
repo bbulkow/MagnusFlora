@@ -418,7 +418,7 @@ class Portal:
     # Returns a dict showing what changed
     def setStatusJson( self, statusObj, log ):
 
-        log.debug("Portal set status: using json: %s  ",str(statusObj) )
+        log.debug("Portal set status: using incoming object: %s  ",str(statusObj) )
 
         is_changed = False
         what_changed = {}

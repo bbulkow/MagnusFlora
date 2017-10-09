@@ -97,19 +97,26 @@ async def portal_notification(request):
     ledPortal = request.app['ledportal']
     try:
 
-        log.debug(" received notification: %s of type %s",request.method, request.content_type)
+        # log.debug(" received notification: %s of type %s",request.method, request.content_type)
 
         req_obj = await request.json()
-        log.debug(" received JSON %s",req_obj)
 
         action, action_parm = req_obj.get("action", None)
         what_changed = req_obj.get("what_changed", None)
+        status_str = req_obj.get("status", None)
 
-        log.warning(" action: %s on: %s",action, action_parm )
-        log.warning(" what changed: {0}".format(what_changed))
-        
+#        log.warning(" action: %s on: %s",action, action_parm )
+#        log.warning(" what changed: {0}".format(what_changed))
+
+        # update the portal to the newest values
+        status_obj = json.loads ( status_str )
+        ledPortal.setStatusJson( status_obj, log )
+
+        # take the action in question
+        ledPortal.action(action,action_parm)    
 
         r = web.Response(text="OK" , charset='utf-8')
+
     except Exception as e:
         log.warning(" exception while handing portal notification: %s ",str(ex))
         r = web.Response(text="FAIL")
@@ -236,7 +243,7 @@ def led_init(args, g_config, log):
 
     # send the init action to all the petals
     # this is now ASYNC so you should see all work together
-    a = LedAction('INIT')
+    a = LedAction('init')
     for r in Resonator.valid_positions:
         ledportal.ledResonators[r].do_action(a)
 
