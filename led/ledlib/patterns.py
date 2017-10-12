@@ -73,7 +73,7 @@ def wake_up (first, size, rgb_color_triplet):
 
 # 
 
-def fade (list_of_pixel_numbers, rgb_color_triplet, fade_ratio=0.5, speed=0):
+def fade (list_of_pixel_numbers, rgb_color_triplet, fade_ratio=0.5, speed=0, thisreso=None):
     # pixel 0 is at 100%; pixel last is at fade_ratio; if sleep defined
     # sleep after setting every pixel
 
@@ -87,6 +87,10 @@ def fade (list_of_pixel_numbers, rgb_color_triplet, fade_ratio=0.5, speed=0):
                         dimmer(rgb_color_triplet,fade)
         if speed > 0:
             time.sleep(speed)
+            # TODO: jump to final position
+            if thisreso:
+                if thisreso.hasinterrupt():
+                    return
 
 # This goes from rgb1 to rgb2 along each list of pixel numbers
 # speed is number of second, steps is ... whatever
@@ -236,7 +240,7 @@ def chase (list_of_lists_of_pixel_numbers, maskstring, repeat, thisreso):
 # this fades along each list of pixesl
 
 def parallel_fade (list_of_lists_of_pixel_numbers, \
-                                        rgb_color_triplet, fade_ratio=0.5, speed=0, steps=100):
+                                        rgb_color_triplet, fade_ratio=0.5, speed=0, steps=100, thisreso=None):
     # pixel 0 is at 100%; pixel last is at fade_ratio;
     # smooth gradient along multiple strands of LEDs of different lengths.
 
@@ -265,6 +269,10 @@ def parallel_fade (list_of_lists_of_pixel_numbers, \
                 strand_pointers[strand] += 1
         if speed > 0:
             time.sleep(speed/steps)
+            # todo: jump to last position in the fade
+            if thisreso:
+                if thisreso.hasinterrupt():
+                    return
 
     # nail in the last pixel in each strand
     newcolor = ledmath.dimmer(rgb_color_triplet, fade_ratio)
@@ -302,7 +310,7 @@ def set_values(pixel_numbers_lol, rgb_values_lol):
 # number of flashes you want to do
 # speed is total amount of time in float seconds
 
-def flash ( pixel_numbers_lol, rgb, n_flashes, secs ):
+def flash ( pixel_numbers_lol, rgb, n_flashes, secs, thisreso=None ):
 
     strand_count = len(pixel_numbers_lol)
     strand_sizes = [0] * strand_count
@@ -335,6 +343,10 @@ def flash ( pixel_numbers_lol, rgb, n_flashes, secs ):
         set_values( pixel_numbers_lol, old_pixel_values)
 
         time.sleep(flash_time)
+        # check if interrupted, TODO: jump to final state
+        if thisreso:
+            if thisreso.hasinterrupt():
+                return
 
 
 
