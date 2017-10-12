@@ -44,6 +44,7 @@ import logging
 
 import json
 import argparse
+import pprint
 
 import asyncio
 import textwrap
@@ -188,48 +189,29 @@ def led_init(args, g_config, log):
     globalconfig.verboseflag = False
     globalconfig.fastwake = False
     globalconfig.log = log
-    portalconfig.north      = args.north
-
-    if globalconfig.noop:
-        print ("No-op mode.  Pixels will not fire.")
-        debugprint ("No-op mode.  Pixels will not fire.")
-
-    # specified RGB values override named colors
-    if hasattr(args, 'color'):
-        try:
-            basecolor = colortable[args.color]
-        except KeyError:
-            basecolor = colortable["MUTED_PINK"]
-            basecolor = colortable["DIM"]
-    debugprint ("Base color 0 is ")
-    debugprint (basecolor)
-
-    if hasattr(args, 'red') and args.red:
-        red = args.red
-    else:
-        red = basecolor[0]
-
-    if hasattr(args, 'green') and args.green:
-        green = args.green
-    else:
-        green = basecolor[1]
-
-    if hasattr(args, 'blue') and args.blue:
-        blue = args.blue
-    else:
-        blue = basecolor[2]
-
-    globaldata.basecolor = (red, green, blue)
 
     globaldata.ledcontrol = start_opc()
 
-    # load the JSON file if it's around
+
+
+    # Start a thread to asynchronously push the pixel array to the LEDs
+    let_there_be_light = Thread(target=opcwrap.ledwriteloop)
+    let_there_be_light.start()
+    log.debug ("Let there be light!")
+
+    # Wake up the whole portal - can take a long time unless fastwake
+    # todo: this should be turned into something else but I want to see SOMETHING
+    patterns.wake_up (0, globaldata.total_pixels, globaldata.basecolor)
+    log.debug ("... and there was light.")
+
+   # load the JSON file if it's around
     portal_json = ""
+
     try:
-        with open(g_config.datafile) as data_file:    
+        with open(g_config["portalfile"]) as data_file:    
             portal_json = json.load(data_file)
-    except:
-        log.warning(" initial json filedoes not exist or can't be parsed")
+    except Exception as ex:
+        log.warning(" initial json file %s does not exist or can't be parsed: %s", g_config["portalfile"], ex.message)
         pass
 
     # this is the key class that has worker threads and everything,
@@ -239,7 +221,7 @@ def led_init(args, g_config, log):
     log.info(" initial state, level is %d", ledportal.getLevel() )
     log.info(" initial state, resos are %s", str(ledportal.resonators) )
     for key, value in ledportal.ledResonators.items():
-        log.info(" initial stated: LedReso %s is %s", key, value )
+        log.debug(" initial state: LedReso %s is %s", key, value )
 
     # send the init action to all the petals
     # this is now ASYNC so you should see all work together
@@ -291,16 +273,6 @@ log.info('starting MagnusFlora Led: there will be %d cakes', 9 )
 led_init(args, g_config, log)
 
 print("starting MagnusFlora Led monitoring ",g_config["portalfile"]," on port ",g_config["led_port"])
-
-# start a simple thread to asynchronously push the pixel array to the LEDs
-let_there_be_light = Thread(target=opcwrap.ledwriteloop)
-let_there_be_light.start()
-log.debug ("Let there be light!")
-
-# Wake up the whole portal - can take a long time unless fastwake
-# todo: this should be turned into something else but I want to see SOMETHING
-patterns.wake_up (0, globaldata.total_pixels, globaldata.basecolor)
-log.debug ("... and there was light.")
 
 # register all the async stuff
 loop = asyncio.get_event_loop()
