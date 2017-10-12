@@ -89,9 +89,12 @@ def fade (list_of_pixel_numbers, rgb_color_triplet, fade_ratio=0.5, speed=0):
             time.sleep(speed)
 
 # This goes from rgb1 to rgb2 along each list of pixel numbers
+# speed is number of second, steps is ... whatever
 
 def parallel_blend (list_of_lists_of_pixel_numbers, \
-                                        rgb1, rgb2, speed=0, steps=100):
+                                        rgb1, rgb2, speed=0, steps=100, thisreso=None):
+
+    log = thisreso.log if thisreso else None
     # pixel 0 is at 100%; pixel last is at fade_ratio;
     # smooth gradient along multiple strands of LEDs of different lengths.
 
@@ -99,7 +102,8 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
     strand_sizes = [0] * strand_count
     strand_pointers = [0] * strand_count
 
-    debugprint (("blend between", rgb1, rgb2))
+    if log:
+        log.debug( "parallel blend: reso %s between %s : %s",thisreso.position, str(rgb1), str(rgb2) )
 
     for strand in range(strand_count):
         strand_sizes[strand] = len(list_of_lists_of_pixel_numbers[strand])
@@ -122,6 +126,12 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
                 strand_pointers[strand] += 1
         if speed > 0:
             time.sleep(speed/steps)
+            # break out if necessary
+            # this should jump to making sure it's at the final state
+            if thisreso:
+                if thisreso.hasinterrupt():
+                    log.info("reso %s: parallel blend interrupted", thisreso.position)
+                    return
 
     # nail in the last pixel in each strand
     for strand in range(strand_count):
@@ -146,7 +156,7 @@ def chase (list_of_lists_of_pixel_numbers, maskstring, repeat, thisreso):
     steps = 200
     speed = 3           # how long to do one pass?
     chasemask = masking.Mask(maskstring)
-    # print ("entering chase loop with %s", chasemask.name)
+    print ("entering chase loop with %s", chasemask.name)
 
     def __single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed):
         print ("entering single chase with %s", chasemask.name)
@@ -213,12 +223,14 @@ def chase (list_of_lists_of_pixel_numbers, maskstring, repeat, thisreso):
         for loop in range(repeat):
             __single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
             if thisreso.hasinterrupt():
-                break
+                print (" broke out of chase1 " )
+                return
     else:
         while True:
             __single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
             if thisreso.hasinterrupt():
-                break
+                print (" broke out of chase2 " )
+                return
 
 
 # this fades along each list of pixesl
