@@ -91,6 +91,7 @@ class LedPortal(Portal):
                 # route to the particular resonator
                 reso = self.ledResonators[action_parm]
                 reso.do_action( act )
+                
 
         elif action == 'recharge':
             if self.faction != 0:
@@ -156,7 +157,7 @@ class PixelMap(object):
 
         cbase = self.base  + channels[0]
         self.LOC = PixelString ( "LOC", cbase, 43, 1)
-        self.__CBOT = PixelString ("CTOP", cbase + 43, 21, -1)
+        self.__CBOT = PixelString ("CBOT", cbase + 43, 21, -1)
 
         cbase = self.base + channels[1]
         self.LIC = PixelString ("LIC", cbase, 36, 1)
@@ -168,10 +169,11 @@ class PixelMap(object):
 
         cbase = self.base + channels[3]
         self.ROC = PixelString ( "ROC", cbase, 43, 1)
-        self.__CTOP = PixelString ("CBOT", cbase + 43, 21, -1)
+        self.__CTOP = PixelString ("CTOP", cbase + 43, 21, -1)
 
+        # center is composed 
         self.CENTER = PixelString("CENTER", 0, 42, 1)
-        self.CENTER.pixels = self.__CTOP.pixels + self.__CBOT.pixels
+        self.CENTER.pixels = self.__CBOT.pixels + self.__CTOP.pixels
 
         self.list_of_lists_of_pixel_numbers = [ \
             self.LOC.pixels, \
@@ -211,27 +213,31 @@ class LedResonatorThread( threading.Thread):
     # sets the leds to the init base state for the current colors
     def init_pattern(self):
         reso = self.ledResonator
-        self.log.info(" init pattern: faction %d level %d ",reso.portal.faction,reso.level)
+        self.log.info(" init pattern: pos %s faction %d level %d ",reso.position, reso.portal.faction,reso.level)
         patterns.parallel_blend(reso.pixelmap.list_of_lists_of_pixel_numbers, \
                         colordefs.colortable_faction[reso.portal.faction], \
                         colordefs.colortable_level[reso.level], \
-                        4, \
-                        200)
+                        2.0, \
+                        20, \
+                        reso)
+        # test with a little chase, don't really want chase now
         # self.basic_chase_pattern("ww--ww--ww")
-        patterns.chase(reso.pixelmap.list_of_lists_of_pixel_numbers, "ww--ww--ww", -1, reso)
+        #patterns.chase(reso.pixelmap.list_of_lists_of_pixel_numbers, "ww--ww--ww", -1, reso)
+        
+
 
     def flash_pattern(self, faction ):
         reso = self.ledResonator
 
         self.log.info(" FLASH pattern: faction %d",faction)
 
-        # 10 flashes in 10 seconds
+        # 10 flashes in 3.0 seconds
         if faction == 1:
             rgb = colortable["ENL"]
         elif faction == 2:
             rgb = colortable["RES"]
 
-        patterns.flash(reso.pixelmap.list_of_lists_of_pixel_numbers, rgb, 10, 10.0)
+        patterns.flash(reso.pixelmap.list_of_lists_of_pixel_numbers, rgb, 10, 3.0, reso)
 
 
     def basic_chase_pattern(self, maskstring):
@@ -246,7 +252,7 @@ class LedResonatorThread( threading.Thread):
         while True:
             action = q.get()
 
-            self.log.debug( "LedResonator %s received action %s ",reso.position,str(action))
+            self.log.debug( "LedResonator %s received action %s qsize %d  ",reso.position,str(action),q.qsize() )
 
             if action.action == "init":
                 self.init_pattern()
@@ -272,12 +278,10 @@ class LedResonator(Resonator):
 
 
     # usage:
-    # FC is 0,1,2,3 ; side is 0,1 (side of the FC)
+    # FC is fadecandy 0,1,2,3 ; side is 0,1 (side of the FC)
     # resos.append(Ledresonator(reso_number, reso_name, fc, side, level, health, faction)
 
     def __init__( self, position, portal, fc, side, log, values ):
-
-        log.warning(" creating Ledresonator at position %s",position)
 
         # superclass init
         Resonator.__init__(self, position, portal, log, values)
@@ -298,11 +302,11 @@ class LedResonator(Resonator):
     # return FALSE if there is nothing else to do
     # return TRUE if you have something better to do
     def hasinterrupt(self):
-        if self.queue.empty() == False:
+        if self.queue.empty() == True:
             # log.info(" resonator %s has nothing better to do",self.position)
             return False
         else:
-            self.log.debug(" resonator %s has SOMETHING better to do",self.position)
+            self.log.debug(" resonator %s : qsize %d has SOMETHING better to do",self.position,self.queue.qsize() )
             return True
 
     def __str__(self):
