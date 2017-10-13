@@ -30,11 +30,11 @@ class LedPortal(Portal):
 
         # this will init all the Portal's fields
         if jsonObj != None:
-            self.setStatusJson(jsonObj, log)
+            self.setStatusJsonSimple(jsonObj, log)
 
         verbose=True
 
-        # create the LedResonators
+        # create the LedResonators, also make the resonators LedResonattors
         self.ledResonators = {}
         for fc in range(4):                             # 4 FAdecandy boards
             for side in range(2):                       # 2 sets of 4 channels each
@@ -45,6 +45,9 @@ class LedPortal(Portal):
                 if portal_res:
                     v = portal_res.getValues()
                 self.ledResonators[pos] = LedResonator(pos, self, fc, side, log, v)
+                # by making the objects the same, when we update a resonator,
+                # we see it in both. Arguably there should be no LedResonators structure.
+                self.resonators[pos] = self.ledResonators[pos]
 
 
     # actions come here from the led.py rest service
