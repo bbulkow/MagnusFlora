@@ -1,0 +1,650 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Magnus Flora</title>
+  <meta name="description" content="Magnus Flora Participant UI">
+
+<!--  <link rel="stylesheet" type="text/css" href="jquery-ui-min-1.8.24.css"> -->
+
+  <!--[if lt IE 9]
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  [endif]-->
+  
+<script>
+var gSide = null;
+var RESISTANCE = "resistance";
+var ENLIGHTENMENT = "enlightenment";
+var NEUTRAL = "neutral";
+var gPortalOwner = "neutral";
+var gPortalStatusURL = "ws://flora.local:7000/";
+var gStatusSocket = null;
+var gGameStateTimer = null;
+var gGameState = {"valid":false};
+var gLoaded = [false, false, false];
+//var gGameStateURL = "http://pi3.local:5051/status/json";
+var gGameStateURL = "http://bbulkow.entrydns.org:5051/status/json";
+//var gGameActionURL = "http://pi3.local:5051/";
+var gGameActionURL = "http://bbulkow.entrydns.org:5051/";
+var gHealthAuraData = null;
+var gHealthAuraCanvas = null;
+var gScale = 1.0;
+var gResoHitRegion = [];
+var gResoCenter = []; 
+var gGameBackgroundHeight = 326;
+var gMaxEnergyPerLevel = [0.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 4000.0, 5000.0, 6000.0 ];
+var gLevelColors = ['grey','#FECE5A','#FFA630','#FF7315','#E40000','#FD2992','#EB26CD','#8A0078','#46007D'];
+
+function setupStatusSocket() {
+    if ("WebSocket" in window) {
+        gStatusSocket = new WebSocket(gPortalStatusURL, ['json']);
+        gStatusSocket.onopen = function() {
+            // ws.send("Message to send"); // NB - nothing to send...
+        };
+
+        gStatusSocket.onerror = function (error) {
+            console.log('Error Logged: ' + error); //log errors
+            gGameStateTimer = setInterval(getGameState, 1000);
+        };  
+              
+        gStatusSocket.onmessage = function (msg) { 
+            var received_msg = msg.data;
+            console.log("Received message " + msg);
+            if (msg["type"] == "gamestate") {
+                setGameState(msg["data"]);
+            }
+        };
+        
+        gStatusSocket.onclose = function() { 
+            console.log("Status socket closed");  
+        };
+            
+    } else {
+        alert("Your browser does not support WebSockets. The game will probably run more slowly");
+        gGameStateTimer = setInterval(getGameState, 200);
+    }
+}
+
+function setGameState(state) {
+    /// Set game state representation based on passed in json game state
+    var owner  = state['faction'];
+    var level  = state['level'];
+    var health = state['health'];
+    var resonators = state['resonators'];
+    var oldOwner = gPortalOwner;
+    
+    gPortalOwner  = owner == 1 ? RESISTANCE : (owner == 2 ? ENLIGHTENMENT : NEUTRAL);;
+    gGameState.level  = level;
+    gGameState.health = health;
+   
+    if ("N" in resonators) {
+        gGameState.resonators[0]["level"] = resonators["N"]["level"];
+        gGameState.resonators[0]["health"] = resonators["N"]["health"];
+//        console.log("North resonator health is " + resonators["N"]["health"]);
+    } else {
+        gGameState.resonators[0]["level"] = 0;
+        gGameState.resonators[0]["health"] = 0;
+    }
+    
+    if ("NE" in resonators) {
+        gGameState.resonators[1]["level"] = resonators["NE"]["level"];
+        gGameState.resonators[1]["health"] = resonators["NE"]["health"];
+//        console.log("North East resonator health is " + resonators["NE"]["health"]);
+    } else {
+        gGameState.resonators[1]["level"] = 0;
+        gGameState.resonators[1]["health"] = 0;
+    }
+    if ("E" in resonators) {
+        gGameState.resonators[2]["health"] = resonators["E"]["health"];
+        gGameState.resonators[2]["level"] = resonators["E"]["level"];
+    } else {
+        gGameState.resonators[2]["level"] = 0;
+        gGameState.resonators[2]["health"] = 0;
+    }
+
+    if ("SE" in resonators) {
+        gGameState.resonators[3]["health"] = resonators["SE"]["health"];
+        gGameState.resonators[3]["level"] = resonators["SE"]["level"];
+    } else {
+        gGameState.resonators[3]["health"] = 0;
+        gGameState.resonators[3]["level"] = 0;
+    }
+
+    if ("S" in resonators) {
+        gGameState.resonators[4]["health"] = resonators["S"]["health"];
+        gGameState.resonators[4]["level"] = resonators["S"]["level"];
+    } else {
+        gGameState.resonators[4]["health"] = 0;
+        gGameState.resonators[4]["level"] = 0;
+    }
+
+    if ("SW" in resonators) {
+        gGameState.resonators[5]["health"] = resonators["SW"]["health"];
+        gGameState.resonators[5]["level"] = resonators["SW"]["level"];
+    } else {
+        gGameState.resonators[5]["health"] = 0;
+        gGameState.resonators[5]["level"] = 0;
+    }
+
+    if ("W" in resonators) {
+        gGameState.resonators[6]["health"] = resonators["W"]["health"];
+        gGameState.resonators[6]["level"] = resonators["W"]["level"];    
+    } else {
+        gGameState.resonators[6]["health"] = 0;
+        gGameState.resonators[6]["level"] = 0;
+    }
+
+    if ("NW" in resonators) {
+        gGameState.resonators[7]["health"] = resonators["NW"]["health"];
+        gGameState.resonators[7]["level"] = resonators["NW"]["level"];    
+    } else {
+        gGameState.resonators[7]["health"] = 0;
+        gGameState.resonators[7]["level"] = 0;
+    }
+
+    gGameState.valid = true;
+    
+    if (oldOwner != owner) {
+        // XXX - do something special to denote change
+        // show or hide divs, as appropriate
+        displayDivs();
+        renderGame();
+    }
+}
+
+function setupHealthAura(healthMask, auraR, auraB, auraG){
+    // draw mask to offscreen canvas...
+    var maskCanvas = document.createElement("canvas");
+    maskCanvas.width = healthMask.width;
+    maskCanvas.height = healthMask.height;
+    var maskContext = maskCanvas.getContext('2d');
+    maskContext.drawImage(healthMask, 0, 0);
+
+    // mask is black and white... Set pixels in red channel into
+    // alpha channel
+    var imageData = maskContext.getImageData(0,0,healthMask.width,healthMask.height);
+    var px = imageData.data;
+    for (var i=0; i < px.length; i+=4) {
+        px[i+3] = 255-px[i];
+        px[i]   = auraR;
+        px[i+1] = auraB;
+        px[i+2] = auraG;
+    }
+    maskContext.putImageData(imageData,0,0);
+    gHealthAuraData = imageData;
+    gHealthAuraCanvas = maskCanvas;
+}
+
+function chooseSide(side) {
+    alert("Side chosen is " + side);
+    //document.cookie = ("side = " + side + ";");
+    setCookie("side", side, 12);
+    //document.cookie = "username=John Smith; expires=Thu, 18 Dec 2018 12:00:00 UTC; path=/";
+    gSide = side;
+    displayDivs();
+    renderGame();
+}
+
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    console.log("current cookies: " + document.cookie);
+}
+
+function checkSide(){
+    var playerSide = getCookie("side"); 
+    alert("Cookies are " + document.cookie + ", side is " + playerSide );
+    //alert("Player side is " + playerSide);
+}
+
+function attack(resonator){
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState == 4) {
+            if (xmlHttp.status == 200) {
+                try {
+                    console.log("Successfully attacked");
+                    //setGameState(JSON.parse(xmlHttp.responseText)); 
+                } catch (err) {
+                    console.log("Error setting game state, " + err);
+                }
+            } else {
+                console.log("Call to get Game State fails, error " + xmlHttp.status + " errorText " + xmlHttp.responseText);
+            }
+        }
+    }
+    xmlHttp.open("POST", gGameActionURL + "attack", true); // true for asynchronous 
+    xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    var postStr = "faction="+encodeURIComponent(gSide);
+    if (resonator != null && typeof resonator != undefined) {
+        postStr += "&resonator="+encodeURIComponent(resonator.position);
+    }
+    xmlHttp.send(postStr); 
+}
+
+function defend(resonator){
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState == 4) {
+            if (xmlHttp.status == 200) {
+                try {
+                    console.log("Successfully defended");
+                    //setGameState(JSON.parse(xmlHttp.responseText)); 
+                } catch (err) {
+                    console.log("Error setting game state, " + err);
+                }
+            } else {
+                console.log("Call to get Game State fails, error " + xmlHttp.status + " errorText " + xmlHttp.responseText);
+            }
+        }
+    }
+    xmlHttp.open("POST", gGameActionURL + "defend", true); // true for asynchronous 
+    xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    var postStr = "faction="+encodeURIComponent(gSide);
+    if (resonator != null && typeof resonator != undefined) {
+        postStr += "&resonator="+encodeURIComponent(resonator.position);
+    }
+    xmlHttp.send(postStr); 
+}
+
+function getGameState() {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState == 4) {
+            if (xmlHttp.status == 200) {
+                try {
+                    setGameState(JSON.parse(xmlHttp.responseText)); 
+                } catch (err) {
+                    console.log("Error setting game state, " + err);
+                }
+            } else {
+                console.log("Call to get Game State fails, error " + xmlHttp.status + " errorText " + xmlHttp.responseText);
+            }
+        }
+    }
+    xmlHttp.open("GET", gGameStateURL, true); // true for asynchronous 
+    xmlHttp.send(null);
+}
+
+function initGame()
+{
+    window.onbeforeunload = function(event) {
+        if (gStatusSocket != null) {
+            gStatusSocket.close();
+            gStatusSocket = null;
+        }
+        if (gGameStateTimer != null) {
+            clearInterval(gGameStateTimer);
+            gGameStateTimer = null;
+        }
+    };
+    
+    gResonatorImages = new Image();
+    gResonatorImages.onload = function() {
+        console.log("resonator onload called!");
+        gLoaded[0] = true;
+        renderGame();
+    };
+    
+    gResonatorImages.src = "images/resonators.png";
+    
+    gGameBackground = new Image();
+    gGameBackground.onload = function() {
+        console.log("background onload called!");
+        gLoaded[1] = true;
+        renderGame();
+    };    
+    gGameBackground.src = "images/ingress-icon.png";
+   
+    gHealthAura = new Image();
+    gHealthAura.onload = function() {
+        gLoaded[2] = true;
+        setupHealthAura(gHealthAura,255,255, 100);
+        renderGame();
+    };
+    gHealthAura.src = "images/healthaura.png" 
+    
+    gGameState.resonators = [ {"level":0, "position":"N", "pressed":false, "pressCount": 0},
+                            {"level":0, "position":"NE", "pressed":false, "pressCount":0},
+                            {"level":0, "position":"E",  "pressed":false, "pressCount":0},
+                            {"level":0, "position":"SE", "pressed":false, "pressCount":0},
+                            {"level":0, "position":"S",  "pressed":false, "pressCount":0},   
+                            {"level":0, "position":"SW", "pressed":false, "pressCount":0},
+                            {"level":0, "position":"W",  "pressed":false, "pressCount":0},
+                            {"level":0, "position":"NW", "pressed":false, "pressCount":0} ];
+
+   
+    // layout - resonators, hit regions ... 
+    var windowWidth = window.innerWidth 
+                      || document.documentElement.clientWidth
+                      || document.body.clientWidth;
+    var windowHeight = window.innerHeight
+                      || document.documentElement.clientHeight
+                      || document.body.clientHeight;
+
+    var windowSize = Math.min(windowWidth, windowHeight);
+
+//    console.log("Window height is " + windowHeight + " Window Width is " + windowWidth);
+
+    var canvas = document.getElementById("game_canvas");
+    var proposedHeight = Math.max(windowSize, canvas.height);
+    var proposedWidth  = Math.max(windowSize, canvas.width);
+    var proposedSize = Math.min(proposedHeight, proposedWidth);
+    gScale = proposedSize/canvas.width;
+    
+    var radius = /*gScale**/(gGameBackgroundHeight/2 + 35);
+    var centerX = canvas.width/2;
+    var centerY = canvas.height/2;
+    var resoHitWidth = 60;
+    var resoHitHeight = 60;
+
+    for (var i=0; i<8; i++) {
+        gResoCenter.push({"x" : Math.sin((Math.PI*2*i)/8)*radius + centerX,
+                             "y" : -Math.cos((Math.PI*2*i)/8)*radius + centerY});
+    }
+
+    for (var i=0; i<8; i++) {
+        gResoHitRegion.push( {"x1": gScale * (gResoCenter[i].x - resoHitWidth/2),
+                             "x2": gScale * (gResoCenter[i].x + resoHitWidth/2),
+                             "y1": gScale * (gResoCenter[i].y - resoHitHeight/2),
+                             "y2": gScale * (gResoCenter[i].y + resoHitHeight/2)});
+    }    
+
+    var numericFontSizeDesired = 
+    canvas.onclick = function(data){
+         console.log("Click in canvas");
+         var x = data.layerX;
+         var y = data.layerY;
+         console.log("Clicked at " + x + "," + y);
+         var i=0;
+         for (i=0; i<8; i++) {
+             if ((gResoHitRegion[i].x1 <= x) && (gResoHitRegion[i].x2 >= x) && 
+                 (gResoHitRegion[i].y1 <= y) && (gResoHitRegion[i].y2 >= y)){
+                 break;
+             }
+         }
+         if (i < 8) {
+             console.log("hit resonator " + i);
+             if (gPortalOwner == NEUTRAL || gPortalOwner == gSide) { 
+                 defend(gGameState.resonators[i]);
+             } else {
+                 attack(gGameState.resonators[i]);
+             }
+             // flash resonator for a fraction of a second
+             gGameState.resonators[i].pressed = true;
+             gGameState.resonators[i].pressCount++;
+             setTimeout(function() {
+                var theResonator = gGameState.resonators[i];
+                theResonator.pressCount = Math.max(theResonator.pressCount-1, 0);
+                if (theResonator.pressCount == 0) {
+                    theResonator.pressed = false;
+                    renderGame();
+                }    
+             }, 100);
+             renderGame();
+         }
+    }
+    
+    var fontSize = Math.round(20*gScale);
+    var fontFamily = "sans-serif";
+
+    var introDiv = document.getElementById("intro");
+    introDiv.style.fontSize = fontSize + "px";
+    introDiv.style.fontFamily = fontFamily;
+    var resistanceButton = document.getElementById("choose_resistance");
+    resistanceButton.style.fontSize = fontSize + "px";
+    resistanceButton.style.fontFamily = fontFamily;
+    var enlightenmentButton = document.getElementById("choose_enlightenment");
+    enlightenmentButton.style.fontSize = fontSize + "px";
+    enlightenmentButton.style.fontFamily = fontFamily
+    enlightenmentButton.height = (2 * fontSize) + "px";
+
+    console.log("Scale factor is " + gScale);
+    canvas.height = proposedSize;
+    canvas.width  = proposedSize;
+   
+
+    setupStatusSocket();
+
+    getGameState();
+    
+    // get current cookies
+    gSide = getCookie("side");
+    
+    console.log("side is " + gSide);    
+
+    displayDivs();
+}
+
+function displayDivs() {
+    /// Display the appropriate divs, depending on game state (whether
+    /// you've chosen a side, and whether the portal belongs to your side)
+   
+/* 
+    var attack_div = document.getElementById("attack_div");
+    var defend_div = document.getElementById("defend_div");*/
+    var portal_div = document.getElementById("gamestate");
+    var side_choose_div = document.getElementById("choose_a_side");
+    
+    // All divs initialized to not display
+    /*attack_div.style.display = "none";
+    defend_div.style.display = "none";*/
+    side_choose_div.style.display = "none";
+    portal_div.style.display = "none";
+    
+    // display appropriate divs.
+    if (gSide == RESISTANCE || gSide == ENLIGHTENMENT) {
+        portal_div.style.display = "block";
+/*
+        if (gPortalOwner == NEUTRAL || gPortalOwner == gSide) {
+            defend_div.style.display = "block";
+        }
+        if (gPortalOwner == NEUTRAL || gPortalOwner != gSide) {
+            attack_div.style.display = "block";
+        }
+*/ 
+    } else {
+        side_choose_div.style.display = "block";
+    }
+}
+
+function renderGame() {
+    var canvas = document.getElementById("game_canvas");
+    var ctx=canvas.getContext("2d");
+   
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // draw background. 
+    if (gLoaded[1]) {
+        var imageX = gPortalOwner == RESISTANCE ? 0 : (gPortalOwner == ENLIGHTENMENT ? 563 : 282);
+        var imageY = 0;
+        ctx.drawImage(gGameBackground, imageX, imageY, 281, 325, 
+                                       (canvas.width - 281*gScale)/2, (canvas.height - 325*gScale)/2,
+                                       gScale*281,gScale*325);
+        var textLine1;
+        var textLine2;
+        if (gPortalOwner != RESISTANCE && gPortalOwner != ENLIGHTENMENT) {
+            textLine1 = "Portal is not owned!!";
+            textLine2 = "Click on any resonator to claim it for the " + gSide[0].toUpperCase() + gSide.substr(1);
+            ctx.fillStyle = "black";
+        } else {
+            textLine1 = "Portal is owned by the " + gPortalOwner[0].toUpperCase() + gPortalOwner.substr(1);
+            textLine2 = "Click on any resonator to " + (gSide == gPortalOwner ? "DEFEND!!" : "ATTACK!!");
+            ctx.fillStyle = "white";
+        } 
+        var fontSize = Math.round(14 * gScale);
+        ctx.font = fontSize + "px sans-serif";
+
+        ctx.fillText(textLine1, canvas.width/2, canvas.height/2);
+        ctx.fillText(textLine2, canvas.width/2, canvas.height/2 + 40);
+    }
+    
+    if (gLoaded[0]) {
+        var radius = gScale*(gGameBackground.height/2 + 35);
+        //console.log("GameBackground height is " + gGameBackground.height);
+        //var centerX = canvas.width/2;
+        //var centerY = canvas.height/2;
+ 
+        //ctx.drawImage(gResonatorImages, 0, 150, 60, 60, centerX-25, centerY-25, 60, 60);
+        // draw individual resonators
+        var energyMax = gMaxEnergyPerLevel[8];
+
+        for (var i=0; i<8; i++) {
+            var level = gGameState.valid ? gGameState.resonators[i].level : 0;
+            var health = level > 0 ? gGameState.resonators[i].health : 0; 
+            var energy = (health/100 * gMaxEnergyPerLevel[level])/energyMax;
+            var xPos = gResoCenter[i].x;
+            //var xPos = Math.sin((Math.PI*2*i)/8)*radius + centerX;
+            var yPos = gResoCenter[i].y;
+            //var yPos = Math.cos((Math.PI*2*i)/8)*radius + centerY;
+ 
+            var theResonator = gGameState.resonators[i];
+
+            if (i==0) {
+                console.log("energy level is " + energy + ", health is " + health + ", level is " + level);
+            }
+
+            // draw health glow
+            if (gLoaded[2]) {
+                ctx.globalAlpha = health/100;
+                //console.log("global alpha is " + health/100);
+                ctx.drawImage(gHealthAuraCanvas, 0, 0, 100, 100, (xPos-50)*gScale, (yPos-50)*gScale, 100*gScale, 100*gScale);    
+                //ctx.putImageData(gHealthAuraData, 50, 50, xPos-110, yPos-110, 100, 100);    
+                //ctx.putImageData(gHealthAuraData, xPos-50, yPos-50, 0, 0, 100, 100);    
+            }
+            ctx.globalAlpha = 1.0;
+
+            // debug - draw hit area
+            //ctx.strokeStyle="red";
+            //ctx.rect(gResoHitRegion[i].x1, gResoHitRegion[i].y1, 
+            //         gResoHitRegion[i].x2 - gResoHitRegion[i].x1, gResoHitRegion[i].y2-gResoHitRegion[i].y1);
+            //ctx.stroke();i
+
+            // draw resonator
+            var imageX = (level == 0 ? 0 : (level * 75) - 75); 
+            var imageY = (level == 0 ? 150 : (gPortalOwner == ENLIGHTENMENT ? 0 : (gPortalOwner == RESISTANCE ? 75 : 150)));
+            ctx.beginPath();
+            ctx.arc(gResoCenter[i].x*gScale, gResoCenter[i].y*gScale, 25*gScale, 0, Math.PI*2);
+            
+            if (theResonator.pressed) {
+                ctx.fillStyle = "orange";
+            } else {
+               ctx.fillStyle = gLevelColors[level];
+            }
+
+/*
+            }else if (gPortalOwner == RESISTANCE) {
+                ctx.fillStyle = "#73A7F5";
+            } else if (gPortalOwner == ENLIGHTENMENT) {
+                ctx.fillStyle = "#3BB772"; 
+            } else {
+                ctx.fillStyle = "grey";
+            }
+*/
+            ctx.fill();
+
+            // indicate resonator level
+            ctx.textBaseline = "middle";
+            ctx.textAlign = "center";
+            var fontSize = Math.round(30 * gScale);
+            ctx.font = fontSize + "px sans-serif";
+            if (level > 2) {
+                ctx.fillStyle = "white";
+            } else {
+                ctx.fillStyle = "black";
+            }
+            ctx.fillText(level, gResoCenter[i].x*gScale, gResoCenter[i].y*gScale);
+
+            // draw energy indicator fill
+            var energyArcEnd = Math.PI*((1.45 + 2 - energy*1.9)%2);
+            ctx.beginPath();
+            ctx.arc(gResoCenter[i].x*gScale, gResoCenter[i].y*gScale, (25+10)*gScale,
+                          Math.PI*1.45,energyArcEnd,true);
+            ctx.lineTo((gResoCenter[i].x + Math.sin(energyArcEnd - Math.PI*1.50)*(25+3))*gScale , 
+                       (gResoCenter[i].y - Math.cos(energyArcEnd - Math.PI*1.50)*(25+3))*gScale);
+            ctx.arc(gResoCenter[i].x*gScale, gResoCenter[i].y*gScale, (25+3)*gScale, 
+                          energyArcEnd, Math.PI*1.45);
+            ctx.closePath();
+            ctx.fillStyle = "orange";
+            ctx.fill();
+ 
+            // draw outline for energy indicator
+            ctx.beginPath();
+            ctx.arc(gResoCenter[i].x*gScale, gResoCenter[i].y*gScale, (25+10)*gScale,
+                          Math.PI*1.45,Math.PI*1.55,true);
+            ctx.lineTo((gResoCenter[i].x + Math.sin(Math.PI*0.05)*(25+3))*gScale , 
+                       (gResoCenter[i].y - Math.cos(Math.PI*0.05)*(25+3))*gScale);
+            ctx.arc(gResoCenter[i].x*gScale, gResoCenter[i].y*gScale, (25+3)*gScale, 
+                          Math.PI*1.55, Math.PI*1.45);
+            ctx.closePath();
+            ctx.stroke();
+            
+            //ctx.drawImage(gResonatorImages, imageX, imageY, 60, 60, (xPos-25)*gScale, (yPos-25)*gScale, 60*gScale, 60*gScale);
+        }
+    }
+}
+
+</script>
+</head>
+<style>
+h1 {font-family:sans-serif;
+}
+</style>
+
+<body onload="initGame()">
+<div id="choose_a_side">
+<h1>Choose A Side</h1>
+<p id="intro">Aliens have landed!<br><br>
+They promise to bring a new era of peace and understanding. <br><br>
+But are they what they claim to be?<br> 
+Or are they trying to take over our world and control our minds?<br><br>
+<button id="choose_enlightenment" onclick="chooseSide(ENLIGHTENMENT)">I believe! Let me join the Enlightenment</button><br><br>
+<button id="choose_resistance" click="chooseSide(RESISTANCE)">Goggly-eyed ET's aint taking my planet! I'm with the Resistance</button><br>
+</p>
+</div>
+<div id="main">
+<div id="explanation" style="display:none">
+<p>The large flower-like object in front of you is a portal, endowed by the aliens with the ability
+to influence the minds of humans in its vicinity. Both sides - Resistance and Enlightenment - have
+discovered how to use portals, and they battle for control of portals as they attempt 
+to convince the unaligned masses to see things Their Way.</p>
+<p>To control take control of a portal, you must put your own resonators around it </p>
+</div>
+<!--
+<div id="control_options">
+<div id="attack_div">
+<button id="attack_btn" onclick="attack()">Attack!</button>
+</div>
+<div id="defend_div">
+<button id="defend_btn" onclick="defend()">Defend</button>
+</div>
+</div>
+-->
+<div id="gamestate">
+<canvas id="game_canvas" width="500" height="500" style="border:1px solid #000000;">
+</div>
+</div>
+</body >
+
+</html>

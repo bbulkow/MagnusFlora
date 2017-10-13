@@ -1,0 +1,42 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Magnus Flora</title>
+  <meta name="description" content="Magnus Flora Reset">
+<script>
+var gResetURL = "http://bbulkow.entrydns.org:5051/reset";
+
+function reset() {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() {
+        var responseDiv = document.getElementById("responseDiv");
+        if (xmlHttp.readyState == 4) {
+            if (xmlHttp.status == 200) {
+                responseDiv.innerHTML = "Reset Succeeded";
+            } else {
+                responseDiv.innerHTML = "Call to Reset fails, error " + xmlHttp.status + " errorText " + xmlHttp.respo;
+            }
+        }
+    }
+    xmlHttp.open("POST", gResetURL, true); // true for asynchronous
+    xmlHttp.send(null);
+}
+</script>
+
+</head>
+<style>
+h1 {font-family:sans-serif;
+}
+</style>
+
+<body ">
+<h1>Reset Magnus Fora</h1>
+<button onclick="reset()">Reset Now</button>
+<div id="responseDiv"></div>
+
+</body >
+
+</html>
