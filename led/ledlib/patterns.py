@@ -77,20 +77,29 @@ def fade (list_of_pixel_numbers, rgb_color_triplet, fade_ratio=0.5, speed=0, thi
     # pixel 0 is at 100%; pixel last is at fade_ratio; if sleep defined
     # sleep after setting every pixel
 
-    size = len(list_of_pixel_numbers)
-
-    globaldata.all_the_pixels[list_of_pixel_numbers[0]]=rgb_color_triplet
-    for i in range(1,size):
+    def innerFade(i):
         fade = 1.0 - ((i/size)*fade_ratio)
         debugprint ((i,fade))
         globaldata.all_the_pixels[list_of_pixel_numbers[i]]= \
                         dimmer(rgb_color_triplet,fade)
+        
+
+    size = len(list_of_pixel_numbers)
+
+    globaldata.all_the_pixels[list_of_pixel_numbers[0]]=rgb_color_triplet
+    for i in range(1,size):
+        innerFade(i)
+
+#        fade = 1.0 - ((i/size)*fade_ratio)
+#        debugprint ((i,fade))
+#        globaldata.all_the_pixels[list_of_pixel_numbers[i]]= \
+#                        dimmer(rgb_color_triplet,fade)
         if speed > 0:
             time.sleep(speed)
-            # TODO: jump to final position
-            if thisreso:
-                if thisreso.hasinterrupt():
-                    return
+            # jump to final position
+            if thisreso and thisreso.hasinterrupt():
+                innerFade(size-1)
+                return
 
 # This goes from rgb1 to rgb2 along each list of pixel numbers
 # speed is number of second, steps is ... whatever
@@ -115,8 +124,7 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
         globaldata.all_the_pixels \
                     [list_of_lists_of_pixel_numbers[strand][0]]=rgb1
 
-
-    for thisstep in range(steps):
+    def inner_parallel_blend(thisstep):
         # ignore the fencepost errors.  not going for exactness here.
         # hue will vary due to rounding.  possibly a feature.
         progress = thisstep/steps
@@ -128,14 +136,29 @@ def parallel_blend (list_of_lists_of_pixel_numbers, \
                     [list_of_lists_of_pixel_numbers[strand][strand_pointers[strand]]] = \
                             newcolor
                 strand_pointers[strand] += 1
+
+    for thisstep in range(steps):
+        inner_parallel_blend(thisstep)
+
+        # ignore the fencepost errors.  not going for exactness here.
+        # hue will vary due to rounding.  possibly a feature.
+        #progress = thisstep/steps
+        #newcolor = ledmath.mix(rgb1, 1.0-progress, rgb2)
+        #debugprint (("blend", thisstep, newcolor))
+        #for strand in range(strand_count):
+        #    while progress > (strand_pointers[strand] / strand_sizes[strand]):
+        #        globaldata.all_the_pixels \
+        #            [list_of_lists_of_pixel_numbers[strand][strand_pointers[strand]]] = \
+        #                    newcolor
+        #        strand_pointers[strand] += 1
         if speed > 0:
             time.sleep(speed/steps)
             # break out if necessary
-            # this should jump to making sure it's at the final state
-            if thisreso:
-                if thisreso.hasinterrupt():
-                    log.info("reso %s: parallel blend interrupted", thisreso.position)
-                    return
+            # jump to  final state
+            if thisreso and thisreso.hasinterrupt():
+                inner_parallel_blend(steps-1)
+                log.info("reso %s: parallel blend interrupted", thisreso.position)
+                return
 
     # nail in the last pixel in each strand
     for strand in range(strand_count):
@@ -165,7 +188,8 @@ def chase (list_of_lists_of_pixel_numbers, maskstring, repeat, thisreso):
     def __single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed):
         print ("entering single chase with %s", chasemask.name)
         strand_pointers = [0] * strand_count
-        for thisstep in range(steps):
+        def __inner_chase(thisstep):
+        #for thisstep in range(steps):
             progress = thisstep/steps
             for strand in range(strand_count):
                 while progress > (strand_pointers[strand] / (strand_sizes[strand]+chasemask.size)):
@@ -195,8 +219,21 @@ def chase (list_of_lists_of_pixel_numbers, maskstring, repeat, thisreso):
                                     # fencepost somewhere.
                                     pass
                     strand_pointers[strand] += 1
+        #    if speed > 0:
+        #        time.sleep(speed/steps)
+        
+        for thisstep in range(steps):
+            __inner_chase(thisstep);
             if speed > 0:
                 time.sleep(speed/steps)
+            if thisreso and thisreso.hasinterrupt():
+                print (" broke out of chase1 " )
+                for strand in range(strand_count):
+                    for i in range(strand_sizes[strand]):
+                        globaldata.setpixel(list_of_lists_of_pixel_numbers[strand][i], base_pixels[strand][i])
+
+
+
 #       # clear out the final chase area
 #       for i in range(chasemask.size):
 #           backpix = strand_sizes[strand] - (chasemask.size - i)
@@ -226,13 +263,13 @@ def chase (list_of_lists_of_pixel_numbers, maskstring, repeat, thisreso):
     if repeat >= 1:
         for loop in range(repeat):
             __single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
-            if thisreso.hasinterrupt():
+            if thisreso and thisreso.hasinterrupt():
                 print (" broke out of chase1 " )
                 return
     else:
         while True:
             __single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed)
-            if thisreso.hasinterrupt():
+            if thisreso and thisreso.hasinterrupt():
                 print (" broke out of chase2 " )
                 return
 
@@ -253,8 +290,7 @@ def parallel_fade (list_of_lists_of_pixel_numbers, \
         globaldata.all_the_pixels \
                     [list_of_lists_of_pixel_numbers[strand][0]]=rgb_color_triplet
 
-
-    for thisstep in range(steps):
+    def inner_parallel_fade(thisstep):
         # ignore the fencepost errors.  not going for exactness here.
         # hue will vary due to rounding.  possibly a feature.
         brightness = 1.0 - fade_ratio*thisstep/steps
@@ -267,12 +303,28 @@ def parallel_fade (list_of_lists_of_pixel_numbers, \
                     [list_of_lists_of_pixel_numbers[strand][strand_pointers[strand]]] = \
                             newcolor
                 strand_pointers[strand] += 1
+
+
+    for thisstep in range(steps):
+        inner_parallel_fade(thisstep)
+        # ignore the fencepost errors.  not going for exactness here.
+        # hue will vary due to rounding.  possibly a feature.
+        #brightness = 1.0 - fade_ratio*thisstep/steps
+        #newcolor = ledmath.dimmer(rgb_color_triplet, brightness)
+        #debugprint (("fade", thisstep, brightness, newcolor))
+        #progress = thisstep/steps
+        #for strand in range(strand_count):
+        #    while progress > (strand_pointers[strand] / strand_sizes[strand]):
+        #        globaldata.all_the_pixels \
+        #            [list_of_lists_of_pixel_numbers[strand][strand_pointers[strand]]] = \
+        #                    newcolor
+        #        strand_pointers[strand] += 1
         if speed > 0:
             time.sleep(speed/steps)
-            # todo: jump to last position in the fade
-            if thisreso:
-                if thisreso.hasinterrupt():
-                    return
+            # jump to last position in the fade
+            if thisreso and thisreso.hasinterrupt():
+                inner_parallel_fade(steps-1)
+                return
 
     # nail in the last pixel in each strand
     newcolor = ledmath.dimmer(rgb_color_triplet, fade_ratio)
