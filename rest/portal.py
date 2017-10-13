@@ -577,6 +577,7 @@ class Portal:
 
             if "faction" in statusObj:
                 self.faction = int(statusObj.get("faction"))
+                log.debug(" setJsonSimple: set faction to %d",self.faction)
 
 #        log.debug("Portal set status: owner  " )
 
@@ -590,6 +591,7 @@ class Portal:
 
             if "resonators" in statusObj:
                 objResonators = statusObj.get("resonators")
+                log.debug(" setJsonSimple: has resonators %s",self.resonators )
 
                 # if it's not in the new one, clear it
                 for pos in self.valid_positions:
@@ -597,52 +599,28 @@ class Portal:
                     if reso:
                         # if not in the new, removed
                         if not pos in objResonators:
-                            portal.resonators[pos].clear()
+                            self.resonators[pos].clear()
+                            log.debug(" clear resonator position %s",pos)
 
                 for pos, values in objResonators.items():
-
+                    log.debug(" %s has resonators, setting %s",pos,str(values))
+                    reso = self.resonators.get(pos, None)
+                    if reso:
+                        if "level" in values:
+                            reso.setLevel( values["level"] )
+                            log.debug(" resonator %s set level to %d",pos,values["level"])
+                        if "health" in values:
+                            reso.setHealth( values["health"] )
+                            log.debug(" resonator %s set health to %d",pos,values["health"])
+                        if "owner" in values:
+                            reso.owner = values["owner"]
+                        if "distance" in values:
+                            reso.distance = values["distance"]
+                    else:
+                        log.debug(" no resonator at position %s, skipping",pos)
 
                     # log.debug(" what changed: reso %s value %s",pos,diffs)
-                    
-                    if diffs:
 
-                        reso_is_changed = True
-                        reso_what_changed[pos] = diffs
-                        portal.resonators[pos] = r
-                        # add the portal's changes to the list
-                        actions.extend(acts)
-
-            # if we changed the resonators, update the health and level
-            # todo: what you really need to do is calculate the health via the
-            # status obj and compare it. THIS IS WRONG but not very wrong
-            # and, like the resonators, it woudl be nice to show not just the new value but the delta
-            if reso_is_changed == True:
-                is_changed = True
-                what_changed["level"] = portal.getLevel()
-                portal.level = portal.getLevel()
-                what_changed["health"] = portal.getHealth()
-                portal.health = portal.getHealth()
-                what_changed["resonators"] = reso_what_changed
-
-#        log.debug("Portal set status: check and set  " )
-
-        # validate the new object through the validator
-        if portal.check() == False:
-            log.warning (" !!! Bad format after applying delta, ignored ")
-
-        else:
- 
-            if is_changed:
-                # copy the parts that should be copied ( ie, not the lock or create time )
-                with self.lock:
-                    self.set(portal)
-
-        # log.debug("+++++ object after changes: %s",str(self))
-
-        if is_changed:
-            return actions, what_changed
-        else:
-            return None, None
 
     # Get action from faction change
     #
