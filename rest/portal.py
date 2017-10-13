@@ -122,6 +122,12 @@ class Resonator:
             self.distance = 0
         return True
 
+    def clear(self):
+        self.level = 0
+        self.health = 0
+        self.distance = 0
+        self.owner = ""
+
     def hasinterrupt(self):
         return False
 
@@ -520,6 +526,91 @@ class Portal:
                     portal.resonators[pos] = r
                     # add the portal's changes to the list
                     actions.extend(acts)
+
+            # if we changed the resonators, update the health and level
+            # todo: what you really need to do is calculate the health via the
+            # status obj and compare it. THIS IS WRONG but not very wrong
+            # and, like the resonators, it woudl be nice to show not just the new value but the delta
+            if reso_is_changed == True:
+                is_changed = True
+                what_changed["level"] = portal.getLevel()
+                portal.level = portal.getLevel()
+                what_changed["health"] = portal.getHealth()
+                portal.health = portal.getHealth()
+                what_changed["resonators"] = reso_what_changed
+
+#        log.debug("Portal set status: check and set  " )
+
+        # validate the new object through the validator
+        if portal.check() == False:
+            log.warning (" !!! Bad format after applying delta, ignored ")
+
+        else:
+ 
+            if is_changed:
+                # copy the parts that should be copied ( ie, not the lock or create time )
+                with self.lock:
+                    self.set(portal)
+
+        # log.debug("+++++ object after changes: %s",str(self))
+
+        if is_changed:
+            return actions, what_changed
+        else:
+            return None, None
+
+    # This function takes a Json string
+    # changes the object - OVERWRITES the resonators
+    # Returns nothing
+    def setStatusJsonSimple( self, statusObj, log ):
+
+        log.debug("Portal set status simple: using incoming object: %s  ",str(statusObj) )
+
+        # print(" parsed JSON, taking lock. Object is: ",statusObj)
+        with self.lock:
+
+#        log.debug("Portal set status: title  " )
+            if "title" in statusObj:
+                self.title = str(statusObj.get("title"))
+
+#       log.debug("Portal set status: faction  " )
+
+            if "faction" in statusObj:
+                self.faction = int(statusObj.get("faction"))
+
+#        log.debug("Portal set status: owner  " )
+
+            if "owner" in statusObj:
+                self.owner = str(statusObj.get("owner"))
+                log.debug(" what changed: owner %s",self.owner)
+
+            #TODO: MODS
+
+            # compare each-by-each
+
+            if "resonators" in statusObj:
+                objResonators = statusObj.get("resonators")
+
+                # if it's not in the new one, clear it
+                for pos in self.valid_positions:
+                    reso = self.resonators.get(pos, None)
+                    if reso:
+                        # if not in the new, removed
+                        if not pos in objResonators:
+                            portal.resonators[pos].clear()
+
+                for pos, values in objResonators.items():
+
+
+                    # log.debug(" what changed: reso %s value %s",pos,diffs)
+                    
+                    if diffs:
+
+                        reso_is_changed = True
+                        reso_what_changed[pos] = diffs
+                        portal.resonators[pos] = r
+                        # add the portal's changes to the list
+                        actions.extend(acts)
 
             # if we changed the resonators, update the health and level
             # todo: what you really need to do is calculate the health via the
