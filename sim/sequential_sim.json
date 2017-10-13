@@ -1,15 +1,28 @@
 #Sim: Portal Initial Details
-   { "delay": 0.0, "title": "TEST PORTAL", "faction": 1, "owner": "Frog1"}
+   { "delay": 0.0, "title": "TEST PORTAL", "faction": 0}
 
-#Sim: Full Health
-   { "delay": 0.5, "resonators": { "N": {"health": 100, "level": 8} } }
-   { "delay": 0.5, "resonators": { "NE": {"health": 100, "level": 8} } }
-   { "delay": 0.5, "resonators": { "E": {"health": 100, "level": 8} } }
-   { "delay": 0.5, "resonators": { "SE": {"health": 100, "level": 8} } }
-   { "delay": 0.5, "resonators": { "S": {"health": 100, "level": 8} } }
-   { "delay": 0.5, "resonators": { "SW": {"health": 100, "level": 8} } }
-   { "delay": 0.5, "resonators": { "W": {"health": 100, "level": 8} } }
-   { "delay": 0.5, "resonators": { "NW": {"health": 100, "level": 8} } }
+# Start empty. Make sure it goes grey.
+   { "delay": 0.1, "resonators": { "N": {"health": 0, "level": 0} } }
+   { "delay": 0.1, "resonators": { "NE": {"health": 0, "level": 0} } }
+   { "delay": 0.1, "resonators": { "E": {"health": 0, "level": 0} } }
+   { "delay": 0.5, "resonators": { "SE": {"health": 0, "level": 0} } }
+   { "delay": 0.5, "resonators": { "S": {"health": 0, "level": 0} } }
+   { "delay": 0.5, "resonators": { "SW": {"health": 0, "level": 0} } }
+   { "delay": 0.5, "resonators": { "W": {"health": 0, "level": 0} } }
+   { "delay": 0.5, "resonators": { "NW": {"health": 0, "level": 0} } }
+   { "delay": 20.0 }
+
+#Sim: Add each resonator slowly. Should see them wheel around.
+
+   { "delay": 1.0, "faction": 1, "resonators": { "N": {"health": 100, "level": 8} } }
+   { "delay": 1.0, "resonators": { "NE": {"health": 100, "level": 8} } }
+   { "delay": 1.0, "resonators": { "E": {"health": 100, "level": 8} } }
+   { "delay": 1.0, "resonators": { "SE": {"health": 100, "level": 8} } }
+   { "delay": 1.0, "resonators": { "S": {"health": 100, "level": 8} } }
+   { "delay": 1.0, "resonators": { "SW": {"health": 100, "level": 8} } }
+   { "delay": 1.0, "resonators": { "W": {"health": 100, "level": 8} } }
+   { "delay": 1.0, "resonators": { "NW": {"health": 100, "level": 8} } }
+   { "delay": 20.0 }
  
 #Sim: 95% Health
    { "delay": 0.5, "resonators": { "N": {"health": 95, "level": 8} } }
