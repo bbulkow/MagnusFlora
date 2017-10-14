@@ -321,7 +321,6 @@ class Portal:
 
             # need to set faction and owner to zero if no health - it's a proxy for no resonators
             if len(portal.resonators) == 0:
-                print(" no portal resonators, set faction to zero ")
                 portal.owner = None
                 portal.faction = 0
                 portal.mods = []
