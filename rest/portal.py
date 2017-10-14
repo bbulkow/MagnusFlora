@@ -591,7 +591,7 @@ class Portal:
 
             if "resonators" in statusObj:
                 objResonators = statusObj.get("resonators")
-                log.debug(" setJsonSimple: has resonators %s",self.resonators )
+                #log.debug(" setJsonSimple: has resonators %s",self.resonators )
 
                 # if it's not in the new one, clear it
                 for pos in self.valid_positions:
@@ -600,7 +600,7 @@ class Portal:
                         # if not in the new, removed
                         if not pos in objResonators:
                             self.resonators[pos].clear()
-                            log.debug(" clear resonator position %s",pos)
+                            #log.debug(" clear resonator position %s",pos)
 
                 for pos, values in objResonators.items():
                     log.debug(" %s has resonators, setting %s",pos,str(values))
@@ -608,10 +608,10 @@ class Portal:
                     if reso:
                         if "level" in values:
                             reso.setLevel( values["level"] )
-                            log.debug(" resonator %s set level to %d",pos,values["level"])
+                            #log.debug(" resonator %s set level to %d",pos,values["level"])
                         if "health" in values:
                             reso.setHealth( values["health"] )
-                            log.debug(" resonator %s set health to %d",pos,values["health"])
+                            #log.debug(" resonator %s set health to %d",pos,values["health"])
                         if "owner" in values:
                             reso.owner = values["owner"]
                         if "distance" in values:
