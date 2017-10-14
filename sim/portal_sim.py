@@ -308,11 +308,23 @@ class Portal:
             resonators = dict(statusObj.get("resonators"))
             for pos, values in resonators.items():
                 r = Resonator(pos, values)
-                portal.resonators[pos] = r
+                # only add a resonator if it has a level
+                if r.level > 0 and r.health > 0:
+                    portal.resonators[pos] = r
+                # remove the old resonator if it has no level
+                else:
+                    portal.resonators.pop(pos, None) 
 
             # if we changed the resonators, update the health and level
             portal.level = portal.getLevel()
             portal.health = portal.getHealth()
+
+            # need to set faction and owner to zero if no health - it's a proxy for no resonators
+            if len(portal.resonators) == 0:
+                print(" no portal resonators, set faction to zero ")
+                portal.owner = None
+                portal.faction = 0
+                portal.mods = []
 
         # validate the new object through the validator
         if portal.check() == False:
