@@ -188,15 +188,15 @@ class IngressSound:
 
 
     actions_sounds_prod = {
-        'portal_neutralized': [ '../audio/portal_neutralized.wav', 3.0 ],
+        'portal_neutralized': [ '../audio/portal_neutralized.wav', 4.0 ],
         'portal_captured': [ '../audio/portal_online.wav', 6.0 ],
-        'resonator_add': [ '../audio/resonator_deployed.wav', 3.0 ],
-        'resonator_remove': [ '../audio/resonator_destroyed.wav', 3.0],
-        'resonator_upgrade': [ '../audio/test/resonator_upgraded.wav', 2.0],
+        'resonator_add': [ '../audio/resonator_deployed.wav', 4.0 ],
+        'resonator_remove': [ '../audio/resonator_destroyed.wav', 4.0],
+        'resonator_upgrade': [ '../audio/resonator_deployed.wav', 4.0],
         'mod_added': [ '../audio/mod_deployed.wav', 2.0],
         'mod_destroyed': [ '../audio/mod_destroyed.wav', 2.0],
         'attack': [ '../audio/under_attack.wav', 3.0 ],
-        'recharge': [ '../audio/test/recharged.wav', 3.0],
+        'recharge': [ '../audio/mod_deployed.wav', 3.0],
         'virus_ada': [ '../audio/virus_ada_refactor.wav', 3.0],
         'virus_jarvis': [ '../audio/virus_jarvis_vocal.wav', 3.0],
     }
