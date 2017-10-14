@@ -111,7 +111,7 @@ async def portal_notification(request):
 
         # update the portal to the newest values
         status_obj = json.loads ( status_str )
-        ledPortal.setStatusJson( status_obj, log )
+        ledPortal.setStatusJsonSimple( status_obj, log )
 
         # take the action in question
         ledPortal.action(action,action_parm)    
@@ -211,7 +211,7 @@ def led_init(args, g_config, log):
         with open(g_config["portalfile"]) as data_file:    
             portal_json = json.load(data_file)
     except Exception as ex:
-        log.warning(" initial json file %s does not exist or can't be parsed: %s", g_config["portalfile"], ex.message)
+        log.warning(" initial json file %s does not exist or can't be parsed: %s", g_config["portalfile"], str(ex))
         pass
 
     # this is the key class that has worker threads and everything,

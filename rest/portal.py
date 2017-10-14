@@ -122,6 +122,12 @@ class Resonator:
             self.distance = 0
         return True
 
+    def clear(self):
+        self.level = 0
+        self.health = 0
+        self.distance = 0
+        self.owner = ""
+
     def hasinterrupt(self):
         return False
 
@@ -552,6 +558,69 @@ class Portal:
             return actions, what_changed
         else:
             return None, None
+
+    # This function takes a Json string
+    # changes the object - OVERWRITES the resonators
+    # Returns nothing
+    def setStatusJsonSimple( self, statusObj, log ):
+
+        log.debug("Portal set status simple: using incoming object: %s  ",str(statusObj) )
+
+        # print(" parsed JSON, taking lock. Object is: ",statusObj)
+        with self.lock:
+
+#        log.debug("Portal set status: title  " )
+            if "title" in statusObj:
+                self.title = str(statusObj.get("title"))
+
+#       log.debug("Portal set status: faction  " )
+
+            if "faction" in statusObj:
+                self.faction = int(statusObj.get("faction"))
+                log.debug(" setJsonSimple: set faction to %d",self.faction)
+
+#        log.debug("Portal set status: owner  " )
+
+            if "owner" in statusObj:
+                self.owner = str(statusObj.get("owner"))
+                log.debug(" what changed: owner %s",self.owner)
+
+            #TODO: MODS
+
+            # compare each-by-each
+
+            if "resonators" in statusObj:
+                objResonators = statusObj.get("resonators")
+                log.debug(" setJsonSimple: has resonators %s",self.resonators )
+
+                # if it's not in the new one, clear it
+                for pos in self.valid_positions:
+                    reso = self.resonators.get(pos, None)
+                    if reso:
+                        # if not in the new, removed
+                        if not pos in objResonators:
+                            self.resonators[pos].clear()
+                            log.debug(" clear resonator position %s",pos)
+
+                for pos, values in objResonators.items():
+                    log.debug(" %s has resonators, setting %s",pos,str(values))
+                    reso = self.resonators.get(pos, None)
+                    if reso:
+                        if "level" in values:
+                            reso.setLevel( values["level"] )
+                            log.debug(" resonator %s set level to %d",pos,values["level"])
+                        if "health" in values:
+                            reso.setHealth( values["health"] )
+                            log.debug(" resonator %s set health to %d",pos,values["health"])
+                        if "owner" in values:
+                            reso.owner = values["owner"]
+                        if "distance" in values:
+                            reso.distance = values["distance"]
+                    else:
+                        log.debug(" no resonator at position %s, skipping",pos)
+
+                    # log.debug(" what changed: reso %s value %s",pos,diffs)
+
 
     # Get action from faction change
     #

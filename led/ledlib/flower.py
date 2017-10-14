@@ -30,11 +30,11 @@ class LedPortal(Portal):
 
         # this will init all the Portal's fields
         if jsonObj != None:
-            self.setStatusJson(jsonObj, log)
+            self.setStatusJsonSimple(jsonObj, log)
 
         verbose=True
 
-        # create the LedResonators
+        # create the LedResonators, also make the resonators LedResonattors
         self.ledResonators = {}
         for fc in range(4):                             # 4 FAdecandy boards
             for side in range(2):                       # 2 sets of 4 channels each
@@ -45,6 +45,9 @@ class LedPortal(Portal):
                 if portal_res:
                     v = portal_res.getValues()
                 self.ledResonators[pos] = LedResonator(pos, self, fc, side, log, v)
+                # by making the objects the same, when we update a resonator,
+                # we see it in both. Arguably there should be no LedResonators structure.
+                self.resonators[pos] = self.ledResonators[pos]
 
 
     # actions come here from the led.py rest service
@@ -217,13 +220,12 @@ class LedResonatorThread( threading.Thread):
         patterns.parallel_blend(reso.pixelmap.list_of_lists_of_pixel_numbers, \
                         colordefs.colortable_faction[reso.portal.faction], \
                         colordefs.colortable_level[reso.level], \
-                        2.0, \
+                        4.0, \
                         20, \
                         reso)
         # test with a little chase, don't really want chase now
         # self.basic_chase_pattern("ww--ww--ww")
         #patterns.chase(reso.pixelmap.list_of_lists_of_pixel_numbers, "ww--ww--ww", -1, reso)
-        
 
 
     def flash_pattern(self, faction ):
@@ -232,7 +234,9 @@ class LedResonatorThread( threading.Thread):
         self.log.info(" FLASH pattern: faction %d",faction)
 
         # 10 flashes in 3.0 seconds
-        if faction == 1:
+        if faction == 0:
+            rgb = colortable["NEUTRAL"]
+        elif faction == 1:
             rgb = colortable["ENL"]
         elif faction == 2:
             rgb = colortable["RES"]
@@ -252,7 +256,8 @@ class LedResonatorThread( threading.Thread):
         while True:
             action = q.get()
 
-            self.log.debug( "LedResonator %s received action %s qsize %d  ",reso.position,str(action),q.qsize() )
+            self.log.debug( "LedResonator %s faction %d received action %s qsize %d  ",reso.position, \
+                reso.portal.faction, str(action),q.qsize() )
 
             if action.action == "init":
                 self.init_pattern()
@@ -260,10 +265,21 @@ class LedResonatorThread( threading.Thread):
             elif action.action == "attack":
                 # faction is the number-form here - it means the faction that is attacking
                 self.flash_pattern(action.faction)
+                self.init_pattern()
 
             elif action.action == "defend":
                 # faction is the number form - it is the faction that is defending
                 self.flash_pattern(action.faction)
+                self.init_pattern()
+ 
+            elif action.action == "remove":
+                # now there is nothing
+                self.flash_pattern( 0 )
+                self.init_pattern()
+
+            elif action.action == "add":
+                self.flash_pattern( reso.portal.faction )
+                self.init_pattern()
 
             else:
                 self.log.warning( "resonator received unknown command %s",action.action)
