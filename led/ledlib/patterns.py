@@ -180,13 +180,13 @@ def chase (list_of_lists_of_pixel_numbers, maskstring, repeat, thisreso):
     strand_pointers = [0] * strand_count
     base_pixels =   [0,0,0] * strand_sizes[0] * strand_count
     # TODO: should be configurable params
-    steps = 200
+    steps = 100
     speed = 3           # how long to do one pass?
     chasemask = masking.Mask(maskstring)
-    print ("entering chase loop with %s", chasemask.name)
+    #print ("entering chase loop with %s", chasemask.name)
 
     def __single_chase(base_pixels, list_of_lists_of_pixel_numbers, chasemask, steps, speed):
-        print ("entering single chase with %s", chasemask.name)
+        #print ("entering single chase with %s", chasemask.name)
         strand_pointers = [0] * strand_count
     
         def __inner_chase(thisstep):
@@ -228,11 +228,7 @@ def chase (list_of_lists_of_pixel_numbers, maskstring, repeat, thisreso):
             if speed > 0:
                 time.sleep(speed/steps)
             if thisreso and thisreso.hasinterrupt():
-                print (" broke out of chase " )
-#                for strand in range(strand_count):
-#                    for i in range(strand_sizes[strand]):
-#                        globaldata.setpixel(list_of_lists_of_pixel_numbers[strand][i], base_pixels[strand][i])
-
+                #print (" broke out of chase " )
                 break
 
 #       # clear out the final chase area
@@ -246,7 +242,7 @@ def chase (list_of_lists_of_pixel_numbers, maskstring, repeat, thisreso):
 #               time.sleep(speed/steps)
 
         # return to base state
-        print ("returning to base state")
+        #print ("returning to base state")
         for strand in range(strand_count):
             for i in range(strand_sizes[strand]):
                 globaldata.setpixel(list_of_lists_of_pixel_numbers[strand][i], base_pixels[strand][i])

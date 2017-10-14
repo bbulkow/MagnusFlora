@@ -71,6 +71,10 @@ class LedPortal(Portal):
             reso = self.ledResonators[action_parm]
             reso.do_action( LedAction("add") )
 
+        elif action == 'resonator_upgrade':
+            reso = self.ledResonators[action_parm]
+            reso.do_action( LedAction("add") )
+
         elif action == 'resonator_remove':
             # flash the resonator a lot leave it grey
             reso = self.ledResonators[action_parm]
@@ -229,12 +233,9 @@ class LedResonatorThread( threading.Thread):
         #patterns.chase(reso.pixelmap.list_of_lists_of_pixel_numbers, "ww--ww--ww", -1, reso)
 
 
-    def flash_pattern(self, faction ):
+    def flash_pattern(self, faction, secs ):
         reso = self.ledResonator
 
-        self.log.info(" FLASH pattern: faction %d",faction)
-
-        # 10 flashes in 3.0 seconds
         if faction == 0:
             rgb = colortable["NEUTRAL"]
         elif faction == 1:
@@ -242,7 +243,9 @@ class LedResonatorThread( threading.Thread):
         elif faction == 2:
             rgb = colortable["RES"]
 
-        patterns.flash(reso.pixelmap.list_of_lists_of_pixel_numbers, rgb, 10, 3.0, reso)
+        self.log.info(" FLASH pattern: factionn %d rgb %s", faction, str(rgb) )
+
+        patterns.flash(reso.pixelmap.list_of_lists_of_pixel_numbers, rgb, 10, secs, reso)
 
 
     def basic_chase_pattern(self, maskstring):
@@ -270,21 +273,21 @@ class LedResonatorThread( threading.Thread):
 
             elif action.action == "attack":
                 # faction is the number-form here - it means the faction that is attacking
-                self.flash_pattern(action.faction)
+                self.flash_pattern(action.faction, 3.0)
                 self.init_pattern()
 
             elif action.action == "defend":
                 # faction is the number form - it is the faction that is defending
-                self.flash_pattern(action.faction)
+                self.flash_pattern(action.faction, 3.0)
                 self.init_pattern()
  
             elif action.action == "remove":
                 # now there is nothing
-                self.flash_pattern( 0 )
+                self.flash_pattern( 0, 6.0 )
                 self.init_pattern()
 
             elif action.action == "add":
-                self.flash_pattern( reso.portal.faction )
+                self.flash_pattern( reso.portal.faction, 6.0 )
                 self.init_pattern()
 
             else:
