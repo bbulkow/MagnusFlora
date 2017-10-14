@@ -10,6 +10,6 @@ eval "$(pyenv init -)"
 
 cd /home/pi/MagnusFlora/rest
 
-python jarvis.py -c config.json
+python jarvis.py -c config.json -d DEBUG
 
 
