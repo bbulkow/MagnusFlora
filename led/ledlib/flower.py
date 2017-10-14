@@ -222,7 +222,7 @@ class LedResonatorThread( threading.Thread):
                         colordefs.colortable_faction[reso.portal.faction], \
                         colordefs.colortable_level[reso.level], \
                         4.0, \
-                        20, \
+                        40, \
                         reso)
         # test with a little chase, don't really want chase now
         # self.basic_chase_pattern("ww--ww--ww")
@@ -292,8 +292,12 @@ class LedResonatorThread( threading.Thread):
 
             q.task_done() # tells other guy you are complete
 
-            # TODO: add here the background chase, and have it check the queue for new work
-            # frequently
+            # this is the background that happens if nothing else happens
+            while q.qsize() == 0:
+                self.log.debug( " start background petal %s ",reso.position )
+                patterns.chase(reso.pixelmap.list_of_lists_of_pixel_numbers, "ww--ww--ww", -1, reso)
+                 
+
             
 
 class LedResonator(Resonator):
