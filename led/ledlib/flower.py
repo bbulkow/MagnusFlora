@@ -58,6 +58,7 @@ class LedPortal(Portal):
         if action == 'portal_neutralized':
             # flash grey a lot, leave it grey
             for pos, reso in self.ledResonators.items():
+                self.log.debug(" LED portal sends neutralized command to leds")
                 reso.do_action( LedAction( "neutralized" ) )
 
         elif action == 'portal_captured':
@@ -260,6 +261,11 @@ class LedResonatorThread( threading.Thread):
                 reso.portal.faction, str(action),q.qsize() )
 
             if action.action == "init":
+                self.init_pattern()
+
+            elif action.action == "neutralized":
+                self.log.debug("Resonator receives Neutralize command")
+                self.ledResonator.clear()
                 self.init_pattern()
 
             elif action.action == "attack":
