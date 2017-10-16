@@ -166,15 +166,16 @@ class Resonator:
             self.health = 100
         else:
             if concentrated:
-                deltaEnergy = 10 * randint(20,35)
+                deltaEnergy = 10 * randint(15,25)
             else:
                 deltaEnergy = 10 * randint(10,25)
             newEnergy = self.health * Resonator.level_energy[self.level] + deltaEnergy;
             newHealth = int(newEnergy/Resonator.level_energy[self.level])
+            minHealth = min(self.health + 1, 100);
             if (newHealth > 100) :
                 if self.level < 8:
                     self.setLevel(min(8, self.level+1))
-                    self.setHealth(newEnergy/Resonator.level_energy[self.level])
+                    self.setHealth(max(minHealth, newEnergy/Resonator.level_energy[self.level]))
                 else:
                     self.setHealth(100)
             else:
@@ -184,7 +185,7 @@ class Resonator:
         if (self.level == 0):
             return
         if concentrated:
-            deltaEnergy = 10 * randint(20,35)
+            deltaEnergy = 10 * randint(25,45)
         else:   
             deltaEnergy = 10 * randint(10,25)
         newEnergy = self.health * Resonator.level_energy[self.level] - deltaEnergy
@@ -211,7 +212,7 @@ class Portal:
     valid_mods = ["FA","HS-C","HS-R","HS-VR","LA-R","LA-VR","SBUL","MH-C","MH-R","MH-VR","PS-C","PS-R","PS-VR","AXA","T"]
     reso_level_XM = [0.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 4000.0, 5000.0, 6000.0 ]
 
-    factionStr = ["neutral", "resistance", "enlightenment"]
+    factionStr = ["neutral", "enlightenment", "resistance"]
     
     @staticmethod
     def getFactionId(faction):
@@ -470,7 +471,7 @@ class Portal:
             resos.pop()
         reso_string = ''.join(resos)
         return '{{"faction": {0}, "health": {1}, "level": "{2}", "title": "{3}", "resonators": {{{4}}}, "mods": {5} }}'.format(
-            self.faction, self.health, self.level, self.title, reso_string, self.getModsStr() )
+            self.faction, self.getHealth(), self.getLevel(), self.title, reso_string, self.getModsStr() )
 
     # this method makes sure the status is valid and reasonable ( no values greater than game state )
     def check(self):

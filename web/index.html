@@ -7,12 +7,6 @@
   <title>Magnus Flora</title>
   <meta name="description" content="Magnus Flora Participant UI">
 
-<!--  <link rel="stylesheet" type="text/css" href="jquery-ui-min-1.8.24.css"> -->
-
-  <!--[if lt IE 9]
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
-  [endif]-->
-  
 <script>
 var gSide = null;
 var RESISTANCE = "resistance";
@@ -24,9 +18,7 @@ var gStatusSocket = null;
 var gGameStateTimer = null;
 var gGameState = {"valid":false};
 var gLoaded = [false, false, false];
-//var gGameStateURL = "http://pi3.local:5051/status/json";
 var gGameStateURL = "http://bbulkow.entrydns.org:5051/status/json";
-//var gGameActionURL = "http://pi3.local:5051/";
 var gGameActionURL = "http://bbulkow.entrydns.org:5051/";
 var gHealthAuraData = null;
 var gHealthAuraCanvas = null;
@@ -75,14 +67,13 @@ function setGameState(state) {
     var resonators = state['resonators'];
     var oldOwner = gPortalOwner;
     
-    gPortalOwner  = owner == 1 ? RESISTANCE : (owner == 2 ? ENLIGHTENMENT : NEUTRAL);;
+    gPortalOwner  = owner == 2 ? RESISTANCE : (owner == 1 ? ENLIGHTENMENT : NEUTRAL);;
     gGameState.level  = level;
     gGameState.health = health;
    
     if ("N" in resonators) {
         gGameState.resonators[0]["level"] = resonators["N"]["level"];
         gGameState.resonators[0]["health"] = resonators["N"]["health"];
-//        console.log("North resonator health is " + resonators["N"]["health"]);
     } else {
         gGameState.resonators[0]["level"] = 0;
         gGameState.resonators[0]["health"] = 0;
@@ -91,7 +82,6 @@ function setGameState(state) {
     if ("NE" in resonators) {
         gGameState.resonators[1]["level"] = resonators["NE"]["level"];
         gGameState.resonators[1]["health"] = resonators["NE"]["health"];
-//        console.log("North East resonator health is " + resonators["NE"]["health"]);
     } else {
         gGameState.resonators[1]["level"] = 0;
         gGameState.resonators[1]["health"] = 0;
@@ -145,16 +135,22 @@ function setGameState(state) {
     }
 
     gGameState.valid = true;
-    
+   
+    // change display if owner has changed 
     if (oldOwner != owner) {
-        // XXX - do something special to denote change
-        // show or hide divs, as appropriate
         displayDivs();
         renderGame();
     }
 }
 
 function setupHealthAura(healthMask, auraR, auraB, auraG){
+    /// To handle the programmatic opacity and colorrequired, 
+    // we first draw the bitmap ('healthmask') to an offscreen 
+    // canvas. We then set the bitmap's opacity values by
+    // transferring the red channel to the alpha channel, and
+    // finally we set the color by manually poking the 
+    // passed in r, g, b into the bitmap.
+    
     // draw mask to offscreen canvas...
     var maskCanvas = document.createElement("canvas");
     maskCanvas.width = healthMask.width;
@@ -181,7 +177,6 @@ function chooseSide(side) {
     alert("Side chosen is " + side);
     //document.cookie = ("side = " + side + ";");
     setCookie("side", side, 12);
-    //document.cookie = "username=John Smith; expires=Thu, 18 Dec 2018 12:00:00 UTC; path=/";
     gSide = side;
     displayDivs();
     renderGame();
@@ -215,7 +210,6 @@ function setCookie(cname, cvalue, exdays) {
 function checkSide(){
     var playerSide = getCookie("side"); 
     alert("Cookies are " + document.cookie + ", side is " + playerSide );
-    //alert("Player side is " + playerSide);
 }
 
 function attack(resonator){
@@ -225,7 +219,7 @@ function attack(resonator){
             if (xmlHttp.status == 200) {
                 try {
                     console.log("Successfully attacked");
-                    //setGameState(JSON.parse(xmlHttp.responseText)); 
+                    //setGameState(JSON.parse(xmlHttp.responseText)); // XXX - do I have a state response? Can I do this? 
                 } catch (err) {
                     console.log("Error setting game state, " + err);
                 }
@@ -250,7 +244,7 @@ function defend(resonator){
             if (xmlHttp.status == 200) {
                 try {
                     console.log("Successfully defended");
-                    //setGameState(JSON.parse(xmlHttp.responseText)); 
+                    //setGameState(JSON.parse(xmlHttp.responseText)); // XXX - per above 
                 } catch (err) {
                     console.log("Error setting game state, " + err);
                 }
@@ -289,6 +283,7 @@ function getGameState() {
 
 function initGame()
 {
+    // before changing pages, clear timers and close down sockets
     window.onbeforeunload = function(event) {
         if (gStatusSocket != null) {
             gStatusSocket.close();
@@ -300,6 +295,7 @@ function initGame()
         }
     };
     
+    // load image resources
     gResonatorImages = new Image();
     gResonatorImages.onload = function() {
         console.log("resonator onload called!");
@@ -325,6 +321,7 @@ function initGame()
     };
     gHealthAura.src = "images/healthaura.png" 
     
+    // set up resonator objects. (Yes, this deserves a class.)
     gGameState.resonators = [ {"level":0, "position":"N", "pressed":false, "pressCount": 0},
                             {"level":0, "position":"NE", "pressed":false, "pressCount":0},
                             {"level":0, "position":"E",  "pressed":false, "pressCount":0},
@@ -335,7 +332,7 @@ function initGame()
                             {"level":0, "position":"NW", "pressed":false, "pressCount":0} ];
 
    
-    // layout - resonators, hit regions ... 
+    // figure out layout - main portal image, resonators, hit regions ... 
     var windowWidth = window.innerWidth 
                       || document.documentElement.clientWidth
                       || document.body.clientWidth;
@@ -345,33 +342,37 @@ function initGame()
 
     var windowSize = Math.min(windowWidth, windowHeight);
 
-//    console.log("Window height is " + windowHeight + " Window Width is " + windowWidth);
+    console.log("Window height is " + windowHeight + " Window Width is " + windowWidth);
 
     var canvas = document.getElementById("game_canvas");
     var proposedHeight = Math.max(windowSize, canvas.height);
     var proposedWidth  = Math.max(windowSize, canvas.width);
     var proposedSize = Math.min(proposedHeight, proposedWidth);
     gScale = proposedSize/canvas.width;
+    console.log("Scale factor is " + gScale);
     
-    var radius = /*gScale**/(gGameBackgroundHeight/2 + 35);
+    var radius = gGameBackgroundHeight/2 + 35;
     var centerX = canvas.width/2;
     var centerY = canvas.height/2;
     var resoHitWidth = 60;
     var resoHitHeight = 60;
 
-    for (var i=0; i<8; i++) {
+    for (var i=0; i<8; i++) { // NB - resoCenter is in unscaled coordinates
         gResoCenter.push({"x" : Math.sin((Math.PI*2*i)/8)*radius + centerX,
                              "y" : -Math.cos((Math.PI*2*i)/8)*radius + centerY});
     }
 
-    for (var i=0; i<8; i++) {
+    for (var i=0; i<8; i++) { // NB - resoHitRegion is in scaled coordinates
         gResoHitRegion.push( {"x1": gScale * (gResoCenter[i].x - resoHitWidth/2),
                              "x2": gScale * (gResoCenter[i].x + resoHitWidth/2),
                              "y1": gScale * (gResoCenter[i].y - resoHitHeight/2),
                              "y2": gScale * (gResoCenter[i].y + resoHitHeight/2)});
     }    
 
-    var numericFontSizeDesired = 
+    var swapSidesHitRegion = {"x1": canvas.width - 30*gScale, "y1": canvas.height - 30*gScale,
+                            "x2": canvas.width, "y2":canvas.height}; 
+    
+    // enable hit regions
     canvas.onclick = function(data){
          console.log("Click in canvas");
          var x = data.layerX;
@@ -404,8 +405,17 @@ function initGame()
              }, 100);
              renderGame();
          }
+        if ((swapSidesHitRegion.x1 <=x) && (swapSidesHitRegion.x2 >= x) &&
+            (swapSidesHitRegion.y1 <=y) && (swapSidesHitRegion.y2 >= y)) {
+            var swapSideString = "Change side to " + (gSide == ENLIGHTENMENT ? RESISTANCE : ENLIGHTENMENT) + "?";
+            if (confirm(swapSideString)) {
+                gSide = gSide == ENLIGHTENMENT ? RESISTANCE : ENLIGHTENMENT;
+                renderGame();
+            } 
+        }
     }
     
+    // text and button layout
     var fontSize = Math.round(20*gScale);
     var fontFamily = "sans-serif";
 
@@ -420,20 +430,18 @@ function initGame()
     enlightenmentButton.style.fontFamily = fontFamily
     enlightenmentButton.height = (2 * fontSize) + "px";
 
-    console.log("Scale factor is " + gScale);
     canvas.height = proposedSize;
     canvas.width  = proposedSize;
    
+    // get current cookies
+    gSide = getCookie("side");
+    console.log("side is " + gSide);   
 
+    // and start the game
     setupStatusSocket();
 
     getGameState();
     
-    // get current cookies
-    gSide = getCookie("side");
-    
-    console.log("side is " + gSide);    
-
     displayDivs();
 }
 
@@ -441,29 +449,16 @@ function displayDivs() {
     /// Display the appropriate divs, depending on game state (whether
     /// you've chosen a side, and whether the portal belongs to your side)
    
-/* 
-    var attack_div = document.getElementById("attack_div");
-    var defend_div = document.getElementById("defend_div");*/
     var portal_div = document.getElementById("gamestate");
     var side_choose_div = document.getElementById("choose_a_side");
     
     // All divs initialized to not display
-    /*attack_div.style.display = "none";
-    defend_div.style.display = "none";*/
     side_choose_div.style.display = "none";
     portal_div.style.display = "none";
     
     // display appropriate divs.
     if (gSide == RESISTANCE || gSide == ENLIGHTENMENT) {
         portal_div.style.display = "block";
-/*
-        if (gPortalOwner == NEUTRAL || gPortalOwner == gSide) {
-            defend_div.style.display = "block";
-        }
-        if (gPortalOwner == NEUTRAL || gPortalOwner != gSide) {
-            attack_div.style.display = "block";
-        }
-*/ 
     } else {
         side_choose_div.style.display = "block";
     }
@@ -474,9 +469,11 @@ function renderGame() {
     var ctx=canvas.getContext("2d");
    
     ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = gSide == RESISTANCE ? "#D6E3F2" : "#D3FCE2";
+    ctx.fillRect(0,0,canvas.width, canvas.height);
 
-    // draw background. 
-    if (gLoaded[1]) {
+    // draw portal
+    if (gLoaded[1]) { /* ie, if the portal bitmap is loaded */
         var imageX = gPortalOwner == RESISTANCE ? 0 : (gPortalOwner == ENLIGHTENMENT ? 563 : 282);
         var imageY = 0;
         ctx.drawImage(gGameBackground, imageX, imageY, 281, 325, 
@@ -499,39 +496,27 @@ function renderGame() {
         ctx.fillText(textLine1, canvas.width/2, canvas.height/2);
         ctx.fillText(textLine2, canvas.width/2, canvas.height/2 + 40);
     }
-    
-    if (gLoaded[0]) {
+   
+    // draw resonators - they are drawn in a circle around the portal 
+    if (gLoaded[0]) { /* ie, if the resonator bitmaps are loaded */
         var radius = gScale*(gGameBackground.height/2 + 35);
-        //console.log("GameBackground height is " + gGameBackground.height);
-        //var centerX = canvas.width/2;
-        //var centerY = canvas.height/2;
- 
-        //ctx.drawImage(gResonatorImages, 0, 150, 60, 60, centerX-25, centerY-25, 60, 60);
-        // draw individual resonators
         var energyMax = gMaxEnergyPerLevel[8];
-
+ 
+        // draw individual resonators
         for (var i=0; i<8; i++) {
             var level = gGameState.valid ? gGameState.resonators[i].level : 0;
             var health = level > 0 ? gGameState.resonators[i].health : 0; 
             var energy = (health/100 * gMaxEnergyPerLevel[level])/energyMax;
-            var xPos = gResoCenter[i].x;
-            //var xPos = Math.sin((Math.PI*2*i)/8)*radius + centerX;
-            var yPos = gResoCenter[i].y;
-            //var yPos = Math.cos((Math.PI*2*i)/8)*radius + centerY;
+            var xPos = gResoCenter[i].x;  /* NB - unscaled coordinates */
+            var yPos = gResoCenter[i].y;  /* NB - unscaled coordiantes */
  
             var theResonator = gGameState.resonators[i];
-
-            if (i==0) {
-                console.log("energy level is " + energy + ", health is " + health + ", level is " + level);
-            }
 
             // draw health glow
             if (gLoaded[2]) {
                 ctx.globalAlpha = health/100;
                 //console.log("global alpha is " + health/100);
                 ctx.drawImage(gHealthAuraCanvas, 0, 0, 100, 100, (xPos-50)*gScale, (yPos-50)*gScale, 100*gScale, 100*gScale);    
-                //ctx.putImageData(gHealthAuraData, 50, 50, xPos-110, yPos-110, 100, 100);    
-                //ctx.putImageData(gHealthAuraData, xPos-50, yPos-50, 0, 0, 100, 100);    
             }
             ctx.globalAlpha = 1.0;
 
@@ -539,7 +524,7 @@ function renderGame() {
             //ctx.strokeStyle="red";
             //ctx.rect(gResoHitRegion[i].x1, gResoHitRegion[i].y1, 
             //         gResoHitRegion[i].x2 - gResoHitRegion[i].x1, gResoHitRegion[i].y2-gResoHitRegion[i].y1);
-            //ctx.stroke();i
+            //ctx.stroke();
 
             // draw resonator
             var imageX = (level == 0 ? 0 : (level * 75) - 75); 
@@ -553,15 +538,6 @@ function renderGame() {
                ctx.fillStyle = gLevelColors[level];
             }
 
-/*
-            }else if (gPortalOwner == RESISTANCE) {
-                ctx.fillStyle = "#73A7F5";
-            } else if (gPortalOwner == ENLIGHTENMENT) {
-                ctx.fillStyle = "#3BB772"; 
-            } else {
-                ctx.fillStyle = "grey";
-            }
-*/
             ctx.fill();
 
             // indicate resonator level
@@ -600,7 +576,6 @@ function renderGame() {
             ctx.closePath();
             ctx.stroke();
             
-            //ctx.drawImage(gResonatorImages, imageX, imageY, 60, 60, (xPos-25)*gScale, (yPos-25)*gScale, 60*gScale, 60*gScale);
         }
     }
 }
@@ -620,7 +595,7 @@ They promise to bring a new era of peace and understanding. <br><br>
 But are they what they claim to be?<br> 
 Or are they trying to take over our world and control our minds?<br><br>
 <button id="choose_enlightenment" onclick="chooseSide(ENLIGHTENMENT)">I believe! Let me join the Enlightenment</button><br><br>
-<button id="choose_resistance" click="chooseSide(RESISTANCE)">Goggly-eyed ET's aint taking my planet! I'm with the Resistance</button><br>
+<button id="choose_resistance" onclick="chooseSide(RESISTANCE)">Goggly-eyed ET's aint taking my planet! I'm with the Resistance</button><br>
 </p>
 </div>
 <div id="main">
@@ -631,16 +606,6 @@ discovered how to use portals, and they battle for control of portals as they at
 to convince the unaligned masses to see things Their Way.</p>
 <p>To control take control of a portal, you must put your own resonators around it </p>
 </div>
-<!--
-<div id="control_options">
-<div id="attack_div">
-<button id="attack_btn" onclick="attack()">Attack!</button>
-</div>
-<div id="defend_div">
-<button id="defend_btn" onclick="defend()">Defend</button>
-</div>
-</div>
--->
 <div id="gamestate">
 <canvas id="game_canvas" width="500" height="500" style="border:1px solid #000000;">
 </div>
