@@ -58,6 +58,7 @@ class LedPortal(Portal):
         if action == 'portal_neutralized':
             # flash grey a lot, leave it grey
             for pos, reso in self.ledResonators.items():
+                self.log.debug(" LED portal sends neutralized command to leds")
                 reso.do_action( LedAction( "neutralized" ) )
 
         elif action == 'portal_captured':
@@ -67,6 +68,10 @@ class LedPortal(Portal):
 
         elif action == 'resonator_add':
             # flash the resonator a lot
+            reso = self.ledResonators[action_parm]
+            reso.do_action( LedAction("add") )
+
+        elif action == 'resonator_upgrade':
             reso = self.ledResonators[action_parm]
             reso.do_action( LedAction("add") )
 
@@ -221,19 +226,16 @@ class LedResonatorThread( threading.Thread):
                         colordefs.colortable_faction[reso.portal.faction], \
                         colordefs.colortable_level[reso.level], \
                         4.0, \
-                        20, \
+                        40, \
                         reso)
         # test with a little chase, don't really want chase now
         # self.basic_chase_pattern("ww--ww--ww")
         #patterns.chase(reso.pixelmap.list_of_lists_of_pixel_numbers, "ww--ww--ww", -1, reso)
 
 
-    def flash_pattern(self, faction ):
+    def flash_pattern(self, faction, secs ):
         reso = self.ledResonator
 
-        self.log.info(" FLASH pattern: faction %d",faction)
-
-        # 10 flashes in 3.0 seconds
         if faction == 0:
             rgb = colortable["NEUTRAL"]
         elif faction == 1:
@@ -241,7 +243,9 @@ class LedResonatorThread( threading.Thread):
         elif faction == 2:
             rgb = colortable["RES"]
 
-        patterns.flash(reso.pixelmap.list_of_lists_of_pixel_numbers, rgb, 10, 3.0, reso)
+        self.log.info(" FLASH pattern: factionn %d rgb %s", faction, str(rgb) )
+
+        patterns.flash(reso.pixelmap.list_of_lists_of_pixel_numbers, rgb, 10, secs, reso)
 
 
     def basic_chase_pattern(self, maskstring):
@@ -262,23 +266,28 @@ class LedResonatorThread( threading.Thread):
             if action.action == "init":
                 self.init_pattern()
 
+            elif action.action == "neutralized":
+                self.log.debug("Resonator receives Neutralize command")
+                self.ledResonator.clear()
+                self.init_pattern()
+
             elif action.action == "attack":
                 # faction is the number-form here - it means the faction that is attacking
-                self.flash_pattern(action.faction)
+                self.flash_pattern(action.faction, 3.0)
                 self.init_pattern()
 
             elif action.action == "defend":
                 # faction is the number form - it is the faction that is defending
-                self.flash_pattern(action.faction)
+                self.flash_pattern(action.faction, 3.0)
                 self.init_pattern()
  
             elif action.action == "remove":
                 # now there is nothing
-                self.flash_pattern( 0 )
+                self.flash_pattern( 0, 6.0 )
                 self.init_pattern()
 
             elif action.action == "add":
-                self.flash_pattern( reso.portal.faction )
+                self.flash_pattern( reso.portal.faction, 6.0 )
                 self.init_pattern()
 
             else:
@@ -286,8 +295,12 @@ class LedResonatorThread( threading.Thread):
 
             q.task_done() # tells other guy you are complete
 
-            # TODO: add here the background chase, and have it check the queue for new work
-            # frequently
+            # this is the background that happens if nothing else happens
+            while q.qsize() == 0:
+                self.log.debug( " start background petal %s ",reso.position )
+                patterns.chase(reso.pixelmap.list_of_lists_of_pixel_numbers, "ww--ww--ww", -1, reso)
+                 
+
             
 
 class LedResonator(Resonator):

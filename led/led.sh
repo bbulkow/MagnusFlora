@@ -8,9 +8,8 @@ export PYENV_ROOT="/usr/local/bin/pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 
-cd /home/pi/MagnusFlora/rest
+cd /home/pi/MagnusFlora/led
 
-#python jarvis.py -c config.json -d DEBUG
-python jarvis.py -c config.json 
+python led.py -c ../rest/config.json 
 
 

@@ -15,11 +15,11 @@
 	"jarvis_url": "http://127.0.0.1:2005/",
 	"jarvis_port": 2005,
 
-	"tecthulu_url": "http://127.0.0.1:5050/status/json",
-	"tecthulu_port": 5050,
+	"tecthulu_url": "http://bbulkow.entrydns.org:5051/status/json",
+	"tecthulu_port": 5051,
 	"tecthulu_poll": 1.0,
 
-	"portalfile": "portal.json",
+	"portalfile": "../rest/portal.json",
 	"tracefile": "trace.json",
 
 	"drivers": [ "sound_url", "led_url" ]
